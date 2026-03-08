@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wiesel 2">
 <title>Wiesel 2 — Analytics Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- Firebase -->
@@ -577,7 +580,6 @@
   <div style="display:flex;gap:10px;align-items:center;">
     <div class="season-badge" id="season-badge">SAISON 2025/26 · LANDESLIGA B</div>
     <div id="record-badge" style="font-family:'DM Mono';font-size:12px;color:var(--muted2);"></div>
-    <div id="sync-status" style="font-family:'DM Mono';font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:5px;" title="Cloud Sync Status">☁ Cloud</div>
     <button id="lang-toggle" onclick="toggleLang()" style="
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -2653,125 +2655,69 @@ showView = function(name) {
   }
 };
 
-// ========== LOCALSTORAGE HELPERS ==========
-const LS_KEY = 'wiesel2_rotationen';
-
-function lsSaveRotations(entries) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(entries)); } catch(e) {}
-}
-
-function lsLoadRotations() {
-  try {
-    const stored = localStorage.getItem(LS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch(e) { return []; }
-}
-
-function setSyncStatus(text, color) {
-  const el = document.getElementById('sync-status');
-  if (el) { el.textContent = text; el.style.color = color; }
-}
-
-// ========== ROTATION STORAGE (Firebase + localStorage) ==========
+// ========== ROTATION STORAGE (Firebase) ==========
 let _lastRotationData = null;
 
 async function saveCurrentRotation() {
   if (!_lastRotationData) { alert('Zuerst eine Rotation generieren!'); return; }
+  if (!window._fbReady) { alert('Firebase noch nicht bereit — kurz warten und nochmal versuchen.'); return; }
   const nameInput = document.getElementById('save-rotation-name');
   const label = nameInput.value.trim() || `Rotation ${new Date().toLocaleDateString('de-DE')}`;
   const entry = { label, savedAt: new Date().toISOString(), ..._lastRotationData };
-
-  // 1. Sofort in localStorage speichern
-  const localEntries = lsLoadRotations();
-  const tempId = 'local_' + Date.now();
-  entry._docId = tempId;
-  localEntries.unshift(entry);
-  lsSaveRotations(localEntries);
-  const feedback = document.getElementById('save-feedback');
-  feedback.style.display = 'inline';
-  setTimeout(() => feedback.style.display = 'none', 2500);
-  nameInput.value = '';
-
-  // 2. Parallel in Firebase speichern
-  if (window._fbReady) {
-    setSyncStatus('☁ Speichern…', 'var(--muted2)');
-    try {
-      const docId = await window._fbSave(entry);
-      // Update localStorage mit echter Firebase docId
-      const updated = lsLoadRotations().map(e => e._docId === tempId ? { ...e, _docId: docId } : e);
-      lsSaveRotations(updated);
-      setSyncStatus('☁ Synced ✓', 'var(--green)');
-      setTimeout(() => setSyncStatus('☁ Cloud', 'var(--muted2)'), 2000);
-      loadSavedRotations();
-    } catch(e) {
-      setSyncStatus('☁ Offline', 'var(--red)');
-      console.error(e);
-    }
-  } else {
-    setSyncStatus('☁ Offline', 'var(--red)');
+  try {
+    const docId = await window._fbSave(entry);
+    entry._docId = docId;
+    const feedback = document.getElementById('save-feedback');
+    feedback.style.display = 'inline';
+    setTimeout(() => feedback.style.display = 'none', 2500);
+    nameInput.value = '';
     loadSavedRotations();
+  } catch(e) {
+    alert('Speichern fehlgeschlagen: ' + e.message);
+    console.error(e);
   }
-}
-
-function renderRotationList(entries) {
-  const countEl = document.getElementById('saved-rotations-count');
-  const listEl = document.getElementById('saved-rotations-list');
-  if (!countEl || !listEl) return;
-  countEl.textContent = entries.length > 0 ? `${entries.length} gespeichert` : 'Keine gespeichert';
-  if (entries.length === 0) {
-    listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Noch keine Rotationen gespeichert.</div>';
-    return;
-  }
-  listEl.innerHTML = entries.map(e => {
-    const date = new Date(e.savedAt).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    const starters = (e.starters || []).join(', ');
-    const bench = (e.bench || []).join(', ');
-    const docId = e._docId;
-    return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--surface2);">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:var(--text);">${e.label}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono';">${date}</div>
-          <div style="font-size:11px;color:var(--accent);margin-top:4px;">★ ${starters || '—'}</div>
-          <div style="font-size:11px;color:var(--accent2);margin-top:2px;">· ${bench || '—'}</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-shrink:0;">
-          <button onclick="loadRotation('${docId}')" style="padding:6px 14px;background:rgba(74,158,232,0.1);border:1px solid rgba(74,158,232,0.25);border-radius:6px;color:var(--accent2);font-family:'DM Sans';font-size:12px;cursor:pointer;">↩ Laden</button>
-          <button onclick="deleteRotation('${docId}')" style="padding:6px 10px;background:rgba(232,90,74,0.08);border:1px solid rgba(232,90,74,0.2);border-radius:6px;color:var(--red);font-family:'DM Sans';font-size:12px;cursor:pointer;">🗑</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
 }
 
 async function loadSavedRotations() {
   const countEl = document.getElementById('saved-rotations-count');
   const listEl = document.getElementById('saved-rotations-list');
   if (!countEl || !listEl) return;
-
-  // Sofort aus localStorage rendern (kein Warten auf Firebase)
-  const localEntries = lsLoadRotations();
-  if (localEntries.length > 0) renderRotationList(localEntries);
-
-  // Dann Firebase laden und aktualisieren
   if (!window._fbReady) {
-    countEl.textContent = localEntries.length > 0 ? `${localEntries.length} (lokal)` : 'wird geladen…';
+    countEl.textContent = 'wird geladen…';
     setTimeout(loadSavedRotations, 800);
     return;
   }
   try {
-    setSyncStatus('☁ Sync…', 'var(--muted2)');
+    countEl.textContent = '⏳ lädt…';
     const entries = await window._fbLoad();
-    // Firebase ist Master — localStorage aktualisieren
-    lsSaveRotations(entries);
-    renderRotationList(entries);
-    setSyncStatus('☁ Cloud', 'var(--muted2)');
-  } catch(e) {
-    setSyncStatus('☁ Offline', 'var(--red)');
-    if (localEntries.length === 0) {
-      countEl.textContent = 'Fehler';
-      listEl.innerHTML = `<div style="color:var(--red);font-size:12px;">Firebase-Fehler: ${e.message}</div>`;
+    countEl.textContent = entries.length > 0 ? `${entries.length} gespeichert` : 'Keine gespeichert';
+    if (entries.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Noch keine Rotationen gespeichert.</div>';
+      return;
     }
+    listEl.innerHTML = entries.map(e => {
+      const date = new Date(e.savedAt).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const starters = (e.starters || []).join(', ');
+      const bench = (e.bench || []).join(', ');
+      const docId = e._docId;
+      return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--surface2);">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--text);">${e.label}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono';">${date}</div>
+            <div style="font-size:11px;color:var(--accent);margin-top:4px;">★ ${starters || '—'}</div>
+            <div style="font-size:11px;color:var(--accent2);margin-top:2px;">· ${bench || '—'}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button onclick="loadRotation('${docId}')" style="padding:6px 14px;background:rgba(74,158,232,0.1);border:1px solid rgba(74,158,232,0.25);border-radius:6px;color:var(--accent2);font-family:'DM Sans';font-size:12px;cursor:pointer;">↩ Laden</button>
+            <button onclick="deleteRotation('${docId}')" style="padding:6px 10px;background:rgba(232,90,74,0.08);border:1px solid rgba(232,90,74,0.2);border-radius:6px;color:var(--red);font-family:'DM Sans';font-size:12px;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    countEl.textContent = 'Fehler';
+    listEl.innerHTML = `<div style="color:var(--red);font-size:12px;">Firebase-Fehler: ${e.message}</div>`;
     console.error(e);
   }
 }
