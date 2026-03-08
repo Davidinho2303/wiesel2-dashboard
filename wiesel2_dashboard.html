@@ -1060,13 +1060,13 @@ async function loadData() {
 
     PLAYERS = buildPlayersFromJSON(data);
 
-    // adj_pm aus spieler_aggregiert übernehmen (korrekt GSI-gewichtet)
+    // adj_pm und lineup_score aus spieler_aggregiert übernehmen
     const agg = data.spieler_aggregiert || {};
     Object.entries(agg).forEach(([rawName, a]) => {
       const name = NAME_MAP[rawName] || rawName;
-      if (PLAYERS[name] && a.adj_pm != null) {
-        PLAYERS[name].adj_pm = a.adj_pm;
-      }
+      if (!PLAYERS[name]) return;
+      if (a.adj_pm != null) PLAYERS[name].adj_pm = a.adj_pm;
+      if (a.lineup_score)   PLAYERS[name].lineup_score = a.lineup_score;
     });
 
     // LINEUPS aus allen Spieldaten zusammenführen
