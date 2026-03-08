@@ -981,7 +981,6 @@ function buildPlayersFromJSON(data) {
       ].forEach(([field,fld,cnt])=>{ if(s[field]!=null){p[fld]+=s[field];p[cnt]++;} });
     });
   });
-
   const result={};
   Object.entries(acc).forEach(([name,p])=>{
     const g=p.spiele;
@@ -1034,43 +1033,28 @@ async function loadData() {
     const resp = await fetch('./Wiesel2_Lineup_Daten_v3_clean.json');
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const data = await resp.json();
-
-    // GSI pro Spiel berechnen
     (data.spiele||[]).forEach(g => {
-      const ww  = g.ww2_punkte || g.ww  || 0;
-      const opp = g.gegner_punkte || g.opp || 0;
-      g.gsi = (ww+opp)>0 ? Math.round(opp/(ww+opp)*1000)/1000 : 0.5;
-      g._ww = ww; g._opp = opp;
+      const ww=g.ww2_punkte||g.ww||0, opp=g.gegner_punkte||g.opp||0;
+      g.gsi=(ww+opp)>0?Math.round(opp/(ww+opp)*1000)/1000:0.5;
+      g._ww=ww; g._opp=opp;
     });
-
     PLAYERS = buildPlayersFromJSON(data);
-
-    // LINEUPS aus Spieldaten zusammenführen
-    const luMap = {};
+    const luMap={};
     (data.spiele||[]).forEach(spiel => {
       (spiel.lineups||[]).forEach(lu => {
         const players=(lu.spieler||lu.players||[]).map(n=>NAME_MAP[n]||n);
         const key=players.slice().sort().join('|');
-        const m=_parseMin(lu.min), p=lu.pkt||0, o=lu.opp||0;
+        const m=_parseMin(lu.min),p=lu.pkt||0,o=lu.opp||0;
         if(!luMap[key]) luMap[key]={players,min:0,pkt:0,opp:0,pm:0,count:0};
         luMap[key].min+=m; luMap[key].pkt+=p; luMap[key].opp+=o;
         luMap[key].pm+=p-o; luMap[key].count++;
       });
     });
-    LINEUPS = Object.values(luMap).map(e=>({
-      ...e, net_rtg: e.min>0?Math.round(e.pm/e.min*100*10)/10:0
-    })).sort((a,b)=>b.min-a.min);
-
-    GAMES = (data.spiele||[]).map(g=>({
-      id:g.id, datum:g.datum, gegner:g.gegner,
-      ergebnis:g.ergebnis, ww:g._ww, opp:g._opp, gsi:g.gsi
-    }));
-
+    LINEUPS=Object.values(luMap).map(e=>({...e,net_rtg:e.min>0?Math.round(e.pm/e.min*100*10)/10:0})).sort((a,b)=>b.min-a.min);
+    GAMES=(data.spiele||[]).map(g=>({id:g.id,datum:g.datum,gegner:g.gegner,ergebnis:g.ergebnis,ww:g._ww,opp:g._opp,gsi:g.gsi}));
     initDashboard();
   } catch(err) {
-    document.body.innerHTML = '<div style="color:#e85a4a;padding:40px;font-family:monospace">'+
-      'Fehler beim Laden der JSON: '+err.message+'<br><br>'+
-      'Stelle sicher dass <b>Wiesel2_Lineup_Daten_v3_clean.json</b> im selben Verzeichnis liegt.</div>';
+    document.body.innerHTML='<div style="color:#e85a4a;padding:40px;font-family:monospace">Fehler beim Laden der JSON: '+err.message+'<br><br>Stelle sicher dass <b>Wiesel2_Lineup_Daten_v3_clean.json</b> im selben Verzeichnis liegt.</div>';
   }
 }
 // ========== HELPERS ==========
@@ -1199,7 +1183,7 @@ function buildOverview() {
     { label:'Top Scorer', value: topScorer?.ppg, sub: topScorer?.vollname?.split(' ')[0] },
     { label:'Top Rebounder', value: topReb?.reb, sub: topReb?.vollname?.split(' ')[0] },
     { label:'Best Raw+/-', value: (topPM?.[1]?.pm_total > 0 ? '+':'')+topPM?.[1]?.pm_total, sub: topPM?.[0] },
-      { label:'Roster', value: Object.keys(PLAYERS).length, sub: 'Spieler' }
+    { label:'Roster', value: Object.keys(PLAYERS).length, sub: 'Spieler' }
   ];
 
   document.getElementById('overview-cards').innerHTML = cards.map(c=>`
@@ -1235,7 +1219,83 @@ function buildOverview() {
       </div>
     </div>`).join('');
 
-  // Top Adj PM
+
+  // Games
+  document.getElementById('game-results').innerHTML = GAMES.map(g=>{
+    let ww = g.ww, opp = g.opp;
+    let res = g.ergebnis;
+    let isW = res==='W' || (ww!=null && opp!=null && ww>opp);
+    let isL = res==='L' || (ww!=null && opp!=null && ww<opp);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);width:30px;">${g.id}</span>
+      <span class="${isW?'result-w':isL?'result-l':''}" style="width:16px;">${isW?'W':isL?'L':'?'}</span>
+      <span style="flex:1;font-size:12px;color:var(--text);">${g.gegner}</span>
+      <span style="font-family:'DM Mono';font-size:12px;color:var(--muted2);">${ww!=null?ww+'-'+opp:'?'}</span>
+      <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${g.gsi>0.55?'rgba(232,90,74,0.12)':g.gsi<0.45?'rgba(74,232,122,0.1)':'rgba(255,255,255,0.05)'};color:${g.gsi>0.55?'#f0907a':g.gsi<0.45?'var(--green)':'var(--muted)'};">GSI ${g.gsi}</span>
+      <span style="font-size:10px;color:var(--muted);">${g.datum}</span>
+    </div>`;
+  }).join('');
+
+  // Best lineups
+  const best = LINEUPS.filter(l=>l.min>=5).sort((a,b)=>b.net_rtg-a.net_rtg).slice(0,5);
+  document.getElementById('top-lineups-overview').innerHTML = best.map(l=>`
+    <div style="margin-bottom:12px;padding:10px;background:var(--surface2);border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:10px;font-family:'DM Mono';color:${l.net_rtg>0?'var(--green)':'var(--red)'};">Net: ${l.net_rtg>0?'+':''}${l.net_rtg} · ${l.min}min · ${l.pm>0?'+':''}${l.pm}</span>
+      </div>
+      <div>${l.players.map(p=>`<span class="lu-tag">${p}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ========== PLAYER PROFILES ==========
+let currentPosFilter = 'all';
+let currentArchFilter = null;
+
+function posMatchesFilter(pos, filter) {
+  if (filter === 'all') return true;
+  if (!pos || pos==='?') return false;
+  const p = pos.toLowerCase();
+  if (filter==='1') return p.includes('1');
+  if (filter==='2') return p.includes('2') || p==='2';
+  if (filter==='combo') return p.includes('combo');
+  if (filter==='3') return p.includes('3');
+  if (filter==='4') return p.includes('4');
+  if (filter==='5') return p.includes('5');
+  return true;
+}
+
+function filterPos(btn, pos) {
+  currentPosFilter = pos;
+  currentArchFilter = null;
+  document.querySelectorAll('#pos-filter .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPlayerCards();
+}
+
+function filterArch(btn, arch) {
+  currentArchFilter = arch;
+  currentPosFilter = 'all';
+  document.querySelectorAll('#pos-filter .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPlayerCards();
+}
+
+function buildPlayerCards() {
+  const POS_ORDER = ['1','1/2','2','combo','3','3/4','4','4/5','5'];
+  const posRank = pos => {
+    const p = (pos||'').toLowerCase();
+    const idx = POS_ORDER.findIndex(o => p === o);
+    return idx >= 0 ? idx : 99;
+  };
+
+  const all = Object.entries(PLAYERS).filter(([name,p])=>{
+    if (p.spiele < 1) return false;
+    if (currentArchFilter) {
+      const [main] = archetype(p, name);
+      return main === currentArchFilter;
+    }
+    return posMatchesFilter(p.pos, currentPosFilter);
+  });
 
   // If filtered by specific pos or arch → flat sorted by PPG (original behavior)
   if (currentArchFilter || currentPosFilter !== 'all') {
@@ -1286,11 +1346,13 @@ function playerCardHTML(name, p) {
         <div class="pc-stat"><div class="v">${p.reb}</div><div class="l">REB</div></div>
         <div class="pc-stat"><div class="v">${p.apg}</div><div class="l">AST</div></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;">
+      <div style="display:grid;grid-template-columns:1fr;gap:6px;margin-top:10px;">
         <div style="background:var(--surface);border-radius:6px;padding:6px 6px;text-align:center;">
           <div style="font-family:'DM Mono';font-size:13px;font-weight:600;color:${p.pm_total>=0?'var(--green)':'var(--red)'};">${p.pm_total>0?'+':''}${p.pm_total}</div>
           <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Raw +/-</div>
         </div>
+        
+        
       </div>
       <div style="margin-top:12px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
@@ -1364,15 +1426,1021 @@ function showProfile(name) {
         if(!active.length)return '';
         return `<div style="margin-bottom:12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Fähigkeiten</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${active.map(([,v])=>`<span style="font-size:10px;padding:3px 8px;border-radius:12px;background:${v.c}22;color:${v.c};border:1px solid ${v.c}44;font-weight:600;">${v.l}</span>`).join('')}</div></div>`;
       })()}
+      <div class="pd-row"><span class="pd-key">Spiele</span><span class="pd-val">${p.spiele} (${p.mpg} min/G)</span></div>
+      <div class="pd-row"><span class="pd-key">Punkte</span><span class="pd-val" style="color:var(--accent);">${p.ppg} PPG</span></div>
+      <div class="pd-row"><span class="pd-key">Rebounds</span><span class="pd-val">${p.reb} (${p.or_pg} off / ${p.dr_pg} def)</span></div>
+      <div class="pd-row"><span class="pd-key">Assists</span><span class="pd-val">${p.apg}</span></div>
+      <div class="pd-row"><span class="pd-key">Turnover</span><span class="pd-val">${p.tpg}</span></div>
+      <div class="pd-row"><span class="pd-key">AST/TO</span><span class="pd-val" style="color:${p.ast_to>=1?'var(--green)':'var(--red)'};">${astToStr}</span></div>
+      <div class="pd-row"><span class="pd-key">Steals</span><span class="pd-val">${p.stl}</span></div>
+      <div class="pd-row"><span class="pd-key">Blocks</span><span class="pd-val">${p.blk}</span></div>
+      <div class="pd-row"><span class="pd-key">Fouls</span><span class="pd-val">${p.pf}</span></div>
+      <div class="pd-row"><span class="pd-key">Raw +/-</span><span class="pd-val" style="color:${p.pm_total>=0?'var(--green)':'var(--red)'};">${p.pm_total>0?'+':''}${p.pm_total}</span></div>
+      ${p.pir != null ? `<div class="pd-row"><span class="pd-key">PIR / Spiel</span><span class="pd-val">${p.pir}</span></div>` : ''}
+    </div>
+    <div class="pd-section">
+      <div class="pd-title">SHOOTING</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">SHOT DISTRIBUTION (${p.shot_dist?.two_a_total||0} × 2P · ${p.shot_dist?.three_a_total||0} × 3P · ${p.shot_dist?.ft_a_total||0} × FT)</div>
+        <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;gap:1px;">
+          ${p.shot_dist?.two_pct_share != null ? `
+            <div style="width:${p.shot_dist.two_pct_share}%;background:var(--accent2);border-radius:5px 0 0 5px;" title="2P: ${p.shot_dist.two_pct_share}%"></div>
+            <div style="flex:1;background:var(--accent);opacity:0.8;border-radius:0 5px 5px 0;" title="3P: ${p.shot_dist.three_pct_share}%"></div>
+          ` : ''}
+        </div>
+        <div style="display:flex;gap:16px;margin-top:5px;">
+          <span style="font-size:11px;"><span style="color:var(--accent2);">■</span> 2P ${p.shot_dist?.two_pct_share??'—'}%</span>
+          <span style="font-size:11px;"><span style="color:var(--accent);">■</span> 3P ${p.shot_dist?.three_pct_share??'—'}%</span>
+        </div>
+      </div>
+      <div class="pd-row"><span class="pd-key">FT%</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
+          <div class="bar" style="width:80px;"><div class="bar-fill" style="width:${p.fw_pct||0}%;background:var(--green);"></div></div>
+          <span class="pd-val">${pct(p.fw_pct)} (${p.fw_a_pg}/G)</span>
+        </div>
+      </div>
+      <div class="pd-row"><span class="pd-key">2P%</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
+          <div class="bar" style="width:80px;"><div class="bar-fill" style="width:${p.two_pct||0}%;background:var(--accent2);"></div></div>
+          <span class="pd-val">${pct(p.two_pct)} (${p.two_a_pg}/G)</span>
+        </div>
+      </div>
+      <div class="pd-row"><span class="pd-key">3P%</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
+          <div class="bar" style="width:80px;"><div class="bar-fill" style="width:${p.three_pct||0}%;background:var(--accent);"></div></div>
+          <span class="pd-val">${pct(p.three_pct)} (${p.three_a_pg}/G)</span>
+        </div>
+      </div>
+    </div>
+    <div class="pd-section">
+      <div class="pd-title">PUNKTE VERLAUF</div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:8px;">
+        ${sparkline}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        ${p.games.map(g=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--muted);">${g.gid}</div>`).join('')}
+      </div>
+    </div>
+    <div class="pd-section">
+      <div class="pd-title">BESTE LINEUPS (mit ${name})</div>
+      ${myLineups.length ? myLineups.map(l=>`
+        <div style="margin-bottom:8px;padding:8px;background:var(--surface);border-radius:6px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="font-family:'DM Mono';font-size:11px;color:${l.net_rtg>0?'var(--green)':'var(--red)'};">Net ${l.net_rtg>0?'+':''}${l.net_rtg} · ${l.min}min</span>
+            <span style="font-size:11px;color:${l.pm>0?'var(--green)':'var(--red)'};">${l.pm>0?'+':''}${l.pm}</span>
+          </div>
+          <div>${l.players.map(p2=>`<span class="lu-tag" style="${p2===name?'background:rgba(232,200,74,0.2);color:var(--accent);':''}">${p2}</span>`).join('')}</div>
+        </div>`).join('')
+      : '<div style="color:var(--muted);font-size:12px;">Nicht genug Lineup-Daten</div>'}
     </div>`;
 
-  // more profile content continues below
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
-function showAutoBuilderResult(starters, bench, mins, posBalance, quarterPlan) {
+function closeProfile() {
+  document.getElementById('profile-panel').style.display = 'none';
+  document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected'));
+}
+
+// ========== STATS TABLE ==========
+let tableSortKey = 'ppg';
+let tableSortDir = -1;
+
+function buildTable() {
+  renderTable();
+}
+
+function sortTable(key) {
+  if (tableSortKey === key) tableSortDir *= -1;
+  else { tableSortKey = key; tableSortDir = -1; }
+  document.querySelectorAll('#stats-table th').forEach(t=>t.classList.remove('sorted'));
+  event.target.classList.add('sorted');
+  renderTable();
+}
+
+function renderTable() {
+  const POS_RANK = {'1':0,'1/2':1,'2':2,'combo':3,'3':4,'3/4':5,'4':6,'4/5':7,'5':8};
+  const posRank = v => POS_RANK[(v||'').toLowerCase()] ?? 99;
+
+  const rows = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1);
+  rows.sort((a,b)=>{
+    const av = a[1][tableSortKey] ?? (tableSortKey==='name'?a[0]:0);
+    const bv = b[1][tableSortKey] ?? (tableSortKey==='name'?b[0]:0);
+    if (tableSortKey==='name') return av.localeCompare(bv)*tableSortDir;
+    if (tableSortKey==='pos') return (posRank(av)-posRank(bv))*tableSortDir;
+    return (bv-av)*tableSortDir;
+  });
+
+  document.getElementById('stats-tbody').innerHTML = rows.map(([name, p])=>`
+    <tr onclick="showView2('profiles'); showProfile('${name}')" style="cursor:pointer;">
+      <td class="name">${name}</td>
+      <td>${posBadge(p.pos)}</td>
+      <td class="highlight">${p.spiele}</td>
+      <td>${p.mpg}</td>
+      <td class="highlight" style="color:var(--accent);font-weight:600;">${p.ppg}</td>
+      <td>${pct(p.fw_pct)}</td>
+      <td>${pct(p.two_pct)}</td>
+      <td>${pct(p.three_pct)}</td>
+      <td>${p.reb}</td>
+      <td>${p.apg}</td>
+      <td>${p.tpg}</td>
+      <td>${p.stl}</td>
+      <td class="${pmColor(p.pm_total)}">${p.pm_total>0?'+':''}${p.pm_total}</td>
+      
+      <td>${p.pir != null ? p.pir : '—'}</td>
+    </tr>`).join('');
+}
+
+function showView2(name) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+}
+
+// ========== LINEUPS ==========
+let lineupMinFilter = 5;
+let lineupSortKey = 'pm';
+let lineupSortDir = -1;
+
+function buildLineups() {
+  renderLineups();
+}
+
+function filterLineups(btn, min) {
+  lineupMinFilter = min;
+  document.querySelectorAll('#view-lineups .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLineups();
+}
+
+function sortLineups(btn, key) {
+  if (lineupSortKey === key) lineupSortDir *= -1;
+  else { lineupSortKey = key; lineupSortDir = -1; }
+  document.querySelectorAll(`#lineups-thead th`).forEach(t=>t.classList.remove(`sorted`));
+  btn.classList.add(`sorted`);
+  renderLineups();
+}
+
+function filterLineupsSearch() {
+  renderLineups();
+}
+
+function renderLineups() {
+  const search = document.getElementById('lineup-search').value.toLowerCase().trim();
+  const searchTerms = search ? search.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+  let data = LINEUPS.filter(l=>l.min>=lineupMinFilter);
+  if (searchTerms.length) {
+    data = data.filter(l=>searchTerms.every(t=>l.players.some(p=>p.toLowerCase().includes(t))));
+  }
+  data.sort((a,b)=>(b[lineupSortKey]-a[lineupSortKey])*lineupSortDir);
+
+  document.getElementById('lineup-tbody').innerHTML = data.map(l=>`
+    <tr>
+      <td><div class="lu-players">${l.players.map(p=>`<span class="lu-tag">${p}</span>`).join('')}</div></td>
+      <td class="highlight">${l.min}</td>
+      <td>${l.pkt}</td>
+      <td>${l.opp}</td>
+      <td class="${l.pm>=0?'good':'bad'}">${l.pm>0?'+':''}${l.pm}</td>
+      <td style="color:var(--muted);">${l.count}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Keine Lineups gefunden</td></tr>';
+}
+
+// ========== ROTATION BUILDER ==========
+// ========== STARTER PICKER (combined with Auto-Build) ==========
+let manualStarters = []; // manually picked starters (empty = use auto)
+
+function buildStarterPicker() {
+  renderStarterPicker();
+}
+
+function makePlayerCard(name, zone) {
+  const p = PLAYERS[name];
+  const isStarter = zone === 'starter';
+  const bg = isStarter ? 'rgba(232,200,74,0.08)' : 'rgba(74,158,232,0.06)';
+  const border = isStarter ? 'rgba(232,200,74,0.25)' : 'rgba(74,158,232,0.2)';
+  const color = isStarter ? 'var(--accent)' : 'var(--accent2)';
+  return `<div draggable="true"
+    ondragstart="dragStart(event,'${name}')"
+    ondragend="dragEnd(event)"
+    onclick="toggleStarter('${name}')"
+    style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${bg};border:1px solid ${border};border-radius:7px;cursor:grab;user-select:none;transition:opacity 0.15s;">
+    ${posBadge(p?.pos||'?')}
+    <span style="font-weight:600;">${name}</span>
+    <span style="margin-left:auto;font-family:'DM Mono';font-size:11px;color:${color};">${p?.ppg||'—'}ppg</span>
+    <span style="color:var(--muted);font-size:11px;cursor:pointer;" onclick="event.stopPropagation();toggleStarter('${name}')">✕</span>
+  </div>`;
+}
+
+function renderStarterPicker() {
+  const available = Object.keys(abAttendance).filter(n => abAttendance[n]);
+  const bench = available.filter(n => !manualStarters.includes(n));
+
+  // Starter zone
+  const starterEl = document.getElementById('sp-starter-slots');
+  if (starterEl) {
+    let html = manualStarters.map(n => makePlayerCard(n, 'starter')).join('');
+    // Empty slots
+    for (let i = manualStarters.length; i < 5; i++) {
+      html += `<div style="padding:7px 10px;border:1px dashed rgba(232,200,74,0.2);border-radius:7px;color:var(--muted);font-size:12px;">Starter ${i+1} — hierher ziehen</div>`;
+    }
+    starterEl.innerHTML = html;
+  }
+
+  // Bench zone
+  const benchEl = document.getElementById('sp-bench-slots');
+  if (benchEl) {
+    if (bench.length) {
+      benchEl.innerHTML = bench.map(n => makePlayerCard(n, 'bench')).join('');
+    } else if (available.length === 0) {
+      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">Keine Spieler verfügbar — zuerst Anwesenheit setzen</span>`;
+    } else {
+      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">Alle verfügbaren Spieler sind Starter</span>`;
+    }
+  }
+
+  // Summary label
+  const summary = document.getElementById('starters-pick-summary');
+  if (summary) {
+    if (manualStarters.length === 5) {
+      summary.textContent = manualStarters.join(', ');
+      summary.style.color = 'var(--green)';
+    } else if (manualStarters.length > 0) {
+      summary.textContent = `${manualStarters.length}/5 gewählt`;
+      summary.style.color = 'var(--accent)';
+    } else {
+      summary.textContent = '— Auto-Modus aktiv';
+      summary.style.color = 'var(--muted)';
+    }
+  }
+}
+
+// Drag & Drop
+let _dragName = null;
+function dragStart(event, name) {
+  _dragName = name;
+  event.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => { if (event.target) event.target.style.opacity = '0.4'; }, 0);
+}
+function dragEnd(event) {
+  if (event.target) event.target.style.opacity = '';
+  _dragName = null;
+}
+function dropToZone(event, zone) {
+  event.preventDefault();
+  event.currentTarget.style.background = '';
+  if (!_dragName) return;
+  const available = Object.keys(abAttendance).filter(n => abAttendance[n]);
+  if (zone === 'starter') {
+    if (!manualStarters.includes(_dragName) && manualStarters.length < 5) {
+      manualStarters.push(_dragName);
+    } else if (!manualStarters.includes(_dragName) && manualStarters.length >= 5) {
+      // Swap: remove last, add new
+      manualStarters.pop();
+      manualStarters.push(_dragName);
+    }
+  } else { // bench
+    manualStarters = manualStarters.filter(n => n !== _dragName);
+  }
+  renderStarterPicker();
+}
+
+function toggleStarter(name) {
+  if (manualStarters.includes(name)) {
+    manualStarters = manualStarters.filter(n => n !== name);
+  } else if (manualStarters.length < 5) {
+    manualStarters.push(name);
+  } else {
+    manualStarters.pop();
+    manualStarters.push(name);
+  }
+  renderStarterPicker();
+}
+
+function autoPickStarters() {
+  const available = Object.keys(abAttendance).filter(n => abAttendance[n]);
+  if (available.length < 5) return;
+  const scored = available.map(n => ({ name: n, score: scorePlayer(n) }))
+    .sort((a,b) => b.score - a.score);
+  const roster = scored.slice(0, Math.min(available.length, 12)).map(x => x.name);
+  const bh = roster.find(n => FULL_ROSTER[n]?.ballhandler);
+  const big = roster.filter(n => n !== bh).find(n => FULL_ROSTER[n]?.can_play_big);
+  const rest = roster.filter(n => n !== bh && n !== big).slice(0, 3);
+  manualStarters = [bh, big, ...rest].filter(Boolean).slice(0, 5);
+  const body = document.getElementById('ab-starters-pick');
+  if (body) body.style.display = 'block';
+  renderStarterPicker();
+}
+
+
+
+// ========== ATTENDANCE DATA (from CSV export) ==========
+const ATT_DATA = {"dates":["04-08-2025","06-08-2025","11-08-2025","13-08-2025","18-08-2025","20-08-2025","25-08-2025","27-08-2025","01-09-2025","03-09-2025","08-09-2025","10-09-2025","15-09-2025","17-09-2025","22-09-2025","24-09-2025","29-09-2025","01-10-2025","06-10-2025","08-10-2025","13-10-2025","15-10-2025","20-10-2025","22-10-2025","27-10-2025","29-10-2025","03-11-2025","05-11-2025","10-11-2025","12-11-2025","17-11-2025","19-11-2025","24-11-2025","26-11-2025","01-12-2025","03-12-2025","08-12-2025","10-12-2025","15-12-2025","17-12-2025","05-01-2026","07-01-2026","12-01-2026","14-01-2026","19-01-2026","21-01-2026","26-01-2026","28-01-2026","02-02-2026","04-02-2026","09-02-2026","11-02-2026","16-02-2026","18-02-2026","25-02-2026","02-03-2026","04-03-2026"],"stats":{"Felix":{"total":33,"of":57,"last3":0,"last8":3,"was_last_week":false,"rate_all":58,"rate_last8":38,"att":2},"Cedi":{"total":10,"of":57,"last3":1,"last8":1,"was_last_week":true,"rate_all":18,"rate_last8":12,"att":1},"Niklas":{"total":21,"of":57,"last3":2,"last8":4,"was_last_week":true,"rate_all":37,"rate_last8":50,"att":2},"Jeff":{"total":28,"of":57,"last3":2,"last8":4,"was_last_week":true,"rate_all":49,"rate_last8":50,"att":3},"Jari":{"total":37,"of":57,"last3":2,"last8":5,"was_last_week":true,"rate_all":65,"rate_last8":62,"att":3},"Moritz":{"total":32,"of":57,"last3":2,"last8":4,"was_last_week":true,"rate_all":56,"rate_last8":50,"att":3},"Jon":{"total":25,"of":57,"last3":2,"last8":5,"was_last_week":true,"rate_all":44,"rate_last8":62,"att":3},"Mattis":{"total":35,"of":57,"last3":1,"last8":4,"was_last_week":false,"rate_all":61,"rate_last8":50,"att":2},"Theo":{"total":28,"of":57,"last3":3,"last8":5,"was_last_week":true,"rate_all":49,"rate_last8":62,"att":3},"Thore":{"total":25,"of":57,"last3":1,"last8":3,"was_last_week":false,"rate_all":44,"rate_last8":38,"att":2},"Mello":{"total":37,"of":57,"last3":0,"last8":5,"was_last_week":false,"rate_all":65,"rate_last8":62,"att":2},"Deniz":{"total":27,"of":57,"last3":1,"last8":4,"was_last_week":false,"rate_all":47,"rate_last8":50,"att":2},"Serdar":{"total":12,"of":57,"last3":2,"last8":5,"was_last_week":true,"rate_all":21,"rate_last8":62,"att":2},"Frowin":{"total":14,"of":57,"last3":0,"last8":1,"was_last_week":false,"rate_all":25,"rate_last8":12,"att":1},"Dariush":{"total":27,"of":57,"last3":0,"last8":0,"was_last_week":false,"rate_all":47,"rate_last8":0,"att":2},"Martin":{"total":27,"of":57,"last3":1,"last8":6,"was_last_week":true,"rate_all":47,"rate_last8":75,"att":3},"Yang":{"total":27,"of":57,"last3":1,"last8":4,"was_last_week":false,"rate_all":47,"rate_last8":50,"att":2},"Jakob":{"total":17,"of":57,"last3":0,"last8":3,"was_last_week":false,"rate_all":30,"rate_last8":38,"att":2},"Max":{"total":18,"of":57,"last3":0,"last8":0,"was_last_week":false,"rate_all":32,"rate_last8":0,"att":1}},"timeline":{"Felix":["STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE"],"Cedi":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_CONFIRMED"],"Niklas":["STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Jeff":["STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Jari":["STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Moritz":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Jon":["STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Mattis":["STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE"],"Theo":["STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED"],"Thore":["STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE"],"Mello":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE"],"Deniz":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED"],"Serdar":["STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Frowin":["STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED"],"Dariush":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED"],"Martin":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_REJECTED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE"],"Yang":["STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED"],"Jakob":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED"],"Max":["STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED"]}};
+
+// ========== ATTENDANCE HEATMAP ==========
+function buildAttendanceView() {
+  const dates = ATT_DATA.dates;
+  const stats = ATT_DATA.stats;
+  const timeline = ATT_DATA.timeline;
+  const last8Start = dates.length - 8;
+
+  // Sort players by att desc, then rate_all desc
+  const sortedPlayers = Object.keys(stats).sort((a,b) => {
+    if (stats[b].att !== stats[a].att) return stats[b].att - stats[a].att;
+    return stats[b].rate_all - stats[a].rate_all;
+  });
+
+  // Month labels for header
+  const monthLabels = [];
+  let lastMonth = '';
+  dates.forEach((d, i) => {
+    const parts = d.split('-');
+    const monthKey = parts[1] + '-' + parts[2];
+    const monthNames = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    const label = monthNames[parseInt(parts[1])];
+    if (label !== lastMonth) {
+      monthLabels.push({ idx: i, label });
+      lastMonth = label;
+    }
+  });
+
+  const CELL = 11; // px per cell
+  const NAME_W = 70;
+  const GAP = 1;
+  const totalW = NAME_W + dates.length * (CELL + GAP);
+
+  function statusColor(s, isRecent) {
+    if (s === 'STATUS_CONFIRMED') return isRecent ? '#4ae87a' : '#3ab86a';
+    if (s === 'STATUS_ABSENCE') return isRecent ? '#e85a4a' : '#b84a3a';
+    if (s === 'STATUS_REJECTED') return isRecent ? '#c84a3a' : '#883530';
+    if (s === 'STATUS_UNSURE') return '#e8c84a';
+    return 'var(--border)'; // NOT_CHOOSED
+  }
+  function statusOpacity(s, isRecent) {
+    if (s === 'STATUS_CONFIRMED') return isRecent ? 0.9 : 0.65;
+    if (s === 'STATUS_ABSENCE') return isRecent ? 0.7 : 0.45;
+    if (s === 'STATUS_REJECTED') return isRecent ? 0.55 : 0.3;
+    if (s === 'STATUS_UNSURE') return 0.5;
+    return 0.15;
+  }
+
+  // Build HTML
+  let html = `<div style="min-width:${totalW}px;">`;
+
+  // Date header row — show month transitions + mark last 8
+  html += `<div style="display:flex;align-items:flex-end;margin-bottom:4px;padding-left:${NAME_W}px;">`;
+  dates.forEach((d, i) => {
+    const isRecent = i >= last8Start;
+    const monthParts = d.split('-');
+    const monthNames = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    const isMonthStart = i === 0 || d.split('-')[1] !== dates[i-1].split('-')[1];
+    html += `<div style="width:${CELL}px;margin-right:${GAP}px;text-align:center;position:relative;">
+      ${isMonthStart ? `<span style="position:absolute;left:0;top:-14px;font-size:9px;color:${isRecent?'var(--accent)':'var(--muted)'};white-space:nowrap;font-family:'DM Mono';">${monthNames[parseInt(monthParts[1])]}</span>` : ''}
+      ${isRecent ? `<div style="width:${CELL}px;height:3px;background:rgba(232,200,74,0.3);border-radius:1px;margin-bottom:1px;" title="Letzte 4 Wochen"></div>` : '<div style="height:4px;"></div>'}
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Player rows
+  sortedPlayers.forEach(name => {
+    const s = stats[name];
+    const tl = timeline[name] || [];
+    const dots = s.att === 3 ? '●●●' : s.att === 2 ? '●●○' : '●○○';
+    const attColor = s.att === 3 ? 'var(--green)' : s.att === 2 ? 'var(--accent)' : 'var(--muted2)';
+    const pos = FULL_ROSTER[name]?.pos || '?';
+
+    html += `<div style="display:flex;align-items:center;margin-bottom:3px;">`;
+    html += `<div style="width:${NAME_W}px;flex-shrink:0;display:flex;align-items:center;gap:4px;">
+      <span style="font-size:11px;font-weight:600;color:var(--text);min-width:46px;">${name}</span>
+      <span style="font-size:9px;color:${attColor};font-family:'DM Mono';" title="${dots}">${dots}</span>
+    </div>`;
+
+    dates.forEach((d, i) => {
+      const status = tl[i] || 'STATUS_NOT_CHOOSED';
+      const isRecent = i >= last8Start;
+      const color = statusColor(status, isRecent);
+      const opacity = statusOpacity(status, isRecent);
+      const tooltip = `${d}: ${status.replace('STATUS_','')}`;
+      html += `<div title="${tooltip}" style="width:${CELL}px;height:${CELL}px;border-radius:2px;background:${color};opacity:${opacity};margin-right:${GAP}px;flex-shrink:0;"></div>`;
+    });
+
+    // Stats at end
+    html += `<div style="margin-left:10px;display:flex;gap:8px;align-items:center;white-space:nowrap;">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted2);" title="Gesamt">${s.total}/${s.of}</span>
+      <span style="font-family:'DM Mono';font-size:10px;color:${s.rate_all>=50?'var(--green)':s.rate_all>=35?'var(--accent)':'var(--red)'};">${s.rate_all}%</span>
+      <span style="font-family:'DM Mono';font-size:10px;color:${s.rate_last8>=50?'var(--green)':s.rate_last8>=30?'var(--accent)':'var(--red)'};" title="Letzte 4 Wochen">${s.rate_last8}%▲</span>
+      ${s.was_last_week ? '<span style="font-size:10px;color:var(--green);" title="Letzte Woche dabei">✓</span>' : '<span style="font-size:10px;color:var(--red);" title="Letzte Woche NICHT dabei">✗</span>'}
+    </div>`;
+    html += `</div>`;
+  });
+
+  html += `<div style="margin-top:8px;font-size:10px;color:var(--muted);font-family:'DM Mono';">% gesamt &nbsp;·&nbsp; %▲ letzte 4 Wochen &nbsp;·&nbsp; ✓/✗ letzte Woche da</div>`;
+  html += `</div>`;
+
+  document.getElementById('att-heatmap').innerHTML = html;
+
+  // Summary cards sorted by att
+  document.getElementById('att-summary-grid').innerHTML = sortedPlayers.map(name => {
+    const s = stats[name];
+    const dots = s.att === 3 ? '●●●' : s.att === 2 ? '●●○' : '●○○';
+    const attColor = s.att === 3 ? 'var(--green)' : s.att === 2 ? 'var(--accent)' : 'var(--muted2)';
+    const borderColor = s.att === 3 ? 'rgba(74,232,122,0.2)' : s.att === 2 ? 'rgba(232,200,74,0.2)' : 'rgba(255,255,255,0.05)';
+    return `<div style="padding:10px 14px;border-radius:8px;border:1px solid ${borderColor};background:var(--surface2);display:flex;align-items:center;gap:10px;">
+      <span style="font-size:13px;font-weight:700;min-width:52px;">${name}</span>
+      <span style="font-size:11px;color:${attColor};font-family:'DM Mono';">${dots}</span>
+      <span style="margin-left:auto;font-family:'DM Mono';font-size:10px;color:var(--muted2);">${s.rate_all}% / ${s.rate_last8}%▲</span>
+      ${s.was_last_week ? '<span style="color:var(--green);font-size:11px;">✓</span>' : '<span style="color:var(--red);font-size:11px;">✗</span>'}
+    </div>`;
+  }).join('');
+}
+
+function reloadAttendanceCSV(event) {
+  // Future: re-parse and update ATT_DATA dynamically
+  alert('CSV-Import für zukünftige Updates wird in einer späteren Version unterstützt. Aktuell sind die Daten vom 08.03.2026 eingebettet.');
+}
+
+// ========== AUTO-BUILD MODULE ==========
+
+// Full roster from /WWRotation knowledge — att values now from ATT_DATA.stats
+const FULL_ROSTER = {
+  // flags: ballhandler | stretch | rim_runner | can_guard_big | wing_defender | playmaker | can_play_big
+  'Jeff':    { pos:'1/2',   ballhandler:true,  stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Moritz':  { pos:'2',     ballhandler:false, stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Jon':     { pos:'2/3',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Mattias': { pos:'1/2',   ballhandler:true,  stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:true,  playmaker:true,  can_play_big:false },
+  'Frowin':  { pos:'1/2',   ballhandler:true,  stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Dariush': { pos:'1',     ballhandler:true,  stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:true,  can_play_big:false },
+  'Max':     { pos:'2',     ballhandler:false, stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Jakob':   { pos:'2',     ballhandler:false, stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Serdar':  { pos:'combo', ballhandler:true,  stretch:false, rim_runner:true,  can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Felix':   { pos:'combo', ballhandler:true,  stretch:true,  rim_runner:true,  can_guard_big:false, wing_defender:true,  playmaker:true,  can_play_big:false },
+  'Cedi':    { pos:'combo', ballhandler:true,  stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Andi':    { pos:'3',     ballhandler:false, stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Mello':   { pos:'3/4',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:true,  playmaker:false, can_play_big:true  },
+  'Thore':   { pos:'3/4',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:true,  playmaker:false, can_play_big:true  },
+  'Martin':  { pos:'3/4',   ballhandler:false, stretch:true,  rim_runner:false, can_guard_big:true,  wing_defender:true,  playmaker:false, can_play_big:true  },
+  'Niklas':  { pos:'4/5',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Mattis':  { pos:'4/5',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Theo':    { pos:'4/5',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Deniz':   { pos:'4/5',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Jari':    { pos:'4/5',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Yang':    { pos:'5',     ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+};
+
+// Merge real att from CSV data into FULL_ROSTER
+Object.keys(FULL_ROSTER).forEach(name => {
+  FULL_ROSTER[name].att = ATT_DATA.stats[name]?.att ?? 1;
+});
+
+// Attendance state: name -> true/false
+let abAttendance = {};
+// Manual minute targets: name -> minutes (null = auto)
+let abMinTargets = {};
+
+// ========== INIT AUTO-BUILD ==========
+function initAutoBuild() {
+  // Merge FULL_ROSTER with PLAYERS data
+  const allNames = new Set([...Object.keys(FULL_ROSTER), ...Object.keys(PLAYERS)]);
+  // Default: Top 12 by recent attendance (last8 sessions), ties broken by last3 then total
+  const ranked = [...allNames].sort((a, b) => {
+    const sa = ATT_DATA.stats[a] || {last8:0, last3:0, total:0};
+    const sb = ATT_DATA.stats[b] || {last8:0, last3:0, total:0};
+    return (sb.last8 - sa.last8) || (sb.last3 - sa.last3) || (sb.total - sa.total);
+  });
+  const top12 = new Set(ranked.slice(0, 12));
+  allNames.forEach(n => {
+    if (abAttendance[n] === undefined) {
+      abAttendance[n] = top12.has(n);
+    }
+  });
+  renderAttendGrid();
+  renderMinTargets();
+}
+
+function renderAttendGrid() {
+  const allNames = Object.keys(FULL_ROSTER);
+  const present = allNames.filter(n => abAttendance[n]);
+  const absent = allNames.filter(n => !abAttendance[n]);
+  const overLimit = present.length > 12;
+
+  document.getElementById('attend-summary').textContent =
+    `${present.length} dabei · ${absent.length} nicht da`;
+
+  // Roster limit badge
+  const badge = document.getElementById('roster-limit-badge');
+  if (present.length === 0) {
+    badge.style.display = 'none';
+  } else {
+    badge.style.display = 'inline-block';
+    if (overLimit) {
+      badge.textContent = `${present.length}/12 ⚠ zu viele`;
+      badge.style.background = 'rgba(232,90,74,0.15)';
+      badge.style.color = 'var(--red)';
+      badge.style.border = '1px solid rgba(232,90,74,0.3)';
+    } else {
+      badge.textContent = `${present.length}/12`;
+      badge.style.background = 'rgba(74,232,122,0.1)';
+      badge.style.color = present.length === 12 ? 'var(--green)' : 'var(--muted2)';
+      badge.style.border = '1px solid rgba(74,232,122,0.2)';
+    }
+  }
+
+  // Sort: present first (by score desc), then absent (by score desc)
+  const scored = allNames.map(n => ({ name: n, score: scorePlayer(n) }));
+  const sortedPresent = scored.filter(x => abAttendance[x.name]).sort((a,b) => b.score - a.score);
+  const sortedAbsent = scored.filter(x => !abAttendance[x.name]).sort((a,b) => b.score - a.score);
+  const sortedAll = [...sortedPresent, ...sortedAbsent];
+
+  document.getElementById('attend-grid').innerHTML = sortedAll.map(({name: n}, idx) => {
+    const isOn = abAttendance[n];
+    const p = PLAYERS[n];
+    const att = FULL_ROSTER[n]?.att || 1;
+    const attDots = att === 3 ? '●●●' : att === 2 ? '●●○' : '●○○';
+    const attColor = att === 3 ? 'var(--green)' : att === 2 ? 'var(--accent)' : 'var(--muted)';
+    const pos = FULL_ROSTER[n]?.pos || p?.pos || '?';
+    // If over limit, show rank number for present players
+    const rankLabel = isOn && overLimit && idx < present.length
+      ? `<span style="font-size:9px;font-family:'DM Mono';color:var(--red);margin-left:4px;">#${idx+1}</span>`
+      : (isOn && !overLimit && present.length >= 8
+        ? `<span style="font-size:9px;font-family:'DM Mono';color:var(--muted);margin-left:4px;">#${idx+1}</span>`
+        : '');
+    return `<div class="ab-player-row ${isOn ? 'present' : 'absent'}" id="attend-row-${n}">
+      <button class="attend-toggle ${isOn ? 'on' : ''}" onclick="toggleAttend('${n}')" title="${isOn ? 'Dabei' : 'Nicht dabei'}"></button>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${n}${rankLabel}</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
+          <span style="font-size:10px;color:var(--muted);font-family:'DM Mono';">${pos}</span>
+          <span style="font-size:10px;color:${attColor};font-family:'DM Mono';" title="Anwesenheits-Stufe">${attDots}</span>
+        </div>
+      </div>
+      
+    </div>`;
+  }).join('');
+}
+
+function toggleAttend(name) {
+  const present = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
+  // If trying to add a player and already at 12, warn but allow
+  if (!abAttendance[name] && present.length >= 12) {
+    if (!confirm(`Bereits ${present.length} Spieler im Kader (Maximum: 12).\n\n${name} trotzdem hinzufügen?`)) return;
+  }
+  abAttendance[name] = !abAttendance[name];
+  renderAttendGrid();
+  renderMinTargets();
+}
+
+function setAllAttend(val) {
+  if (val) {
+    // Auto-select best 12 by score
+    const allNames = Object.keys(FULL_ROSTER);
+    const scored = allNames.map(n => ({ name: n, score: scorePlayer(n) }))
+      .sort((a, b) => b.score - a.score);
+    allNames.forEach(n => abAttendance[n] = false);
+    scored.slice(0, 12).forEach(x => abAttendance[x.name] = true);
+  } else {
+    Object.keys(FULL_ROSTER).forEach(n => abAttendance[n] = false);
+  }
+  renderAttendGrid();
+  renderMinTargets();
+}
+
+function renderMinTargets() {
+  const available = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
+  document.getElementById('min-targets-grid').innerHTML = available.map(n => {
+    const cur = abMinTargets[n] || '';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);">
+      <span style="font-size:12px;font-weight:600;min-width:52px;">${n}</span>
+      <input type="number" class="min-input" id="min-${n}" value="${cur}" min="0" max="40"
+        placeholder="Auto" oninput="updateMinTarget('${n}',this.value)">
+      <span style="font-size:10px;color:var(--muted);">Min</span>
+    </div>`;
+  }).join('');
+  updateMinTotal();
+}
+
+function updateMinTarget(name, val) {
+  abMinTargets[name] = val ? parseInt(val) : null;
+  updateMinTotal();
+}
+
+function updateMinTotal() {
+  const vals = Object.values(abMinTargets).filter(v => v != null);
+  const sum = vals.reduce((a, v) => a + v, 0);
+  const remaining = 200 - sum;
+  document.getElementById('min-total').textContent =
+    `Gesetzt: ${sum} Min | Verbleibend (Auto): ${remaining} Min | Gesamt: 200 Min`;
+  document.getElementById('min-total').style.color = remaining < 0 ? 'var(--red)' : 'var(--muted2)';
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+// ========== CSV/JSON IMPORT ==========
+function importAttendanceCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result.trim();
+    try {
+      // Try JSON first
+      const json = JSON.parse(text);
+      Object.entries(json).forEach(([name, val]) => {
+        const present = val === 'dabei' || val === true || val === 1 || val === '1';
+        if (name in FULL_ROSTER) abAttendance[name] = present;
+      });
+    } catch {
+      // CSV: name,status
+      text.split('\n').forEach(line => {
+        const parts = line.split(',').map(s => s.trim());
+        if (parts.length >= 2) {
+          const name = parts[0];
+          const status = parts[1].toLowerCase();
+          const present = status === 'dabei' || status === 'true' || status === '1' || status === 'ja' || status === 'yes';
+          if (name in FULL_ROSTER) abAttendance[name] = present;
+        }
+      });
+    }
+    renderAttendGrid();
+    renderMinTargets();
+    alert(`✓ Import erfolgreich! ${Object.keys(FULL_ROSTER).filter(n=>abAttendance[n]).length} Spieler dabei.`);
+  };
+  reader.readAsText(file);
+}
+
+// ========== SCORING ALGORITHM ==========
+function scorePlayer(name) {
+  const p = PLAYERS[name];
+  if (!p) return 0;
+  let score = 0;
+  // Adj +/- (most important)
+  // Raw +/-
+  score += (p.pm_total || 0) * 0.5;
+  // PPG (weighted lower)
+  score += (p.ppg || 0) * 1.5;
+  // Attendance weight
+  const att = FULL_ROSTER[name]?.att || 1;
+  score += att * 15;
+  // Games played bonus (reliability)
+  score += (p.spiele || 0) * 2;
+  // Best lineup appearances bonus
+  const inTopLineups = LINEUPS.filter(l => l.players.includes(name) && l.net_rtg > 0).length;
+  score += inTopLineups * 3;
+  return Math.round(score);
+}
+
+function getPositionGroup(pos) {
+  if (!pos) return 'combo';
+  const p = pos.toLowerCase();
+  if (p === '1' || p === 'pg') return '1';
+  if (p.includes('combo')) return 'combo';
+  if (p.includes('1')) return '1';
+  if (p === '2') return '2';
+  if (p.includes('3') || p === '3') return '3';
+  if (p.includes('4') || p.includes('5') || p === '5') return 'big';
+  return 'combo';
+}
+
+function hasPosition(players, posCheck) {
+  return players.some(n => {
+    const pos = (FULL_ROSTER[n]?.pos || PLAYERS[n]?.pos || '').toLowerCase();
+    return posCheck(pos);
+  });
+}
+
+// ========== MAIN AUTO-BUILD LOGIC ==========
+function runAutoBuild() {
+  const available = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
+
+  if (available.length < 5) {
+    alert('Mindestens 5 Spieler müssen dabei sein!');
+    return;
+  }
+
+  if (available.length > 12) {
+    if (!confirm(`${available.length} Spieler ausgewählt — Maximum sind 12.\n\nTrotzdem generieren? (Die besten 12 nach Score werden verwendet.)`)) return;
+    // Trim to best 12
+    const best12 = available.map(n => ({ name: n, score: scorePlayer(n) }))
+      .sort((a,b) => b.score - a.score)
+      .slice(0, 12)
+      .map(x => x.name);
+    Object.keys(abAttendance).forEach(n => { if (!best12.includes(n)) abAttendance[n] = false; });
+    renderAttendGrid();
+    renderMinTargets();
+  }
+
+  // Score all available players
+  const scored = available.map(n => ({ name: n, score: scorePlayer(n) }))
+    .sort((a, b) => b.score - a.score);
+
+  // ---- STARTER SELECTION ----
+  let starters5 = [];
+  const remaining = [...scored];
+
+  if (manualStarters.length === 5 && manualStarters.every(n => available.includes(n))) {
+    // Use manually picked starters
+    starters5 = [...manualStarters];
+    remaining.splice(0, remaining.length, ...remaining.filter(x => !starters5.includes(x.name)));
+  } else {
+    // Auto: 1x ballhandler, 1x can_play_big, fill rest by score
+    const bh = remaining.find(x => FULL_ROSTER[x.name]?.ballhandler);
+    if (bh) { starters5.push(bh.name); remaining.splice(remaining.indexOf(bh), 1); }
+    const big = remaining.find(x => FULL_ROSTER[x.name]?.can_play_big);
+    if (big) { starters5.push(big.name); remaining.splice(remaining.indexOf(big), 1); }
+    while (starters5.length < 5 && remaining.length > 0) {
+      starters5.push(remaining.shift().name);
+    }
+  }
+
+  const bench5 = remaining.map(x => x.name);
+
+  // ---- MINUTE DISTRIBUTION ----
+  // Score-proportional mit 34→8 min Spread (26 min Differenz)
+  // Basis: linearer Score-Gradient, dann auf [8, 34] skalieren
+  const totalMin = 200;
+  const assignedMin = {};
+  let fixedSum = 0;
+
+  // Apply manual targets first
+  available.forEach(n => {
+    if (abMinTargets[n] != null) {
+      assignedMin[n] = abMinTargets[n];
+      fixedSum += abMinTargets[n];
+    }
+  });
+
+  const autoPlayers = available.filter(n => assignedMin[n] == null);
+  let remaining200 = totalMin - fixedSum;
+
+  if (autoPlayers.length > 0) {
+    // Score-proportional mit linearem Gradient auf [minMin, maxMin]
+    const MIN_MIN = 8, MAX_MIN = 34;
+    const autoScored = autoPlayers
+      .map(n => ({ name: n, score: scorePlayer(n) }))
+      .sort((a, b) => b.score - a.score);
+
+    const n = autoScored.length;
+    if (n === 1) {
+      assignedMin[autoScored[0].name] = remaining200;
+    } else {
+      // Lineare Gewichte: Rang 0 → MAX_MIN-Gewicht, Rang n-1 → MIN_MIN-Gewicht
+      // Normiert sodass Summe = remaining200
+      const rawWeights = autoScored.map((_, i) => MAX_MIN - (MAX_MIN - MIN_MIN) * (i / (n - 1)));
+      const weightSum = rawWeights.reduce((s, w) => s + w, 0);
+      const scale = remaining200 / weightSum;
+      autoScored.forEach((p, i) => {
+        assignedMin[p.name] = Math.max(MIN_MIN, Math.round(rawWeights[i] * scale));
+      });
+    }
+  }
+
+  // Adjust rounding to exactly 200
+  const sumCheck = Object.values(assignedMin).reduce((a, v) => a + v, 0);
+  const diff2 = totalMin - sumCheck;
+  if (diff2 !== 0 && starters5[0]) assignedMin[starters5[0]] = (assignedMin[starters5[0]] || 0) + diff2;
+
+  // ---- STINT PLAN + CHEATSHEET ----
+  const stintResult = generateStintPlan(starters5, bench5, assignedMin);
+  const cheatsheet = stintResult.cheatsheet;
+
+  // ---- POSITION BALANCE ----
+  const posBalance = checkPosBalance(starters5, available);
+
+  // ---- WARNINGS ----
+  const warnings = generateWarnings(starters5, bench5, available, assignedMin, posBalance);
+
+  // ---- RENDER ----
+  renderAutoBuildResult(starters5, bench5, assignedMin, stintResult, cheatsheet, posBalance, warnings);
+
+  // Store for save function
+  _lastRotationData = {
+    starters: starters5,
+    bench: bench5,
+    mins: assignedMin,
+    minTargets: {...abMinTargets},
+    available: Object.keys(FULL_ROSTER).filter(n => abAttendance[n]),
+    quarterPlan: stintResult,
+    cheatsheet,
+    posBalance,
+    warnings
+  };
+
+  document.getElementById('ab-result').style.display = 'block';
+  document.getElementById('ab-result').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ---- QUARTER PLAN GENERATOR ----
+// ========== STINT ENGINE ==========
+// Generates stints: [{name, start, end}] ensuring at all times:
+//   - exactly 5 on court
+//   - at least 1 ballhandler
+//   - at least 1 big (can_play_big)
+//   - max 4 simultaneous subs
+// Returns: { stints: [{name,start,end}], subs: [{minute,outs,ins,fieldAfter}] }
+
+function generateStintPlan(starters, bench, targetMins) {
+  const GAME         = 40;
+  const TARGET_STINT = 7;
+  const MAX_STINT    = 10;
+  const MIN_REST     = 4;
+  const MAX_SUBS     = 2;  // max simultaneous subs (Ausnahme: bis 3)
+
+  const f     = n => FULL_ROSTER[n] || {};
+  const isBH  = n => !!f(n).ballhandler;
+  const isBig = n => !!f(n).can_play_big;
+
+  const roster = [...new Set([...starters, ...bench])].filter(n => (targetMins[n]||0) > 0);
+
+  const played  = {};
+  const onSince = {};
+  const offAt   = {};
+  const pStints = {};
+  roster.forEach(n => {
+    played[n] = 0; onSince[n] = null; offAt[n] = -MIN_REST; pStints[n] = [];
+  });
+
+  // Starters begin at 0 — but stagger their first sub target slightly
+  // so they don't all hit MAX_STINT at the same minute
+  const staggerOffset = {};
+  starters.forEach((n, i) => {
+    onSince[n] = 0;
+    // Spread first sub moment: player 0 hits limit at 6min, player 4 at 8min
+    // by giving each a small "head start" offset of 0-2 min
+    staggerOffset[n] = Math.floor(i / 2) * 1; // 0,0,1,1,2 min offset
+  });
+  bench.forEach(n => { offAt[n] = 0; });
+
+  let court = starters.filter(n => (targetMins[n]||0) > 0).slice(0, 5);
+
+  // Effective time-on for urgency: subtract stagger so they feel "older" than they are
+  const effectiveTimeOn = (n, t) => {
+    const raw = t - (onSince[n] ?? t);
+    return raw + (staggerOffset[n] || 0);
+  };
+
+  const subEvents = [];
+
+  function outUrgency(n, t) {
+    const timeOn = effectiveTimeOn(n, t);
+    const rem    = (targetMins[n]||0) - played[n];
+    if (timeOn >= MAX_STINT + (staggerOffset[n]||0)) return 100 + timeOn; // hard cap
+    if (rem - (t - (onSince[n]??t)) <= 0) return 80;                      // minutes used up
+    if (timeOn >= TARGET_STINT) return timeOn - TARGET_STINT;              // soft urgency
+    return 0;
+  }
+
+  function inUrgency(n, t) {
+    if (onSince[n] !== null) return -1;
+    const rem  = (targetMins[n]||0) - played[n];
+    const rest = t - offAt[n];
+    if (rem <= 0 || rest < MIN_REST) return -1;
+    const timeLeft = GAME - t;
+    return rem / Math.max(1, timeLeft) * 10 + (starters.includes(n) ? 1 : 0);
+  }
+
+  for (let t = 2; t <= GAME; t += 2) {
+    if (t === GAME) {
+      court.forEach(n => {
+        const s = onSince[n] ?? t;
+        played[n] += t - s;
+        pStints[n].push({ start: s, end: t });
+      });
+      break;
+    }
+
+    // Sort by urgency, take max MAX_SUBS (soft: allow 3 only if someone is hard-capped)
+    const urgencies = court
+      .map(n => ({ n, u: outUrgency(n, t) }))
+      .filter(x => x.u > 0)
+      .sort((a, b) => b.u - a.u);
+
+    const hardCapped = urgencies.filter(x => x.u >= 100).length;
+    const limit = hardCapped > MAX_SUBS ? Math.min(hardCapped, 3) : Math.min(urgencies.length, MAX_SUBS);
+    const wantOut = urgencies.slice(0, limit).map(x => x.n);
+
+    if (!wantOut.length) continue;
+
+    const staying = court.filter(n => !wantOut.includes(n));
+    const needBH  = !staying.some(isBH);
+    const needBig = !staying.some(isBig);
+
+    const canIn = roster
+      .filter(n => !court.includes(n))
+      .map(n => ({ n, u: inUrgency(n, t) }))
+      .filter(x => x.u >= 0)
+      .sort((a, b) => {
+        let sa = a.u, sb = b.u;
+        if (needBH  && isBH(a.n))  sa += 20;
+        if (needBH  && isBH(b.n))  sb += 20;
+        if (needBig && isBig(a.n)) sa += 20;
+        if (needBig && isBig(b.n)) sb += 20;
+        return sb - sa;
+      })
+      .map(x => x.n);
+
+    const numSubs  = Math.min(wantOut.length, canIn.length);
+    if (numSubs === 0) continue;
+
+    const goingOut = wantOut.slice(0, numSubs);
+    const comingIn = canIn.slice(0, numSubs);
+
+    goingOut.forEach(n => {
+      const s = onSince[n] ?? t;
+      played[n] += t - s;
+      pStints[n].push({ start: s, end: t });
+      onSince[n] = null;
+      offAt[n]   = t;
+    });
+    comingIn.forEach(n => { onSince[n] = t; });
+
+    court = [...staying, ...comingIn];
+
+    subEvents.push({ minute: t, outs: goingOut, ins: comingIn, fieldAfter: [...court] });
+  }
+
+  const playerSummary = {};
+  roster.forEach(n => {
+    playerSummary[n] = {
+      stints:  pStints[n],
+      planned: pStints[n].reduce((s, x) => s + x.end - x.start, 0),
+      target:  targetMins[n] || 0
+    };
+  });
+
+  return {
+    stints: pStints,
+    cheatsheet: subEvents.map(e => ({ minute: e.minute, outs: e.outs, ins: e.ins, fieldAfter: e.fieldAfter })),
+    playerSummary
+  };
+}
+
+
+function generateQuarterPlan(starters, bench, mins, available) {
+  // Return null — we now use generateStintPlan directly
+  return null;
+}
+function generateCheatsheet(quarterPlan, starters) {
+  return [];
+}
+
+// ---- POSITION BALANCE CHECK ----
+function checkPosBalance(starters, available) {
+  const f = n => FULL_ROSTER[n] || {};
+  const checks = {
+    hasBallhandler:  starters.some(n => f(n).ballhandler),
+    hasBig:          starters.some(n => f(n).can_play_big),
+    hasStretch:      starters.some(n => f(n).stretch),
+    hasWingDefender: starters.some(n => f(n).wing_defender),
+    hasBenchBig:     available.filter(n => !starters.includes(n)).some(n => f(n).can_play_big),
+    hasBenchBH:      available.filter(n => !starters.includes(n)).some(n => f(n).ballhandler),
+  };
+  return checks;
+}
+
+// ---- WARNINGS ----
+function generateWarnings(starters, bench, available, mins, posBalance) {
+  const warnings = [];
+  const f = n => FULL_ROSTER[n] || {};
+
+  if (!posBalance.hasBallhandler)
+    warnings.push({ type: 'red', text: '⚠️ Kein Ballhandler in den Startern — Ballvortrag unklar' });
+
+  if (!posBalance.hasBig)
+    warnings.push({ type: 'red', text: '⚠️ Kein Big Man (can_play_big) in Startern — Rebound & Rimschutz fehlt' });
+
+  if (!posBalance.hasBenchBig)
+    warnings.push({ type: 'yellow', text: '⚡ Kein Big auf der Bank — Foul-Trouble wird kritisch' });
+
+  if (!posBalance.hasBenchBH)
+    warnings.push({ type: 'yellow', text: '⚡ Kein Backup-Ballhandler — Starter-BH kann nicht rausgehen' });
+
+  if (!posBalance.hasStretch)
+    warnings.push({ type: 'yellow', text: '⚡ Kein Stretch-Spieler in Startern — Defense zieht nicht raus' });
+
+  if (available.length < 8)
+
+  if (available.length < 8)
+    warnings.push({ type: 'yellow', text: `ℹ️ Nur ${available.length} Spieler verfügbar — Rotation sehr eng, Ermüdung beachten` });
+
+  if (available.length >= 12)
+    warnings.push({ type: 'green', text: `✓ ${available.length} Spieler verfügbar — tiefe Rotation möglich` });
+
+
+  return warnings;
+}
+
+// ---- RENDER RESULT ----
+function renderAutoBuildResult(starters, bench, mins, quarterPlan, cheatsheet, posBalance, warnings) {
+
+  // Starter cards
+  
   document.getElementById('ab-starters').innerHTML = starters.map((n, i) => {
     const p = PLAYERS[n];
     const pos = FULL_ROSTER[n]?.pos || p?.pos || '?';
+    const score = scorePlayer(n);
     return `<div class="ab-starter-card">
       <span style="font-family:'Bebas Neue';font-size:16px;color:var(--muted);min-width:20px;">${i + 1}</span>
       ${posBadge(pos)}
@@ -1384,19 +2452,6 @@ function showAutoBuilderResult(starters, bench, mins, posBalance, quarterPlan) {
     </div>`;
   }).join('');
 
-  document.getElementById('ab-bench-summary').textContent = `${bench.length} Spieler`;
-  document.getElementById('ab-bench').innerHTML = bench.length > 0 ? bench.map(n => {
-    const p = PLAYERS[n];
-    const pos = FULL_ROSTER[n]?.pos || p?.pos || '?';
-    return `<div class="ab-bench-card">
-      ${posBadge(pos)}
-      <div>
-        <div style="font-size:13px;font-weight:600;">${n}</div>
-        ${p ? `<div style="font-size:10px;color:var(--muted);font-family:'DM Mono';">${p.ppg} ppg · ${p.mpg} mpg</div>` : ''}
-      </div>
-      <span class="ab-bench-min-badge">${mins[n] || 0} Min</span>
-    </div>`;
-  }).join('') : `<div style="color:var(--muted);font-size:12px;padding:8px;">Keine Bankspieler verfügbar</div>`;
   document.getElementById('ab-bench-summary').textContent = `${bench.length} Spieler`;
   document.getElementById('ab-bench').innerHTML = bench.length > 0 ? bench.map(n => {
     const p = PLAYERS[n];
@@ -1678,126 +2733,6 @@ async function loadRotation(docId) {
     document.getElementById('saved-rotations-body').style.display = 'none';
     setTimeout(() => document.getElementById('ab-result').scrollIntoView({ behavior: 'smooth' }), 100);
   } catch(e) { alert('Laden fehlgeschlagen: ' + e.message); console.error(e); }
-}
-
-function runAutoBuild() {
-  const available = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
-
-  if (available.length < 5) {
-    alert('Mindestens 5 Spieler müssen dabei sein!');
-    return;
-  }
-
-  if (available.length > 12) {
-    if (!confirm(`${available.length} Spieler ausgewählt — Maximum sind 12.\n\nTrotzdem generieren? (Die besten 12 nach Score werden verwendet.)`)) return;
-    // Trim to best 12
-    const best12 = available.map(n => ({ name: n, score: scorePlayer(n) }))
-      .sort((a,b) => b.score - a.score)
-      .slice(0, 12)
-      .map(x => x.name);
-    Object.keys(abAttendance).forEach(n => { if (!best12.includes(n)) abAttendance[n] = false; });
-    renderAttendGrid();
-    renderMinTargets();
-  }
-
-  // Score all available players
-  const scored = available.map(n => ({ name: n, score: scorePlayer(n) }))
-    .sort((a, b) => b.score - a.score);
-
-  // ---- STARTER SELECTION ----
-  let starters5 = [];
-  const remaining = [...scored];
-
-  if (manualStarters.length === 5 && manualStarters.every(n => available.includes(n))) {
-    // Use manually picked starters
-    starters5 = [...manualStarters];
-    remaining.splice(0, remaining.length, ...remaining.filter(x => !starters5.includes(x.name)));
-  } else {
-    // Auto: 1x ballhandler, 1x can_play_big, fill rest by score
-    const bh = remaining.find(x => FULL_ROSTER[x.name]?.ballhandler);
-    if (bh) { starters5.push(bh.name); remaining.splice(remaining.indexOf(bh), 1); }
-    const big = remaining.find(x => FULL_ROSTER[x.name]?.can_play_big);
-    if (big) { starters5.push(big.name); remaining.splice(remaining.indexOf(big), 1); }
-    while (starters5.length < 5 && remaining.length > 0) {
-      starters5.push(remaining.shift().name);
-    }
-  }
-
-  const bench5 = remaining.map(x => x.name);
-
-  // ---- MINUTE DISTRIBUTION ----
-  // Score-proportional mit 34→8 min Spread (26 min Differenz)
-  // Basis: linearer Score-Gradient, dann auf [8, 34] skalieren
-  const totalMin = 200;
-  const assignedMin = {};
-  let fixedSum = 0;
-
-  // Apply manual targets first
-  available.forEach(n => {
-    if (abMinTargets[n] != null) {
-      assignedMin[n] = abMinTargets[n];
-      fixedSum += abMinTargets[n];
-    }
-  });
-
-  const autoPlayers = available.filter(n => assignedMin[n] == null);
-  let remaining200 = totalMin - fixedSum;
-
-  if (autoPlayers.length > 0) {
-    // Score-proportional mit linearem Gradient auf [minMin, maxMin]
-    const MIN_MIN = 8, MAX_MIN = 34;
-    const autoScored = autoPlayers
-      .map(n => ({ name: n, score: scorePlayer(n) }))
-      .sort((a, b) => b.score - a.score);
-
-    const n = autoScored.length;
-    if (n === 1) {
-      assignedMin[autoScored[0].name] = remaining200;
-    } else {
-      // Lineare Gewichte: Rang 0 → MAX_MIN-Gewicht, Rang n-1 → MIN_MIN-Gewicht
-      // Normiert sodass Summe = remaining200
-      const rawWeights = autoScored.map((_, i) => MAX_MIN - (MAX_MIN - MIN_MIN) * (i / (n - 1)));
-      const weightSum = rawWeights.reduce((s, w) => s + w, 0);
-      const scale = remaining200 / weightSum;
-      autoScored.forEach((p, i) => {
-        assignedMin[p.name] = Math.max(MIN_MIN, Math.round(rawWeights[i] * scale));
-      });
-    }
-  }
-
-  // Adjust rounding to exactly 200
-  const sumCheck = Object.values(assignedMin).reduce((a, v) => a + v, 0);
-  const diff2 = totalMin - sumCheck;
-  if (diff2 !== 0 && starters5[0]) assignedMin[starters5[0]] = (assignedMin[starters5[0]] || 0) + diff2;
-
-  // ---- STINT PLAN + CHEATSHEET ----
-  const stintResult = generateStintPlan(starters5, bench5, assignedMin);
-  const cheatsheet = stintResult.cheatsheet;
-
-  // ---- POSITION BALANCE ----
-  const posBalance = checkPosBalance(starters5, available);
-
-  // ---- WARNINGS ----
-  const warnings = generateWarnings(starters5, bench5, available, assignedMin, posBalance);
-
-  // ---- RENDER ----
-  renderAutoBuildResult(starters5, bench5, assignedMin, stintResult, cheatsheet, posBalance, warnings);
-
-  // Store for save function
-  _lastRotationData = {
-    starters: starters5,
-    bench: bench5,
-    mins: assignedMin,
-    minTargets: {...abMinTargets},
-    available: Object.keys(FULL_ROSTER).filter(n => abAttendance[n]),
-    quarterPlan: stintResult,
-    cheatsheet,
-    posBalance,
-    warnings
-  };
-
-  document.getElementById('ab-result').style.display = 'block';
-  document.getElementById('ab-result').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Patch runAutoBuild to also store last result
