@@ -1035,7 +1035,7 @@ async function loadData() {
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const data = await resp.json();
     (data.spiele||[]).forEach(g => {
-      const ww=g.ww2_punkte||g.ww||0, opp=g.gegner_punkte||g.opp||0;
+      const ww=g.ww2_punkte??g.ww??0, opp=g.gegner_punkte??g.opp??0;
       g.gsi=(ww+opp)>0?Math.round(opp/(ww+opp)*1000)/1000:0.5;
       g._ww=ww; g._opp=opp;
     });
@@ -1053,15 +1053,10 @@ async function loadData() {
     });
     LINEUPS=Object.values(luMap).map(e=>({...e,net_rtg:e.min>0?Math.round(e.pm/e.min*100*10)/10:0})).sort((a,b)=>b.min-a.min);
     GAMES=(data.spiele||[]).map(g=>{
-      // Normalize ergebnis: always derive from scores
-      let ergebnis = g.ergebnis;
-      if (ergebnis !== 'W' && ergebnis !== 'L') {
-        // Try to derive from scores
-        if (g._ww != null && g._opp != null) {
-          ergebnis = g._ww > g._opp ? 'W' : 'L';
-        }
-      }
-      return {id:g.id,datum:g.datum,gegner:g.gegner,ergebnis,ww:g._ww,opp:g._opp,gsi:g.gsi};
+      const ww  = g.ww2_punkte ?? g.ww ?? null;
+      const opp = g.gegner_punkte ?? g.opp ?? null;
+      const ergebnis = (ww != null && opp != null) ? (ww > opp ? 'W' : 'L') : g.ergebnis;
+      return {id:g.id, datum:g.datum, gegner:g.gegner, ergebnis, ww, opp, gsi:g.gsi};
     });
     initDashboard();
   } catch(err) {
