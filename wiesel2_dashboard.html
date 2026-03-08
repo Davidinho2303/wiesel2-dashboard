@@ -575,17 +575,34 @@
     <span class="logo">WIESEL 2 <span>ANALYTICS</span></span>
   </div>
   <div style="display:flex;gap:10px;align-items:center;">
-    <div class="season-badge">SEASON 2025/26 · LANDESLIGA B</div>
+    <div class="season-badge" id="season-badge">SAISON 2025/26 · LANDESLIGA B</div>
     <div id="record-badge" style="font-family:'DM Mono';font-size:12px;color:var(--muted2);"></div>
+    <button id="lang-toggle" onclick="toggleLang()" style="
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      cursor: pointer;
+      font-family: 'DM Sans';
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    " onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <span id="lang-flag">🇬🇧</span>
+      <span id="lang-label">EN</span>
+    </button>
   </div>
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="showView('overview')">Overview</div>
-  <div class="tab" onclick="showView('profiles')">Player Profiles</div>
-  <div class="tab" onclick="showView('table')">Stats Table</div>
-  <div class="tab" onclick="showView('lineups')">Lineups</div>
-  <div class="tab" onclick="showView('attendance')">Attendance</div>
+  <div class="tab active" data-tab="overview" onclick="showView('overview')">Übersicht</div>
+  <div class="tab" data-tab="profiles" onclick="showView('profiles')">Spielerprofile</div>
+  <div class="tab" data-tab="table" onclick="showView('table')">Stats-Tabelle</div>
+  <div class="tab" data-tab="lineups" onclick="showView('lineups')">Lineups</div>
+  <div class="tab" data-tab="attendance" onclick="showView('attendance')">Anwesenheit</div>
   <div class="tab" onclick="showView('autobuild')" style="color:#4ae87a;border-bottom:2px solid transparent;" id="tab-autobuild">⚡ Auto-Build</div>
 </div>
 
@@ -596,7 +613,7 @@
   <div class="stat-grid" id="overview-cards"></div>
   <!-- Archetype Legend -->
   <div class="panel" style="margin-bottom:20px;">
-    <div class="panel-header"><span class="panel-title">Archetype System</span><span class="panel-sub">Main & Sub-Categories</span></div>
+    <div class="panel-header"><span class="panel-title">Archetype System</span><span id="panel-archetype-sub-el" class="panel-sub">Haupt- & Unterkategorien</span></div>
     <div id="arch-legend" style="padding:16px 20px;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;"></div>
   </div>
   <div class="two-col">
@@ -610,7 +627,7 @@
     <div class="panel">
       <div class="panel-header">
         <span class="panel-title">Best Plus/Minus</span>
-        <span class="panel-sub">Raw +/- total</span>
+        <span id="panel-pm-sub-el" class="panel-sub">Raw +/- gesamt</span>
       </div>
       <div id="top-pm" style="padding:16px;"></div>
     </div>
@@ -618,15 +635,15 @@
   <div class="two-col">
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Game Results</span>
-        <span class="panel-sub">Season 2025/26</span>
+        <span id="panel-games-title-el" class="panel-title">Spielergebnisse</span>
+        <span id="panel-games-sub-el" class="panel-sub">Saison 2025/26</span>
       </div>
       <div id="game-results" style="padding:12px 16px;"></div>
     </div>
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Best Lineups</span>
-        <span class="panel-sub">min. 5 min · by Net Rating</span>
+        <span id="panel-toplu-title-el" class="panel-title">Beste Lineups</span>
+        <span id="panel-toplu-sub-el" class="panel-sub">min. 5 Min · nach Net Rating</span>
       </div>
       <div id="top-lineups-overview" style="padding:16px;"></div>
     </div>
@@ -637,7 +654,7 @@
 <div class="view" id="view-profiles">
   <div class="panel" style="margin-bottom:20px;">
     <div class="filter-bar" id="pos-filter">
-      <button class="filter-btn active" onclick="filterPos(this,'all')">All</button>
+      <button id="filter-all-btn" class="filter-btn active" onclick="filterPos(this,'all')">Alle</button>
       <button class="filter-btn" onclick="filterPos(this,'1')">PG (1)</button>
       <button class="filter-btn" onclick="filterPos(this,'2')">SG (2)</button>
       <button class="filter-btn" onclick="filterPos(this,'combo')">Combo</button>
@@ -655,8 +672,8 @@
   </div>
   <div class="panel" id="profile-panel" style="display:none;">
     <div class="panel-header">
-      <span class="panel-title" id="profile-title">Player Profile</span>
-      <button onclick="closeProfile()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted2);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'DM Sans';">✕ Close</button>
+      <span class="panel-title" id="profile-title">Spielerprofil</span>
+      <button id="profile-close-btn" onclick="closeProfile()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted2);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'DM Sans';">✕ Schließen</button>
     </div>
     <div class="profile-detail show" id="profile-detail"></div>
   </div>
@@ -666,15 +683,15 @@
 <div class="view" id="view-table">
   <div class="panel">
     <div class="filter-bar">
-      <span style="font-size:12px;color:var(--muted2);align-self:center;">Sort:</span>
+      <span style="font-size:12px;color:var(--muted2);align-self:center;">Sortieren:</span>
     </div>
     <div class="table-wrap">
       <table id="stats-table">
         <thead>
           <tr>
-            <th onclick="sortTable('name')">Player</th>
+            <th id="th-player-el" onclick="sortTable('name')">Spieler</th>
             <th onclick="sortTable('pos')">Pos</th>
-            <th onclick="sortTable('spiele')">GP</th>
+            <th id="th-games-el" onclick="sortTable('spiele')">Sp</th>
             <th onclick="sortTable('mpg')">Min</th>
             <th onclick="sortTable('ppg')" class="sorted">PPG</th>
             <th onclick="sortTable('fw_pct')">FT%</th>
@@ -699,17 +716,17 @@
 <div class="view" id="view-lineups">
   <div class="panel">
     <div class="panel-header">
-      <span class="panel-title">Lineup Efficiency</span>
-      <span class="panel-sub">All 5-man combinations · sorted by Net Rating</span>
+      <span id="panel-lineups-title-el" class="panel-title">Lineup Effizienz</span>
+      <span id="panel-lineups-sub-el" class="panel-sub">Alle 5er-Kombinationen · sortiert nach Net Rating</span>
     </div>
     <div class="filter-bar">
-      <span style="font-size:12px;color:var(--muted2);align-self:center;">Min. Minutes:</span>
+      <span id="lineup-min-label-el" style="font-size:12px;color:var(--muted2);align-self:center;">Min. Minuten:</span>
       <button class="filter-btn active" onclick="filterLineups(this,5)">5+</button>
       <button class="filter-btn" onclick="filterLineups(this,8)">8+</button>
       <button class="filter-btn" onclick="filterLineups(this,12)">12+</button>
     </div>
     <div class="search-wrap" style="padding:12px 20px;">
-      <input class="search-input" id="lineup-search" placeholder="Search player (e.g. Felix, Jari)..." oninput="filterLineupsSearch()">
+      <input class="search-input" id="lineup-search" placeholder="Spieler suchen (z.B. Felix, Jari)..." oninput="filterLineupsSearch()">
     </div>
     <div class="table-wrap">
       <table>
@@ -717,10 +734,10 @@
           <tr id="lineups-thead">
             <th>Lineup</th>
             <th onclick="sortLineups(this,'min')" style="cursor:pointer;">Min</th>
-            <th onclick="sortLineups(this,'pkt')" style="cursor:pointer;">Pts</th>
+            <th id="th-lineup-pts-el" onclick="sortLineups(this,'pkt')" style="cursor:pointer;">Pkt</th>
             <th onclick="sortLineups(this,'opp')" style="cursor:pointer;">Opp</th>
             <th onclick="sortLineups(this,'pm')" style="cursor:pointer;" class="sorted">+/-</th>
-            <th onclick="sortLineups(this,'count')" style="cursor:pointer;">Games</th>
+            <th id="th-lineup-games-el" onclick="sortLineups(this,'count')" style="cursor:pointer;">Spiele</th>
           </tr>
         </thead>
         <tbody id="lineup-tbody"></tbody>
@@ -734,19 +751,19 @@
 <div class="view" id="view-attendance">
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header">
-      <span class="panel-title">Training Attendance</span>
-      <span class="panel-sub">Season 2025/26 · 57 Sessions · Aug 2025 – Mar 2026</span>
-      <button onclick="document.getElementById('att-csv-upload').click()" style="margin-left:16px;padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:'DM Sans';font-size:12px;">↑ Update CSV</button>
+      <span id="panel-att-title-el" class="panel-title">Trainingsanwesenheit</span>
+      <span id="panel-att-sub-el" class="panel-sub">Saison 2025/26 · 57 Trainings · Aug 2025 – Mär 2026</span>
+      <button id="att-csv-btn-el" onclick="document.getElementById('att-csv-upload').click()" style="margin-left:16px;padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:'DM Sans';font-size:12px;">↑ CSV aktualisieren</button>
       <input type="file" id="att-csv-upload" accept=".csv" style="display:none;" onchange="reloadAttendanceCSV(event)">
     </div>
     <!-- Legend -->
     <div style="display:flex;gap:16px;padding:10px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;">
       <span style="font-size:11px;color:var(--muted2);">Status:</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#4ae87a;display:inline-block;opacity:0.85;"></span>Present (CONFIRMED)</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#e85a4a;display:inline-block;opacity:0.6;"></span>Absent</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#e8c84a;display:inline-block;opacity:0.4;"></span>Uncertain</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--border);display:inline-block;"></span>No response</span>
-      <span style="margin-left:auto;font-size:11px;color:var(--muted);font-family:'DM Mono';">last 8 sessions = last ~4 weeks</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#4ae87a;display:inline-block;opacity:0.85;"></span><span id="att-legend-present-el">Dabei (CONFIRMED)</span></span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#e85a4a;display:inline-block;opacity:0.6;"></span><span id="att-legend-absent-el">Abwesend</span></span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#e8c84a;display:inline-block;opacity:0.4;"></span><span id="att-legend-unsure-el">Unsicher</span></span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--border);display:inline-block;"></span><span id="att-legend-none-el">Keine Angabe</span></span>
+      <span id="att-legend-recent-el" style="margin-left:auto;font-size:11px;color:var(--muted);font-family:'DM Mono';">letzte 8 Trainings = letzte ~4 Wochen</span>
     </div>
     <!-- Heatmap -->
     <div style="overflow-x:auto;padding:16px 20px;">
@@ -755,12 +772,12 @@
   </div>
   <!-- Summary Cards -->
   <div class="panel">
-    <div class="panel-header"><span class="panel-title">Attendance Tiers</span><span class="panel-sub">Calculated from training data</span></div>
+    <div class="panel-header"><span id="panel-att2-title-el" class="panel-title">Anwesenheits-Stufen</span><span id="panel-att2-sub-el" class="panel-sub">Berechnet aus Trainingsdaten</span></div>
     <div style="padding:14px 20px;">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">
-        <b style="color:var(--green);">●●●</b> present last week + last 4W ≥50% + overall ≥40% &nbsp;·&nbsp;
-        <b style="color:var(--accent);">●●○</b> last 4W ≥30% or overall ≥35% &nbsp;·&nbsp;
-        <b style="color:var(--muted2);">●○○</b> otherwise
+      <div id="att-tier-note" style="font-size:11px;color:var(--muted);margin-bottom:12px;">
+        <b style="color:var(--green);">●●●</b> letzte Woche da + letzte 4W ≥50% + gesamt ≥40% &nbsp;·&nbsp;
+        <b style="color:var(--accent);">●●○</b> letzte 4W ≥30% oder gesamt ≥35% &nbsp;·&nbsp;
+        <b style="color:var(--muted2);">●○○</b> sonst
       </div>
       <div id="att-summary-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
     </div>
@@ -773,12 +790,12 @@
   <!-- GESPEICHERTE ROTATIONEN -->
   <div class="panel" style="margin-bottom:16px;" id="saved-rotations-panel">
     <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('saved-rotations-body')">
-      <span class="panel-title">📂 Saved Rotations</span>
-      <span id="saved-rotations-count" class="panel-sub">loading…</span>
+      <span id="panel-saved-title-el" class="panel-title">📂 Gespeicherte Rotationen</span>
+      <span id="saved-rotations-count" class="panel-sub">wird geladen…</span>
     </div>
     <div id="saved-rotations-body" style="padding:16px 20px;display:none;">
       <div id="saved-rotations-list" style="display:flex;flex-direction:column;gap:8px;">
-        <div style="color:var(--muted);font-size:12px;">No saved rotations.</div>
+        <div style="color:var(--muted);font-size:12px;">Keine gespeicherten Rotationen.</div>
       </div>
     </div>
   </div>
@@ -786,23 +803,23 @@
   <!-- STEP 1: ANWESENHEIT -->
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('ab-attend')">
-      <span class="panel-title">① Attendance</span>
-      <span style="font-size:11px;letter-spacing:1px;color:var(--green);margin-left:12px;" id="attend-summary">— not set yet</span>
+      <span id="ab-step1-title-el" class="panel-title">① Anwesenheit</span>
+      <span style="font-size:11px;letter-spacing:1px;color:var(--green);margin-left:12px;" id="attend-summary">— noch nicht gesetzt</span>
       <span id="roster-limit-badge" style="display:none;margin-left:10px;padding:2px 10px;border-radius:12px;font-size:11px;font-family:'DM Mono';font-weight:700;"></span>
-      <span class="panel-sub">max. 12 players per roster</span>
+      <span id="ab-step1-sub-el" class="panel-sub">max. 12 Spieler im Kader</span>
     </div>
     <div id="ab-attend" style="padding:16px 20px;">
       <!-- CSV Import -->
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border-radius:8px;border:1px dashed var(--border);">
         <span style="font-size:12px;color:var(--muted2);">📥 CSV Import:</span>
         <input type="file" id="csv-upload" accept=".csv,.json" style="font-family:'DM Sans';font-size:12px;color:var(--muted2);background:transparent;border:none;cursor:pointer;" onchange="importAttendanceCSV(event)">
-        <span style="font-size:11px;color:var(--muted);">Format: name,status (present/absent) — or JSON: {"Felix":"present",...}</span>
+        <span id="csv-format-hint" style="font-size:11px;color:var(--muted);">Format: name,status (dabei/nicht dabei) — oder JSON: {"Felix":"dabei",...}</span>
       </div>
       <!-- Manual Grid -->
       <div id="attend-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;"></div>
       <div style="display:flex;gap:10px;margin-top:14px;">
-        <button class="ab-btn" onclick="setAllAttend(true)" style="background:rgba(74,232,122,0.1);border-color:rgba(74,232,122,0.3);color:var(--green);">✓ All present</button>
-        <button class="ab-btn" onclick="setAllAttend(false)" style="background:rgba(232,90,74,0.1);border-color:rgba(232,90,74,0.3);color:var(--red);">✗ All out</button>
+        <button id="ab-all-btn-el" class="ab-btn" onclick="setAllAttend(true)" style="background:rgba(74,232,122,0.1);border-color:rgba(74,232,122,0.3);color:var(--green);">✓ Alle dabei</button>
+        <button id="ab-none-btn-el" class="ab-btn" onclick="setAllAttend(false)" style="background:rgba(232,90,74,0.1);border-color:rgba(232,90,74,0.3);color:var(--red);">✗ Alle raus</button>
       </div>
     </div>
   </div>
@@ -811,17 +828,17 @@
   <!-- STEP 2: STARTER -->
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('ab-starters-pick')">
-      <span class="panel-title">② Starters</span>
-      <span style="font-size:11px;letter-spacing:1px;color:var(--accent);margin-left:12px;" id="starters-pick-summary">— not set yet</span>
-      <button onclick="event.stopPropagation();autoPickStarters()" style="margin-left:auto;padding:4px 14px;background:rgba(232,200,74,0.12);border:1px solid rgba(232,200,74,0.3);border-radius:6px;color:var(--accent);font-family:'DM Sans';font-size:12px;cursor:pointer;">⚡ Auto-Suggest</button>
-      <span class="panel-sub" style="margin-left:12px;">Select 5 starters</span>
+      <span id="ab-step2-title-el" class="panel-title">② Starter</span>
+      <span style="font-size:11px;letter-spacing:1px;color:var(--accent);margin-left:12px;" id="starters-pick-summary">— noch nicht gesetzt</span>
+      <button id="ab-auto-btn-el" onclick="event.stopPropagation();autoPickStarters()" style="margin-left:auto;padding:4px 14px;background:rgba(232,200,74,0.12);border:1px solid rgba(232,200,74,0.3);border-radius:6px;color:var(--accent);font-family:'DM Sans';font-size:12px;cursor:pointer;">⚡ Auto-Vorschlag</button>
+      <span id="ab-step2-sub-el" class="panel-sub" style="margin-left:12px;">5 Starter wählen</span>
     </div>
     <div id="ab-starters-pick" style="padding:16px 20px;display:none;">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Drag players to the starter or bench zone · or click to toggle</div>
+      <div id="ab-drag-hint" style="font-size:11px;color:var(--muted);margin-bottom:12px;">Ziehe Spieler in die Starter- oder Bank-Zone · oder klicke zum Wechseln</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <!-- STARTER ZONE -->
         <div>
-          <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">★ STARTERS (5)</div>
+          <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">★ STARTER (5)</div>
           <div id="sp-starter-slots"
             ondragover="event.preventDefault();this.style.background='rgba(232,200,74,0.08)'"
             ondragleave="this.style.background=''"
@@ -846,11 +863,11 @@
   <!-- STEP 3: MINUTENZIELE -->
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('ab-minutes')">
-      <span class="panel-title">③ Minute Targets <span style="font-size:12px;font-family:'DM Sans';font-weight:400;color:var(--muted2);">(optional)</span></span>
-      <span class="panel-sub">Total = 200 min</span>
+      <span id="ab-step3-title-el" class="panel-title">③ Minutenziele <span style="font-size:12px;font-family:'DM Sans';font-weight:400;color:var(--muted2);">(optional)</span></span>
+      <span id="ab-step3-sub-el" class="panel-sub">Gesamt = 200 Min</span>
     </div>
     <div id="ab-minutes" style="padding:16px 20px;display:none;">
-      <div style="font-size:12px;color:var(--muted2);margin-bottom:12px;">Only fill in if you have specific targets — otherwise auto-calculated via Adj. +/- & attendance</div>
+      <div id="ab-min-hint" style="font-size:12px;color:var(--muted2);margin-bottom:12px;">Nur ausfüllen wenn du konkrete Vorgaben hast — sonst automatisch via Adj. +/- & Anwesenheit</div>
       <div id="min-targets-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;"></div>
       <div id="min-total" style="margin-top:12px;font-family:'DM Mono';font-size:12px;color:var(--muted2);"></div>
     </div>
@@ -858,8 +875,8 @@
 
   <!-- GENERATE BUTTON -->
   <div style="text-align:center;margin-bottom:20px;">
-    <button onclick="runAutoBuild()" style="padding:14px 48px;background:var(--accent);color:#000;border:none;border-radius:8px;font-family:'Bebas Neue';font-size:22px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 20px rgba(232,200,74,0.2);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 30px rgba(232,200,74,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(232,200,74,0.2)'">
-      ⚡ GENERATE LINEUP
+    <button id="ab-generate-btn-el" onclick="runAutoBuild()" style="padding:14px 48px;background:var(--accent);color:#000;border:none;border-radius:8px;font-family:'Bebas Neue';font-size:22px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 20px rgba(232,200,74,0.2);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 30px rgba(232,200,74,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(232,200,74,0.2)'">
+      ⚡ LINEUP GENERIEREN
     </button>
   </div>
 
@@ -869,7 +886,7 @@
     <!-- Positions Balance -->
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-header">
-        <span class="panel-title">Position Balance</span>
+        <span id="ab-posbal-title-el" class="panel-title">Positions-Balance</span>
         <span id="posbalance-status" class="panel-sub"></span>
       </div>
       <div id="ab-posbalance" style="padding:16px 20px;"></div>
@@ -879,14 +896,14 @@
     <div id="ab-starter-bench-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title" style="color:var(--accent);">★ STARTERS (5)</span>
+          <span id="ab-starter-title-el" class="panel-title" style="color:var(--accent);">★ STARTER (5)</span>
           <span class="panel-sub" id="ab-starter-netrtg"></span>
         </div>
         <div id="ab-starters" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;"></div>
       </div>
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title" style="color:var(--accent2);">BANK</span>
+          <span id="ab-bench-title-el" class="panel-title" style="color:var(--accent2);">BANK</span>
           <span class="panel-sub" id="ab-bench-summary"></span>
         </div>
         <div id="ab-bench" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;"></div>
@@ -896,8 +913,8 @@
     <!-- Rotation Plan (Quarterwise) -->
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-header">
-        <span class="panel-title">Rotation Plan</span>
-        <span class="panel-sub">Minute distribution by quarter · Total = 200 min</span>
+        <span id="ab-rotplan-title-el" class="panel-title">Rotation Plan</span>
+        <span id="ab-rotplan-sub-el" class="panel-sub">Minutenverteilung nach Viertel · Gesamt = 200 Min</span>
       </div>
       <div id="ab-rotation-plan" style="padding:16px 20px;overflow-x:auto;"></div>
     </div>
@@ -905,8 +922,8 @@
     <!-- Wechsel-Cheatsheet -->
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-header">
-        <span class="panel-title">Sub Cheatsheet</span>
-        <span class="panel-sub">Recommended substitutions per minute</span>
+        <span id="ab-cheat-title-el" class="panel-title">Wechsel-Cheatsheet</span>
+        <span id="ab-cheat-sub-el" class="panel-sub">Empfohlene Auswechselungen pro Minute</span>
       </div>
       <div id="ab-cheatsheet" style="padding:16px 20px;"></div>
     </div>
@@ -919,12 +936,12 @@
     <!-- Speichern -->
     <div class="panel" style="margin-bottom:16px;padding:16px 20px;">
       <div id="save-rotation-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <input id="save-rotation-name" type="text" placeholder="Opponent / Game day (e.g. BASS Südwest 2 – Game 16)"
+        <input id="save-rotation-name" type="text" placeholder="Gegner / Spieltag (z.B. BASS Südwest 2 – Spiel 16)"
           style="flex:1;min-width:200px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans';font-size:13px;">
-        <button onclick="saveCurrentRotation()" style="padding:9px 22px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;cursor:pointer;">
-          💾 SAVE
+        <button id="ab-save-btn-el" onclick="saveCurrentRotation()" style="padding:9px 22px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;cursor:pointer;">
+          💾 SPEICHERN
         </button>
-        <span id="save-feedback" style="font-size:12px;color:var(--green);display:none;">✓ Saved!</span>
+        <span id="save-feedback" style="font-size:12px;color:var(--green);display:none;">✓ Gespeichert!</span>
       </div>
     </div>
 
@@ -1054,7 +1071,7 @@ async function loadData() {
     GAMES=(data.spiele||[]).map(g=>({id:g.id,datum:g.datum,gegner:g.gegner,ergebnis:g.ergebnis,ww:g._ww,opp:g._opp,gsi:g.gsi}));
     initDashboard();
   } catch(err) {
-    document.body.innerHTML='<div style="color:#e85a4a;padding:40px;font-family:monospace">Error loading JSON: '+err.message+'<br><br>Make sure <b>Wiesel2_Lineup_Daten_v3_clean.json</b> is in the same directory.</div>';
+    document.body.innerHTML='<div style="color:#e85a4a;padding:40px;font-family:monospace">Fehler beim Laden der JSON: '+err.message+'<br><br>Stelle sicher dass <b>Wiesel2_Lineup_Daten_v3_clean.json</b> im selben Verzeichnis liegt.</div>';
   }
 }
 // ========== HELPERS ==========
@@ -1084,39 +1101,39 @@ function pmColor(v) {
 
 // Two-tier archetype system: returns [mainLabel, mainClass, subLabel, subClass, description]
 const ARCHETYPE_MAP = {
-  'Felix':   ['CREATOR','arch-main-creator','Lead Playmaker','arch-lead-playmaker','Combo-Playmaker: 2.3 APG, 1.4 STL, 12.7 PPG — primary ball handler, creates offense for others'],
-  'Mattias': ['CREATOR','arch-main-creator','Secondary Creator','arch-secondary-creator','Potential: 60% 3P, 1.0 APG — needs consistency & confidence'],
-  'Niklas':  ['SCORER','arch-main-scorer','Stretch Big','arch-stretch-big','4/5 with 37% from three + 55% from two — pulls defense out'],
-  'Moritz':  ['SCORER','arch-main-scorer','Spot-Up Shooter','arch-spot-up','Perimeter player, 34% 3P — thrives on spacing, minimal TOs'],
-  'Thore':   ['SCORER','arch-main-scorer','Slasher','arch-slasher','67% from two, rarely dribbles — pure finisher & cutter'],
-  'Jon':     ['SCORER','arch-main-scorer','Slasher','arch-slasher','Athletic wing (2–4), drives to the rim instead of shooting — 72% 2P, most dangerous off-ball finisher on team'],
-  'Jeff':    ['TWO-WAY','arch-main-twoway','Two-Way Guard','arch-twoway-guard','10 PPG, 4.5 REB, 43% 3P — reliable on both ends, guard with scoring & defensive anchor qualities'],
-  'Serdar':  ['SCORER','arch-main-scorer','Slasher','arch-slasher','100% 2P (small sample) — very efficient finisher, limited minutes so far'],
+  'Felix':   ['CREATOR','arch-main-creator','Lead Playmaker','arch-lead-playmaker','Combo-Playmaker: 2.3 APG, 1.4 STL, 12.7 PPG — primärer Ballhandler, generiert Offense für andere'],
+  'Mattias': ['CREATOR','arch-main-creator','Secondary Creator','arch-secondary-creator','Potential: 60% 3P, 1.0 APG — braucht Konsistenz & Selbstvertrauen'],
+  'Niklas':  ['SCORER','arch-main-scorer','Stretch Big','arch-stretch-big','4/5 mit 37% von der Dreierlinie + 55% aus dem Zweier — zieht Defense raus'],
+  'Moritz':  ['SCORER','arch-main-scorer','Spot-Up Shooter','arch-spot-up','Perimeter-Spieler, 34% 3P — lebt vom Spacing, kaum TOs'],
+  'Thore':   ['SCORER','arch-main-scorer','Slasher','arch-slasher','67% aus dem Zweier, selten dribbelt — reiner Finisher & Cutter'],
+  'Jon':     ['SCORER','arch-main-scorer','Slasher','arch-slasher','Athletischer Wing (2–4), zieht zum Ring statt zu werfen — 72% 2P, gefährlichster Finisher im Team ohne den Ball zu brauchen'],
+  'Jeff':    ['TWO-WAY','arch-main-twoway','Two-Way Guard','arch-twoway-guard','10 PPG, 4.5 REB, 43% 3P — verlässlich auf beiden Seiten, Guard mit Scoring & Defensivanker-Qualitäten'],
+  'Serdar':  ['SCORER','arch-main-scorer','Slasher','arch-slasher','100% 2P (small sample) — sehr effizienter Finisher, wenig Einsatz bisher'],
   
-  'Andi':    ['TWO-WAY','arch-main-twoway','3&D','arch-3d','36% 3P, 0.4 STL, provides spacing — high TO volume is weakness'],
-  'Jari':    ['ANCHOR','arch-main-anchor','Def. Anchor','arch-def-anchor','7.0 RPG, best +/- on team (+59) — dominant rebounder & physical anchor'],
-  'Mattis':  ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','3.6 REB, 69% FT, no 3P attempts — physically finishes cuts & screens'],
-  'Deniz':   ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','2.6 REB, finishes cuts — three is a bonus (small sample), solid +/- (+14)'],
-  'Cedi':    ['SCORER','arch-main-scorer','Slasher','arch-slasher','Strong debut G15: 9P, 100% 2P, +21 in 18 min — combo with finisher qualities'],
-  'Mello':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','Short stints, 36% 2P — brings energy & intensity off the bench'],
-  'Theo':    ['GLUE','arch-main-glue','Energy Guy','arch-energy','-74 Raw / -96 Adj +/- — brings intensity but needs a more stable role & better efficiency'],
-  'Frowin':  ['GLUE','arch-main-glue','In Development','arch-in-dev','2.3 TPG in small sample — role still unclear, ball security lacking'],
-  'Oskar':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','-22 Raw / -42 Adj — brings energy & hustle, scoring efficiency needs to grow'],
+  'Andi':    ['TWO-WAY','arch-main-twoway','3&D','arch-3d','36% 3P, 0.4 STL, gibt Spacing — hohes TO-Volumen ist Schwäche'],
+  'Jari':    ['ANCHOR','arch-main-anchor','Def. Anchor','arch-def-anchor','7.0 RPG, bester +/- Team (+59) — dominanter Rebounder & physischer Anker'],
+  'Mattis':  ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','3.6 REB, 69% FT, kein 3P-Versuch — finisht Cuts & Screens physisch'],
+  'Deniz':   ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','2.6 REB, finisht Cuts — Dreier ist Bonus (small sample), guter +/- (+14)'],
+  'Cedi':    ['SCORER','arch-main-scorer','Slasher','arch-slasher','Starkes Debüt G15: 9P, 100% 2P, +21 in 18 Min — Combo mit Finisher-Qualitäten'],
+  'Mello':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','Kurze Stints, 36% 2P — bringt Energie & Intensität von der Bank'],
+  'Theo':    ['GLUE','arch-main-glue','Energy Guy','arch-energy','-74 Raw / -96 Adj +/- — bringt Intensität, braucht aber stabilere Rolle & bessere Effizienz'],
+  'Frowin':  ['GLUE','arch-main-glue','In Development','arch-in-dev','2.3 TPG in kleiner Stichprobe — Rolle noch unklar, Ballsicherheit fehlt'],
+  'Oskar':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','-22 Raw / -42 Adj — gibt Energie & Hustle, Scoring-Effizienz muss wachsen'],
 };
 
 const ARCHETYPE_META = {
-  'CREATOR':  { color: 'var(--accent2)', desc: 'Creates offense for others, ball handling & creation' },
-  'SCORER':   { color: '#f0907a',        desc: 'Primary scoring option in various forms' },
-  'TWO-WAY':  { color: 'var(--green)',   desc: 'Reliable on both ends, provides stability' },
-  'ANCHOR':   { color: '#c07af0',        desc: 'Physical presence, rebounds, interior finisher' },
-  'GLUE':     { color: 'var(--muted2)',  desc: 'Energy, hustle or still in development' },
+  'CREATOR':  { color: 'var(--accent2)', desc: 'Generiert Offense für andere, Ballhandling & Kreation' },
+  'SCORER':   { color: '#f0907a',        desc: 'Primäre Scoring-Option in verschiedenen Ausprägungen' },
+  'TWO-WAY':  { color: 'var(--green)',   desc: 'Verlässlich auf beiden Seiten, gibt Stabilität' },
+  'ANCHOR':   { color: '#c07af0',        desc: 'Physische Präsenz, Rebounds, interner Finisher' },
+  'GLUE':     { color: 'var(--muted2)',  desc: 'Energie, Hustle oder noch in Entwicklung' },
 };
 
 function archetype(p, name) {
   const entry = ARCHETYPE_MAP[name];
   if (entry) return entry; // [main, mainClass, sub, subClass, desc]
   // fallback
-  return ['GLUE','arch-main-glue','Roleplayer','arch-in-dev','Role not yet determined'];
+  return ['GLUE','arch-main-glue','Roleplayer','arch-in-dev','Rolle noch nicht bestimmt'];
 }
 
 function archetypeBadgeHTML(p, name, compact=false) {
@@ -1179,11 +1196,11 @@ function buildOverview() {
   const totalGames = GAMES.length;
 
   const cards = [
-    { label:'Games', value: totalGames, sub: `${wins}W / ${losses}L` },
+    { label:'Spiele', value: totalGames, sub: `${wins}W / ${losses}L` },
     { label:'Top Scorer', value: topScorer?.ppg, sub: topScorer?.vollname?.split(' ')[0] },
     { label:'Top Rebounder', value: topReb?.reb, sub: topReb?.vollname?.split(' ')[0] },
     { label:'Best Raw+/-', value: (topPM?.[1]?.pm_total > 0 ? '+':'')+topPM?.[1]?.pm_total, sub: topPM?.[0] },
-    { label:'Roster', value: Object.keys(PLAYERS).length, sub: 'Players' }
+    { label:'Roster', value: Object.keys(PLAYERS).length, sub: 'Spieler' }
   ];
 
   document.getElementById('overview-cards').innerHTML = cards.map(c=>`
@@ -1367,12 +1384,12 @@ function playerCardHTML(name, p) {
           ` : '<div style="width:100%;background:var(--border);"></div>'}
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:3px;">
-          <span style="font-size:9px;color:var(--accent2);">${p.shot_dist?.two_pct_share ?? '—'}% of shots</span>
-          <span style="font-size:9px;color:var(--accent);">${p.shot_dist?.three_pct_share ?? '—'}% of shots</span>
+          <span style="font-size:9px;color:var(--accent2);">${p.shot_dist?.two_pct_share ?? '—'}% der Würfe</span>
+          <span style="font-size:9px;color:var(--accent);">${p.shot_dist?.three_pct_share ?? '—'}% der Würfe</span>
         </div>
       </div>
       <div style="margin-top:8px;">
-        <span style="font-size:10px;color:var(--muted);">${p.spiele} GP · ${p.mpg}min/G</span>
+        <span style="font-size:10px;color:var(--muted);">${p.spiele} Sp · ${p.mpg}min/G</span>
       </div>
     </div>`;
 }
@@ -1407,7 +1424,7 @@ function showProfile(name) {
 
   document.getElementById('profile-detail').innerHTML = `
     <div class="pd-section">
-      <div class="pd-title">PLAYER PROFILE</div>
+      <div class="pd-title">SPIELERPROFIL</div>
       <div class="pd-row" style="margin-bottom:12px;">
         <span class="pd-key">Archetype</span>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
@@ -1424,19 +1441,19 @@ function showProfile(name) {
         const FL={ballhandler:{l:'Ballhandler',c:'#4fc3f7'},stretch:{l:'Stretch',c:'#aed581'},rim_runner:{l:'Rim Runner',c:'#ff8a65'},can_guard_big:{l:'Guard Big',c:'#ce93d8'},wing_defender:{l:'Wing-Def',c:'#80cbc4'},playmaker:{l:'Playmaker',c:'#e8c84a'},can_play_big:{l:'Play Big',c:'#f48fb1'}};
         const active=Object.entries(FL).filter(([k])=>rf[k]);
         if(!active.length)return '';
-        return `<div style="margin-bottom:12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Skills</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${active.map(([,v])=>`<span style="font-size:10px;padding:3px 8px;border-radius:12px;background:${v.c}22;color:${v.c};border:1px solid ${v.c}44;font-weight:600;">${v.l}</span>`).join('')}</div></div>`;
+        return `<div style="margin-bottom:12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Fähigkeiten</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${active.map(([,v])=>`<span style="font-size:10px;padding:3px 8px;border-radius:12px;background:${v.c}22;color:${v.c};border:1px solid ${v.c}44;font-weight:600;">${v.l}</span>`).join('')}</div></div>`;
       })()}
-      <div class="pd-row"><span class="pd-key">Games</span><span class="pd-val">${p.spiele} (${p.mpg} min/G)</span></div>
-      <div class="pd-row"><span class="pd-key">Points</span><span class="pd-val" style="color:var(--accent);">${p.ppg} PPG</span></div>
+      <div class="pd-row"><span class="pd-key">Spiele</span><span class="pd-val">${p.spiele} (${p.mpg} min/G)</span></div>
+      <div class="pd-row"><span class="pd-key">Punkte</span><span class="pd-val" style="color:var(--accent);">${p.ppg} PPG</span></div>
       <div class="pd-row"><span class="pd-key">Rebounds</span><span class="pd-val">${p.reb} (${p.or_pg} off / ${p.dr_pg} def)</span></div>
       <div class="pd-row"><span class="pd-key">Assists</span><span class="pd-val">${p.apg}</span></div>
-      <div class="pd-row"><span class="pd-key">Turnovers</span><span class="pd-val">${p.tpg}</span></div>
+      <div class="pd-row"><span class="pd-key">Turnover</span><span class="pd-val">${p.tpg}</span></div>
       <div class="pd-row"><span class="pd-key">AST/TO</span><span class="pd-val" style="color:${p.ast_to>=1?'var(--green)':'var(--red)'};">${astToStr}</span></div>
       <div class="pd-row"><span class="pd-key">Steals</span><span class="pd-val">${p.stl}</span></div>
       <div class="pd-row"><span class="pd-key">Blocks</span><span class="pd-val">${p.blk}</span></div>
       <div class="pd-row"><span class="pd-key">Fouls</span><span class="pd-val">${p.pf}</span></div>
       <div class="pd-row"><span class="pd-key">Raw +/-</span><span class="pd-val" style="color:${p.pm_total>=0?'var(--green)':'var(--red)'};">${p.pm_total>0?'+':''}${p.pm_total}</span></div>
-      ${p.pir != null ? `<div class="pd-row"><span class="pd-key">PIR / Game</span><span class="pd-val">${p.pir}</span></div>` : ''}
+      ${p.pir != null ? `<div class="pd-row"><span class="pd-key">PIR / Spiel</span><span class="pd-val">${p.pir}</span></div>` : ''}
     </div>
     <div class="pd-section">
       <div class="pd-title">SHOOTING</div>
@@ -1473,7 +1490,7 @@ function showProfile(name) {
       </div>
     </div>
     <div class="pd-section">
-      <div class="pd-title">SCORING TREND</div>
+      <div class="pd-title">PUNKTE VERLAUF</div>
       <div style="display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:8px;">
         ${sparkline}
       </div>
@@ -1482,7 +1499,7 @@ function showProfile(name) {
       </div>
     </div>
     <div class="pd-section">
-      <div class="pd-title">BEST LINEUPS (with ${name})</div>
+      <div class="pd-title">BESTE LINEUPS (mit ${name})</div>
       ${myLineups.length ? myLineups.map(l=>`
         <div style="margin-bottom:8px;padding:8px;background:var(--surface);border-radius:6px;border:1px solid var(--border);">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
@@ -1491,7 +1508,7 @@ function showProfile(name) {
           </div>
           <div>${l.players.map(p2=>`<span class="lu-tag" style="${p2===name?'background:rgba(232,200,74,0.2);color:var(--accent);':''}">${p2}</span>`).join('')}</div>
         </div>`).join('')
-      : '<div style="color:var(--muted);font-size:12px;">Not enough lineup data</div>'}
+      : '<div style="color:var(--muted);font-size:12px;">Nicht genug Lineup-Daten</div>'}
     </div>`;
 
   panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -1604,7 +1621,7 @@ function renderLineups() {
       <td>${l.opp}</td>
       <td class="${l.pm>=0?'good':'bad'}">${l.pm>0?'+':''}${l.pm}</td>
       <td style="color:var(--muted);">${l.count}</td>
-    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">No lineups found</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Keine Lineups gefunden</td></tr>';
 }
 
 // ========== ROTATION BUILDER ==========
@@ -1643,7 +1660,7 @@ function renderStarterPicker() {
     let html = manualStarters.map(n => makePlayerCard(n, 'starter')).join('');
     // Empty slots
     for (let i = manualStarters.length; i < 5; i++) {
-      html += `<div style="padding:7px 10px;border:1px dashed rgba(232,200,74,0.2);border-radius:7px;color:var(--muted);font-size:12px;">Starter ${i+1} — drag here</div>`;
+      html += `<div style="padding:7px 10px;border:1px dashed rgba(232,200,74,0.2);border-radius:7px;color:var(--muted);font-size:12px;">Starter ${i+1} — hierher ziehen</div>`;
     }
     starterEl.innerHTML = html;
   }
@@ -1654,9 +1671,9 @@ function renderStarterPicker() {
     if (bench.length) {
       benchEl.innerHTML = bench.map(n => makePlayerCard(n, 'bench')).join('');
     } else if (available.length === 0) {
-      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">No players available — set attendance first</span>`;
+      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">Keine Spieler verfügbar — zuerst Anwesenheit setzen</span>`;
     } else {
-      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">All available players are starters</span>`;
+      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">Alle verfügbaren Spieler sind Starter</span>`;
     }
   }
 
@@ -1667,7 +1684,7 @@ function renderStarterPicker() {
       summary.textContent = manualStarters.join(', ');
       summary.style.color = 'var(--green)';
     } else if (manualStarters.length > 0) {
-      summary.textContent = `${manualStarters.length}/5 selected`;
+      summary.textContent = `${manualStarters.length}/5 gewählt`;
       summary.style.color = 'var(--accent)';
     } else {
       summary.textContent = '— Auto-Modus aktiv';
@@ -1757,7 +1774,7 @@ function buildAttendanceView() {
   dates.forEach((d, i) => {
     const parts = d.split('-');
     const monthKey = parts[1] + '-' + parts[2];
-    const monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthNames = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
     const label = monthNames[parseInt(parts[1])];
     if (label !== lastMonth) {
       monthLabels.push({ idx: i, label });
@@ -1793,11 +1810,11 @@ function buildAttendanceView() {
   dates.forEach((d, i) => {
     const isRecent = i >= last8Start;
     const monthParts = d.split('-');
-    const monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthNames = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
     const isMonthStart = i === 0 || d.split('-')[1] !== dates[i-1].split('-')[1];
     html += `<div style="width:${CELL}px;margin-right:${GAP}px;text-align:center;position:relative;">
       ${isMonthStart ? `<span style="position:absolute;left:0;top:-14px;font-size:9px;color:${isRecent?'var(--accent)':'var(--muted)'};white-space:nowrap;font-family:'DM Mono';">${monthNames[parseInt(monthParts[1])]}</span>` : ''}
-      ${isRecent ? `<div style="width:${CELL}px;height:3px;background:rgba(232,200,74,0.3);border-radius:1px;margin-bottom:1px;" title="Last 4 weeks"></div>` : '<div style="height:4px;"></div>'}
+      ${isRecent ? `<div style="width:${CELL}px;height:3px;background:rgba(232,200,74,0.3);border-radius:1px;margin-bottom:1px;" title="Letzte 4 Wochen"></div>` : '<div style="height:4px;"></div>'}
     </div>`;
   });
   html += `</div>`;
@@ -1827,15 +1844,15 @@ function buildAttendanceView() {
 
     // Stats at end
     html += `<div style="margin-left:10px;display:flex;gap:8px;align-items:center;white-space:nowrap;">
-      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted2);" title="Total">${s.total}/${s.of}</span>
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted2);" title="Gesamt">${s.total}/${s.of}</span>
       <span style="font-family:'DM Mono';font-size:10px;color:${s.rate_all>=50?'var(--green)':s.rate_all>=35?'var(--accent)':'var(--red)'};">${s.rate_all}%</span>
-      <span style="font-family:'DM Mono';font-size:10px;color:${s.rate_last8>=50?'var(--green)':s.rate_last8>=30?'var(--accent)':'var(--red)'};" title="Last 4 weeks">${s.rate_last8}%▲</span>
-      ${s.was_last_week ? '<span style="font-size:10px;color:var(--green);" title="Present last week">✓</span>' : '<span style="font-size:10px;color:var(--red);" title="NOT present last week">✗</span>'}
+      <span style="font-family:'DM Mono';font-size:10px;color:${s.rate_last8>=50?'var(--green)':s.rate_last8>=30?'var(--accent)':'var(--red)'};" title="Letzte 4 Wochen">${s.rate_last8}%▲</span>
+      ${s.was_last_week ? '<span style="font-size:10px;color:var(--green);" title="Letzte Woche dabei">✓</span>' : '<span style="font-size:10px;color:var(--red);" title="Letzte Woche NICHT dabei">✗</span>'}
     </div>`;
     html += `</div>`;
   });
 
-  html += `<div style="margin-top:8px;font-size:10px;color:var(--muted);font-family:'DM Mono';">% overall &nbsp;·&nbsp; %▲ last 4 weeks &nbsp;·&nbsp; ✓/✗ present last week</div>`;
+  html += `<div style="margin-top:8px;font-size:10px;color:var(--muted);font-family:'DM Mono';">% gesamt &nbsp;·&nbsp; %▲ letzte 4 Wochen &nbsp;·&nbsp; ✓/✗ letzte Woche da</div>`;
   html += `</div>`;
 
   document.getElementById('att-heatmap').innerHTML = html;
@@ -1857,7 +1874,7 @@ function buildAttendanceView() {
 
 function reloadAttendanceCSV(event) {
   // Future: re-parse and update ATT_DATA dynamically
-  alert('CSV import for attendance updates is not yet supported. Data currently embedded as of 08.03.2026.');
+  alert('CSV-Import für zukünftige Updates wird in einer späteren Version unterstützt. Aktuell sind die Daten vom 08.03.2026 eingebettet.');
 }
 
 // ========== AUTO-BUILD MODULE ==========
@@ -1925,7 +1942,7 @@ function renderAttendGrid() {
   const overLimit = present.length > 12;
 
   document.getElementById('attend-summary').textContent =
-    `${present.length} present · ${absent.length} absent`;
+    `${present.length} dabei · ${absent.length} nicht da`;
 
   // Roster limit badge
   const badge = document.getElementById('roster-limit-badge');
@@ -1966,12 +1983,12 @@ function renderAttendGrid() {
         ? `<span style="font-size:9px;font-family:'DM Mono';color:var(--muted);margin-left:4px;">#${idx+1}</span>`
         : '');
     return `<div class="ab-player-row ${isOn ? 'present' : 'absent'}" id="attend-row-${n}">
-      <button class="attend-toggle ${isOn ? 'on' : ''}" onclick="toggleAttend('${n}')" title="${isOn ? 'Present' : 'Absent'}"></button>
+      <button class="attend-toggle ${isOn ? 'on' : ''}" onclick="toggleAttend('${n}')" title="${isOn ? 'Dabei' : 'Nicht dabei'}"></button>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:600;color:var(--text);">${n}${rankLabel}</div>
         <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
           <span style="font-size:10px;color:var(--muted);font-family:'DM Mono';">${pos}</span>
-          <span style="font-size:10px;color:${attColor};font-family:'DM Mono';" title="Attendance tier">${attDots}</span>
+          <span style="font-size:10px;color:${attColor};font-family:'DM Mono';" title="Anwesenheits-Stufe">${attDots}</span>
         </div>
       </div>
       
@@ -1983,7 +2000,7 @@ function toggleAttend(name) {
   const present = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
   // If trying to add a player and already at 12, warn but allow
   if (!abAttendance[name] && present.length >= 12) {
-    if (!confirm(`Already ${present.length} players in roster (max: 12).\n\n Add ${name} anyway?`)) return;
+    if (!confirm(`Bereits ${present.length} Spieler im Kader (Maximum: 12).\n\n${name} trotzdem hinzufügen?`)) return;
   }
   abAttendance[name] = !abAttendance[name];
   renderAttendGrid();
@@ -2029,7 +2046,7 @@ function updateMinTotal() {
   const sum = vals.reduce((a, v) => a + v, 0);
   const remaining = 200 - sum;
   document.getElementById('min-total').textContent =
-    `Set: ${sum} min | Remaining (Auto): ${remaining} min | Total: 200 min`;
+    `Gesetzt: ${sum} Min | Verbleibend (Auto): ${remaining} Min | Gesamt: 200 Min`;
   document.getElementById('min-total').style.color = remaining < 0 ? 'var(--red)' : 'var(--muted2)';
 }
 
@@ -2049,7 +2066,7 @@ function importAttendanceCSV(event) {
       // Try JSON first
       const json = JSON.parse(text);
       Object.entries(json).forEach(([name, val]) => {
-        const present = val === 'present' || val === true || val === 1 || val === '1';
+        const present = val === 'dabei' || val === true || val === 1 || val === '1';
         if (name in FULL_ROSTER) abAttendance[name] = present;
       });
     } catch {
@@ -2059,14 +2076,14 @@ function importAttendanceCSV(event) {
         if (parts.length >= 2) {
           const name = parts[0];
           const status = parts[1].toLowerCase();
-          const present = status === 'present' || status === 'true' || status === '1' || status === 'ja' || status === 'yes';
+          const present = status === 'dabei' || status === 'true' || status === '1' || status === 'ja' || status === 'yes';
           if (name in FULL_ROSTER) abAttendance[name] = present;
         }
       });
     }
     renderAttendGrid();
     renderMinTargets();
-    alert(`✓ Import successful! ${Object.keys(FULL_ROSTER).filter(n=>abAttendance[n]).length} players present.`);
+    alert(`✓ Import erfolgreich! ${Object.keys(FULL_ROSTER).filter(n=>abAttendance[n]).length} Spieler dabei.`);
   };
   reader.readAsText(file);
 }
@@ -2116,12 +2133,12 @@ function runAutoBuild() {
   const available = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
 
   if (available.length < 5) {
-    alert('At least 5 players must be present!');
+    alert('Mindestens 5 Spieler müssen dabei sein!');
     return;
   }
 
   if (available.length > 12) {
-    if (!confirm(`${available.length} players selected — maximum is 12.\n\nGenerate anyway? (The best 12 by score will be used.)`)) return;
+    if (!confirm(`${available.length} Spieler ausgewählt — Maximum sind 12.\n\nTrotzdem generieren? (Die besten 12 nach Score werden verwendet.)`)) return;
     // Trim to best 12
     const best12 = available.map(n => ({ name: n, score: scorePlayer(n) }))
       .sort((a,b) => b.score - a.score)
@@ -2406,27 +2423,27 @@ function generateWarnings(starters, bench, available, mins, posBalance) {
   const f = n => FULL_ROSTER[n] || {};
 
   if (!posBalance.hasBallhandler)
-    warnings.push({ type: 'red', text: '⚠️ No ball handler in starters — ball movement unclear' });
+    warnings.push({ type: 'red', text: '⚠️ Kein Ballhandler in den Startern — Ballvortrag unklar' });
 
   if (!posBalance.hasBig)
-    warnings.push({ type: 'red', text: '⚠️ No big man (can_play_big) in starters — rebounding & rim protection missing' });
+    warnings.push({ type: 'red', text: '⚠️ Kein Big Man (can_play_big) in Startern — Rebound & Rimschutz fehlt' });
 
   if (!posBalance.hasBenchBig)
-    warnings.push({ type: 'yellow', text: '⚡ No big on bench — foul trouble will be critical' });
+    warnings.push({ type: 'yellow', text: '⚡ Kein Big auf der Bank — Foul-Trouble wird kritisch' });
 
   if (!posBalance.hasBenchBH)
-    warnings.push({ type: 'yellow', text: '⚡ No backup ball handler — starter BH cannot come off' });
+    warnings.push({ type: 'yellow', text: '⚡ Kein Backup-Ballhandler — Starter-BH kann nicht rausgehen' });
 
   if (!posBalance.hasStretch)
-    warnings.push({ type: 'yellow', text: '⚡ No stretch player in starters — defense will not spread' });
+    warnings.push({ type: 'yellow', text: '⚡ Kein Stretch-Spieler in Startern — Defense zieht nicht raus' });
 
   if (available.length < 8)
 
   if (available.length < 8)
-    warnings.push({ type: 'yellow', text: `ℹ️ Only ${available.length} players available — rotation very tight, watch for fatigue` });
+    warnings.push({ type: 'yellow', text: `ℹ️ Nur ${available.length} Spieler verfügbar — Rotation sehr eng, Ermüdung beachten` });
 
   if (available.length >= 12)
-    warnings.push({ type: 'green', text: `✓ ${available.length} players available — deep rotation possible` });
+    warnings.push({ type: 'green', text: `✓ ${available.length} Spieler verfügbar — tiefe Rotation möglich` });
 
 
   return warnings;
@@ -2452,7 +2469,7 @@ function renderAutoBuildResult(starters, bench, mins, quarterPlan, cheatsheet, p
     </div>`;
   }).join('');
 
-  document.getElementById('ab-bench-summary').textContent = `${bench.length} players`;
+  document.getElementById('ab-bench-summary').textContent = `${bench.length} Spieler`;
   document.getElementById('ab-bench').innerHTML = bench.length > 0 ? bench.map(n => {
     const p = PLAYERS[n];
     const pos = FULL_ROSTER[n]?.pos || p?.pos || '?';
@@ -2464,7 +2481,7 @@ function renderAutoBuildResult(starters, bench, mins, quarterPlan, cheatsheet, p
       </div>
       <span class="ab-bench-min-badge">${mins[n] || 0} Min</span>
     </div>`;
-  }).join('') : `<div style="color:var(--muted);font-size:12px;padding:8px;">No bench players available</div>`;
+  }).join('') : `<div style="color:var(--muted);font-size:12px;padding:8px;">Keine Bankspieler verfügbar</div>`;
 
   // Position balance
   const posItems = [
@@ -2568,7 +2585,7 @@ function renderAutoBuildResult(starters, bench, mins, quarterPlan, cheatsheet, p
     html += '<div style="margin-top:14px;overflow-x:auto;">';
     html += '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
     html += '<thead><tr style="color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase;">';
-    ['Player','Pos','Target','Planned','Stints'].forEach(function(h, i) {
+    ['Spieler','Pos','Ziel','Plan','Stints'].forEach(function(h, i) {
       var align = i >= 2 && i <= 3 ? 'right' : 'left';
       html += '<th style="text-align:' + align + ';padding:4px 8px;border-bottom:1px solid var(--border);">' + h + '</th>';
     });
@@ -2609,14 +2626,14 @@ function renderAutoBuildResult(starters, bench, mins, quarterPlan, cheatsheet, p
           <span style="color:var(--muted);font-size:10px;font-family:'DM Mono';">${(c.fieldAfter||[]).join(' · ')}</span>
         </div>`).join('')}
     </div>
-    <div style="margin-top:8px;font-size:11px;color:var(--muted);">Subs from stint plan · right = court after</div>
-  ` : '<div style="color:var(--muted);font-size:12px;">No subs generated</div>';
+    <div style="margin-top:8px;font-size:11px;color:var(--muted);">Wechsel aus Stint-Plan · rechts = Feld danach</div>
+  ` : '<div style="color:var(--muted);font-size:12px;">Keine Wechsel generiert</div>';
 
   // Warnings
   document.getElementById('ab-warnings').innerHTML = warnings.length > 0 ? `
-    <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">NOTES HINWEISE & WARNUNGEN WARNINGS</div>
+    <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">HINWEISE & WARNUNGEN</div>
     ${warnings.map(w => `<div class="warn-item warn-${w.type}">${w.text}</div>`).join('')}
-  ` : '<div class="warn-item warn-green">✓ No warnings — lineup looks solid!</div>';
+  ` : '<div class="warn-item warn-green">✓ Keine Warnungen — Lineup sieht solide aus!</div>';
 }
 
 // Patch showView to handle autobuild tab styling
@@ -2639,10 +2656,10 @@ showView = function(name) {
 let _lastRotationData = null;
 
 async function saveCurrentRotation() {
-  if (!_lastRotationData) { alert('Generate a rotation first!'); return; }
-  if (!window._fbReady) { alert('Firebase not ready yet — wait a moment and try again.'); return; }
+  if (!_lastRotationData) { alert('Zuerst eine Rotation generieren!'); return; }
+  if (!window._fbReady) { alert('Firebase noch nicht bereit — kurz warten und nochmal versuchen.'); return; }
   const nameInput = document.getElementById('save-rotation-name');
-  const label = nameInput.value.trim() || `Rotation ${new Date().toLocaleDateString('en-GB')}`;
+  const label = nameInput.value.trim() || `Rotation ${new Date().toLocaleDateString('de-DE')}`;
   const entry = { label, savedAt: new Date().toISOString(), ..._lastRotationData };
   try {
     const docId = await window._fbSave(entry);
@@ -2653,7 +2670,7 @@ async function saveCurrentRotation() {
     nameInput.value = '';
     loadSavedRotations();
   } catch(e) {
-    alert('Save failed: ' + e.message);
+    alert('Speichern fehlgeschlagen: ' + e.message);
     console.error(e);
   }
 }
@@ -2663,20 +2680,20 @@ async function loadSavedRotations() {
   const listEl = document.getElementById('saved-rotations-list');
   if (!countEl || !listEl) return;
   if (!window._fbReady) {
-    countEl.textContent = 'loading…';
+    countEl.textContent = 'wird geladen…';
     setTimeout(loadSavedRotations, 800);
     return;
   }
   try {
-    countEl.textContent = '⏳ loading…';
+    countEl.textContent = '⏳ lädt…';
     const entries = await window._fbLoad();
-    countEl.textContent = entries.length > 0 ? `${entries.length} saved` : 'None saved';
+    countEl.textContent = entries.length > 0 ? `${entries.length} gespeichert` : 'Keine gespeichert';
     if (entries.length === 0) {
-      listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">No rotations saved yet.</div>';
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Noch keine Rotationen gespeichert.</div>';
       return;
     }
     listEl.innerHTML = entries.map(e => {
-      const date = new Date(e.savedAt).toLocaleDateString('en-GB', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const date = new Date(e.savedAt).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
       const starters = (e.starters || []).join(', ');
       const bench = (e.bench || []).join(', ');
       const docId = e._docId;
@@ -2689,32 +2706,32 @@ async function loadSavedRotations() {
             <div style="font-size:11px;color:var(--accent2);margin-top:2px;">· ${bench || '—'}</div>
           </div>
           <div style="display:flex;gap:8px;flex-shrink:0;">
-            <button onclick="loadRotation('${docId}')" style="padding:6px 14px;background:rgba(74,158,232,0.1);border:1px solid rgba(74,158,232,0.25);border-radius:6px;color:var(--accent2);font-family:'DM Sans';font-size:12px;cursor:pointer;">↩ Load</button>
+            <button onclick="loadRotation('${docId}')" style="padding:6px 14px;background:rgba(74,158,232,0.1);border:1px solid rgba(74,158,232,0.25);border-radius:6px;color:var(--accent2);font-family:'DM Sans';font-size:12px;cursor:pointer;">↩ Laden</button>
             <button onclick="deleteRotation('${docId}')" style="padding:6px 10px;background:rgba(232,90,74,0.08);border:1px solid rgba(232,90,74,0.2);border-radius:6px;color:var(--red);font-family:'DM Sans';font-size:12px;cursor:pointer;">🗑</button>
           </div>
         </div>
       </div>`;
     }).join('');
   } catch(e) {
-    countEl.textContent = 'Error';
-    listEl.innerHTML = `<div style="color:var(--red);font-size:12px;">Firebase error: ${e.message}</div>`;
+    countEl.textContent = 'Fehler';
+    listEl.innerHTML = `<div style="color:var(--red);font-size:12px;">Firebase-Fehler: ${e.message}</div>`;
     console.error(e);
   }
 }
 
 async function deleteRotation(docId) {
-  if (!confirm('Delete rotation?')) return;
+  if (!confirm('Rotation löschen?')) return;
   try {
     await window._fbDelete(docId);
     loadSavedRotations();
-  } catch(e) { alert('Delete failed: ' + e.message); }
+  } catch(e) { alert('Löschen fehlgeschlagen: ' + e.message); }
 }
 
 async function loadRotation(docId) {
   try {
     const entries = await window._fbLoad();
     const e = entries.find(x => x._docId === docId);
-    if (!e) { alert('Not found'); return; }
+    if (!e) { alert('Nicht gefunden'); return; }
     // Restore attendance
     Object.keys(FULL_ROSTER).forEach(n => abAttendance[n] = false);
     (e.available || []).forEach(n => { if (n in FULL_ROSTER) abAttendance[n] = true; });
@@ -2732,7 +2749,7 @@ async function loadRotation(docId) {
     }
     document.getElementById('saved-rotations-body').style.display = 'none';
     setTimeout(() => document.getElementById('ab-result').scrollIntoView({ behavior: 'smooth' }), 100);
-  } catch(e) { alert('Load failed: ' + e.message); console.error(e); }
+  } catch(e) { alert('Laden fehlgeschlagen: ' + e.message); console.error(e); }
 }
 
 // Patch runAutoBuild to also store last result
@@ -2753,6 +2770,273 @@ function initDashboard() {
   loadSavedRotations();
 }
 loadData();
+
+// ========== i18n LANGUAGE TOGGLE ==========
+let currentLang = 'de';
+
+const TRANSLATIONS = {
+  // Header & Season badge
+  'season-badge': { de: 'SAISON 2025/26 · LANDESLIGA B', en: 'SEASON 2025/26 · LANDESLIGA B' },
+
+  // Tabs
+  'tab-overview':    { de: 'Übersicht',      en: 'Overview' },
+  'tab-profiles':    { de: 'Spielerprofile', en: 'Player Profiles' },
+  'tab-table':       { de: 'Stats-Tabelle',  en: 'Stats Table' },
+  'tab-lineups':     { de: 'Lineups',        en: 'Lineups' },
+  'tab-attendance':  { de: 'Anwesenheit',    en: 'Attendance' },
+
+  // Overview panels
+  'panel-archetype-sub':     { de: 'Haupt- & Unterkategorien',      en: 'Main & Sub-Categories' },
+  'panel-pm-sub':            { de: 'Raw +/- gesamt',                en: 'Raw +/- total' },
+  'panel-games-title':       { de: 'Spielergebnisse',               en: 'Game Results' },
+  'panel-games-sub':         { de: 'Saison 2025/26',                en: 'Season 2025/26' },
+  'panel-toplu-title':       { de: 'Beste Lineups',                 en: 'Best Lineups' },
+  'panel-toplu-sub':         { de: 'min. 5 Min · nach Net Rating',  en: 'min. 5 min · by Net Rating' },
+
+  // Profiles
+  'filter-all':      { de: 'Alle',           en: 'All' },
+  'profile-close':   { de: '✕ Schließen',    en: '✕ Close' },
+
+  // Table
+  'table-sort-label':   { de: 'Sortieren:',  en: 'Sort:' },
+  'th-player':          { de: 'Spieler',     en: 'Player' },
+  'th-games':           { de: 'Sp',          en: 'GP' },
+
+  // Lineups
+  'panel-lineups-title':  { de: 'Lineup Effizienz',                      en: 'Lineup Efficiency' },
+  'panel-lineups-sub':    { de: 'Alle 5er-Kombinationen · sortiert nach Net Rating', en: 'All 5-man combinations · sorted by Net Rating' },
+  'lineup-min-label':     { de: 'Min. Minuten:',                         en: 'Min. Minutes:' },
+  'lineup-search-ph':     { de: 'Spieler suchen (z.B. Felix, Jari)...',  en: 'Search player (e.g. Felix, Jari)...' },
+  'th-lineup-pts':        { de: 'Pkt',   en: 'Pts' },
+  'th-lineup-games':      { de: 'Spiele', en: 'Games' },
+
+  // Attendance
+  'panel-att-title':      { de: 'Trainingsanwesenheit',               en: 'Training Attendance' },
+  'panel-att-sub':        { de: 'Saison 2025/26 · 57 Trainings · Aug 2025 – Mär 2026', en: 'Season 2025/26 · 57 Sessions · Aug 2025 – Mar 2026' },
+  'att-csv-btn':          { de: '↑ CSV aktualisieren',                en: '↑ Update CSV' },
+  'att-legend-present':   { de: 'Dabei (CONFIRMED)',                  en: 'Present (CONFIRMED)' },
+  'att-legend-absent':    { de: 'Abwesend',                           en: 'Absent' },
+  'att-legend-unsure':    { de: 'Unsicher',                           en: 'Uncertain' },
+  'att-legend-none':      { de: 'Keine Angabe',                       en: 'No response' },
+  'att-legend-recent':    { de: 'letzte 8 Trainings = letzte ~4 Wochen', en: 'last 8 sessions = last ~4 weeks' },
+  'panel-att2-title':     { de: 'Anwesenheits-Stufen',                en: 'Attendance Tiers' },
+  'panel-att2-sub':       { de: 'Berechnet aus Trainingsdaten',       en: 'Calculated from training data' },
+
+  // AutoBuild
+  'panel-saved-title':    { de: '📂 Gespeicherte Rotationen',         en: '📂 Saved Rotations' },
+  'ab-step1-title':       { de: '① Anwesenheit',                     en: '① Attendance' },
+  'ab-step1-sub':         { de: 'max. 12 Spieler im Kader',           en: 'max. 12 players per roster' },
+  'ab-all-btn':           { de: '✓ Alle dabei',                       en: '✓ All present' },
+  'ab-none-btn':          { de: '✗ Alle raus',                        en: '✗ All out' },
+  'ab-step2-title':       { de: '② Starter',                         en: '② Starters' },
+  'ab-step2-sub':         { de: '5 Starter wählen',                   en: 'Select 5 starters' },
+  'ab-auto-btn':          { de: '⚡ Auto-Vorschlag',                   en: '⚡ Auto-Suggest' },
+  'ab-step3-title':       { de: '③ Minutenziele',                    en: '③ Minute Targets' },
+  'ab-step3-sub':         { de: 'Gesamt = 200 Min',                   en: 'Total = 200 min' },
+  'ab-generate-btn':      { de: '⚡ LINEUP GENERIEREN',               en: '⚡ GENERATE LINEUP' },
+  'ab-posbal-title':      { de: 'Positions-Balance',                  en: 'Position Balance' },
+  'ab-starter-title':     { de: '★ STARTER (5)',                      en: '★ STARTERS (5)' },
+  'ab-bench-title':       { de: 'BANK',                               en: 'BENCH' },
+  'ab-rotplan-title':     { de: 'Rotation Plan',                      en: 'Rotation Plan' },
+  'ab-rotplan-sub':       { de: 'Minutenverteilung nach Viertel · Gesamt = 200 Min', en: 'Minute distribution by quarter · Total = 200 min' },
+  'ab-cheat-title':       { de: 'Wechsel-Cheatsheet',                 en: 'Sub Cheatsheet' },
+  'ab-cheat-sub':         { de: 'Empfohlene Auswechselungen pro Minute', en: 'Recommended substitutions per minute' },
+  'ab-save-btn':          { de: '💾 SPEICHERN',                       en: '💾 SAVE' },
+  'save-feedback-text':   { de: '✓ Gespeichert!',                     en: '✓ Saved!' },
+};
+
+// Elements that need text content swapped (id -> translation key mapping)
+const TEXT_ELEMENTS = {
+  'season-badge':     'season-badge',
+  'panel-archetype-sub-el':  'panel-archetype-sub',
+  'panel-pm-sub-el':         'panel-pm-sub',
+  'panel-games-title-el':    'panel-games-title',
+  'panel-games-sub-el':      'panel-games-sub',
+  'panel-toplu-title-el':    'panel-toplu-title',
+  'panel-toplu-sub-el':      'panel-toplu-sub',
+  'filter-all-btn':           'filter-all',
+  'profile-close-btn':        'profile-close',
+  'table-sort-label-el':      'table-sort-label',
+  'th-player-el':             'th-player',
+  'th-games-el':              'th-games',
+  'panel-lineups-title-el':   'panel-lineups-title',
+  'panel-lineups-sub-el':     'panel-lineups-sub',
+  'lineup-min-label-el':      'lineup-min-label',
+  'th-lineup-pts-el':         'th-lineup-pts',
+  'th-lineup-games-el':       'th-lineup-games',
+  'panel-att-title-el':       'panel-att-title',
+  'panel-att-sub-el':         'panel-att-sub',
+  'att-csv-btn-el':           'att-csv-btn',
+  'att-legend-present-el':    'att-legend-present',
+  'att-legend-absent-el':     'att-legend-absent',
+  'att-legend-unsure-el':     'att-legend-unsure',
+  'att-legend-none-el':       'att-legend-none',
+  'att-legend-recent-el':     'att-legend-recent',
+  'panel-att2-title-el':      'panel-att2-title',
+  'panel-att2-sub-el':        'panel-att2-sub',
+  'panel-saved-title-el':     'panel-saved-title',
+  'ab-step1-title-el':        'ab-step1-title',
+  'ab-step1-sub-el':          'ab-step1-sub',
+  'ab-all-btn-el':            'ab-all-btn',
+  'ab-none-btn-el':           'ab-none-btn',
+  'ab-step2-title-el':        'ab-step2-title',
+  'ab-step2-sub-el':          'ab-step2-sub',
+  'ab-auto-btn-el':           'ab-auto-btn',
+  'ab-step3-title-el':        'ab-step3-title',
+  'ab-step3-sub-el':          'ab-step3-sub',
+  'ab-generate-btn-el':       'ab-generate-btn',
+  'ab-posbal-title-el':       'ab-posbal-title',
+  'ab-starter-title-el':      'ab-starter-title',
+  'ab-bench-title-el':        'ab-bench-title',
+  'ab-rotplan-title-el':      'ab-rotplan-title',
+  'ab-rotplan-sub-el':        'ab-rotplan-sub',
+  'ab-cheat-title-el':        'ab-cheat-title',
+  'ab-cheat-sub-el':          'ab-cheat-sub',
+  'ab-save-btn-el':           'ab-save-btn',
+  'save-feedback':            'save-feedback-text',
+};
+
+function toggleLang() {
+  currentLang = currentLang === 'de' ? 'en' : 'de';
+  applyLang();
+}
+
+function applyLang() {
+  const isEN = currentLang === 'en';
+
+  // Update toggle button
+  document.getElementById('lang-flag').textContent = isEN ? '🇩🇪' : '🇬🇧';
+  document.getElementById('lang-label').textContent = isEN ? 'DE' : 'EN';
+
+  // Swap all registered text elements
+  Object.entries(TEXT_ELEMENTS).forEach(([elId, key]) => {
+    const el = document.getElementById(elId);
+    if (el && TRANSLATIONS[key]) {
+      el.textContent = TRANSLATIONS[key][currentLang];
+    }
+  });
+
+  // Tabs (by data-tab attribute)
+  const tabMap = {
+    'overview':   TRANSLATIONS['tab-overview'][currentLang],
+    'profiles':   TRANSLATIONS['tab-profiles'][currentLang],
+    'table':      TRANSLATIONS['tab-table'][currentLang],
+    'lineups':    TRANSLATIONS['tab-lineups'][currentLang],
+    'attendance': TRANSLATIONS['tab-attendance'][currentLang],
+  };
+  document.querySelectorAll('.tab[data-tab]').forEach(t => {
+    const key = t.getAttribute('data-tab');
+    if (tabMap[key]) t.textContent = tabMap[key];
+  });
+
+  // Lineup search placeholder
+  const ls = document.getElementById('lineup-search');
+  if (ls) ls.placeholder = isEN
+    ? 'Search player (e.g. Felix, Jari)...'
+    : 'Spieler suchen (z.B. Felix, Jari)...';
+
+  // Save rotation placeholder
+  const srn = document.getElementById('save-rotation-name');
+  if (srn) srn.placeholder = isEN
+    ? 'Opponent / Game day (e.g. BASS Südwest 2 – Game 16)'
+    : 'Gegner / Spieltag (z.B. BASS Südwest 2 – Spiel 16)';
+
+  // Attendance tier legend note
+  const attNote = document.getElementById('att-tier-note');
+  if (attNote) attNote.innerHTML = isEN
+    ? '<b style="color:var(--green);">●●●</b> present last week + last 4W ≥50% + overall ≥40% &nbsp;·&nbsp; <b style="color:var(--accent);">●●○</b> last 4W ≥30% or overall ≥35% &nbsp;·&nbsp; <b style="color:var(--muted2);">●○○</b> otherwise'
+    : '<b style="color:var(--green);">●●●</b> letzte Woche da + letzte 4W ≥50% + gesamt ≥40% &nbsp;·&nbsp; <b style="color:var(--accent);">●●○</b> letzte 4W ≥30% oder gesamt ≥35% &nbsp;·&nbsp; <b style="color:var(--muted2);">●○○</b> sonst';
+
+  // CSV import hint
+  const csvHint = document.getElementById('csv-format-hint');
+  if (csvHint) csvHint.textContent = isEN
+    ? 'Format: name,status (present/absent) — or JSON: {"Felix":"present",...}'
+    : 'Format: name,status (dabei/nicht dabei) — oder JSON: {"Felix":"dabei",...}';
+
+  // Autobuild step 2 drag hint
+  const dragHint = document.getElementById('ab-drag-hint');
+  if (dragHint) dragHint.textContent = isEN
+    ? 'Drag players to the starter or bench zone · or click to toggle'
+    : 'Ziehe Spieler in die Starter- oder Bank-Zone · oder klicke zum Wechseln';
+
+  // Autobuild step 3 hint
+  const minHint = document.getElementById('ab-min-hint');
+  if (minHint) minHint.textContent = isEN
+    ? 'Only fill in if you have specific targets — otherwise auto-calculated via Adj. +/- & attendance'
+    : 'Nur ausfüllen wenn du konkrete Vorgaben hast — sonst automatisch via Adj. +/- & Anwesenheit';
+
+  // Archetype descriptions in ARCHETYPE_MAP
+  const archEN = {
+    'Felix':   'Combo-Playmaker: 2.3 APG, 1.4 STL, 12.7 PPG — primary ball handler, creates offense for others',
+    'Mattias': 'Potential: 60% 3P, 1.0 APG — needs consistency & confidence',
+    'Niklas':  '4/5 with 37% from three + 55% from two — pulls defense out',
+    'Moritz':  'Perimeter player, 34% 3P — thrives on spacing, minimal TOs',
+    'Thore':   '67% from two, rarely dribbles — pure finisher & cutter',
+    'Jon':     'Athletic wing (2–4), drives to the rim instead of shooting — 72% 2P, most dangerous off-ball finisher on team',
+    'Jeff':    '10 PPG, 4.5 REB, 43% 3P — reliable on both ends, guard with scoring & defensive anchor qualities',
+    'Serdar':  '100% 2P (small sample) — very efficient finisher, limited minutes so far',
+    'Andi':    '36% 3P, 0.4 STL, provides spacing — high TO volume is weakness',
+    'Jari':    '7.0 RPG, best +/- on team (+59) — dominant rebounder & physical anchor',
+    'Mattis':  '3.6 REB, 69% FT, no 3P attempts — physically finishes cuts & screens',
+    'Deniz':   '2.6 REB, finishes cuts — three is a bonus (small sample), solid +/- (+14)',
+    'Cedi':    'Strong debut G15: 9P, 100% 2P, +21 in 18 min — combo with finisher qualities',
+    'Mello':   'Short stints, 36% 2P — brings energy & intensity off the bench',
+    'Theo':    '-74 Raw / -96 Adj +/- — brings intensity but needs a more stable role & better efficiency',
+    'Frowin':  '2.3 TPG in small sample — role still unclear, ball security lacking',
+    'Oskar':   '-22 Raw / -42 Adj — brings energy & hustle, scoring efficiency needs to grow',
+  };
+  const archDE = {
+    'Felix':   'Combo-Playmaker: 2.3 APG, 1.4 STL, 12.7 PPG — primärer Ballhandler, generiert Offense für andere',
+    'Mattias': 'Potential: 60% 3P, 1.0 APG — braucht Konsistenz & Selbstvertrauen',
+    'Niklas':  '4/5 mit 37% von der Dreierlinie + 55% aus dem Zweier — zieht Defense raus',
+    'Moritz':  'Perimeter-Spieler, 34% 3P — lebt vom Spacing, kaum TOs',
+    'Thore':   '67% aus dem Zweier, selten dribbelt — reiner Finisher & Cutter',
+    'Jon':     'Athletischer Wing (2–4), zieht zum Ring statt zu werfen — 72% 2P, gefährlichster Finisher im Team ohne den Ball zu brauchen',
+    'Jeff':    '10 PPG, 4.5 REB, 43% 3P — verlässlich auf beiden Seiten, Guard mit Scoring & Defensivanker-Qualitäten',
+    'Serdar':  '100% 2P (small sample) — sehr effizienter Finisher, wenig Einsatz bisher',
+    'Andi':    '36% 3P, 0.4 STL, gibt Spacing — hohes TO-Volumen ist Schwäche',
+    'Jari':    '7.0 RPG, bester +/- Team (+59) — dominanter Rebounder & physischer Anker',
+    'Mattis':  '3.6 REB, 69% FT, kein 3P-Versuch — finisht Cuts & Screens physisch',
+    'Deniz':   '2.6 REB, finisht Cuts — Dreier ist Bonus (small sample), guter +/- (+14)',
+    'Cedi':    'Starkes Debüt G15: 9P, 100% 2P, +21 in 18 Min — Combo mit Finisher-Qualitäten',
+    'Mello':   'Kurze Stints, 36% 2P — bringt Energie & Intensität von der Bank',
+    'Theo':    '-74 Raw / -96 Adj +/- — bringt Intensität, braucht aber stabilere Rolle & bessere Effizienz',
+    'Frowin':  '2.3 TPG in kleiner Stichprobe — Rolle noch unklar, Ballsicherheit fehlt',
+    'Oskar':   '-22 Raw / -42 Adj — gibt Energie & Hustle, Scoring-Effizienz muss wachsen',
+  };
+  const archMeta = {
+    'CREATOR': { de: 'Generiert Offense für andere, Ballhandling & Kreation', en: 'Creates offense for others, ball handling & creation' },
+    'SCORER':  { de: 'Primäre Scoring-Option in verschiedenen Ausprägungen',  en: 'Primary scoring option in various forms' },
+    'TWO-WAY': { de: 'Verlässlich auf beiden Seiten, gibt Stabilität',         en: 'Reliable on both ends, provides stability' },
+    'ANCHOR':  { de: 'Physische Präsenz, Rebounds, interner Finisher',         en: 'Physical presence, rebounds, interior finisher' },
+    'GLUE':    { de: 'Energie, Hustle oder noch in Entwicklung',               en: 'Energy, hustle or still in development' },
+  };
+
+  // Patch ARCHETYPE_MAP descriptions live
+  const archDesc = isEN ? archEN : archDE;
+  Object.entries(ARCHETYPE_MAP).forEach(([name, entry]) => {
+    if (archDesc[name]) entry[4] = archDesc[name];
+  });
+  // Patch ARCHETYPE_META
+  Object.entries(archMeta).forEach(([key, val]) => {
+    if (ARCHETYPE_META[key]) ARCHETYPE_META[key].desc = val[currentLang];
+  });
+
+  // Rebuild dynamic sections that render from data
+  if (Object.keys(PLAYERS).length > 0) {
+    buildOverview();
+    buildPlayerCards();
+    // Re-show profile if open
+    const profilePanel = document.getElementById('profile-panel');
+    if (profilePanel && profilePanel.style.display !== 'none') {
+      const title = document.getElementById('profile-title');
+      if (title) {
+        const name = title.textContent.split(' · ')[1];
+        if (name && PLAYERS[name]) showProfile(name);
+      }
+    }
+  }
+}
 </script>
 
 </body>
