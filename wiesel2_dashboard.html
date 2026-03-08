@@ -704,8 +704,8 @@
             <th onclick="sortTable('apg')">AST</th>
             <th onclick="sortTable('tpg')">TO</th>
             <th onclick="sortTable('stl')">STL</th>
+            <th onclick="sortTable('blk')">BLK</th>
             <th onclick="sortTable('pm_total')">+/-</th>
-            
             <th onclick="sortTable('pir')">PIR</th>
           </tr>
         </thead>
@@ -1027,7 +1027,8 @@ function buildPlayersFromJSON(data) {
       pf:    pg(p.pf,p.pf_g),
       pm_total: p.pm,
       adj_pm: null,
-      pir: null,
+      pir: g>0 ? Math.round(((p.pkt + (p.or+p.dr) + p.ast + p.stl + p.blk)
+             - ((p.two_a-p.two_m) + (p.three_a-p.three_m) + (p.ft_a-p.ft_m) + p.to + p.pf)) / g * 10) / 10 : null,
       ast_to: p.to>0?Math.round(p.ast/p.to*100)/100:null,
       ballhandler:   flags.ballhandler||false,
       stretch:       flags.stretch||false,
@@ -1565,8 +1566,8 @@ function renderTable() {
       <td>${p.apg}</td>
       <td>${p.tpg}</td>
       <td>${p.stl}</td>
+      <td>${p.blk}</td>
       <td class="${pmColor(p.pm_total)}">${p.pm_total>0?'+':''}${p.pm_total}</td>
-      
       <td>${p.pir != null ? p.pir : '—'}</td>
     </tr>`).join('');
 }
