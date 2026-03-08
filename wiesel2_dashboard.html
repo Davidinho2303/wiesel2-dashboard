@@ -1,0 +1,2367 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiesel 2 — Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCySvMOiRgKSkclyZViGC_bEpCu4AZ0a8k",
+    authDomain: "wiesel2app.firebaseapp.com",
+    projectId: "wiesel2app",
+    storageBucket: "wiesel2app.firebasestorage.app",
+    messagingSenderId: "737112507859",
+    appId: "1:737112507859:web:269f4baab1adf880e75b26"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const COLL = 'wiesel2_rotationen';
+
+  window._fbSave = async function(data) {
+    const ref = await addDoc(collection(db, COLL), data);
+    return ref.id;
+  };
+
+  window._fbLoad = async function() {
+    const q = query(collection(db, COLL), orderBy('savedAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+  };
+
+  window._fbDelete = async function(docId) {
+    await deleteDoc(doc(db, COLL, docId));
+  };
+
+  window._fbReady = true;
+  // Trigger load once FB is ready
+  if (typeof loadSavedRotations === 'function') loadSavedRotations();
+</script>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2530;
+    --accent: #e8c84a;
+    --accent2: #4a9ee8;
+    --red: #e85a4a;
+    --green: #4ae87a;
+    --text: #e8ecf2;
+    --muted: #5a6478;
+    --muted2: #8a94a8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 3px; color: var(--accent); }
+  .logo span { color: var(--muted2); font-size: 16px; margin-left: 12px; letter-spacing: 2px; }
+  .season-badge {
+    background: var(--border); color: var(--muted2);
+    padding: 4px 12px; border-radius: 20px;
+    font-family: 'DM Mono'; font-size: 11px; letter-spacing: 1px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 0;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 14px 24px;
+    cursor: pointer;
+    font-weight: 500; font-size: 13px; letter-spacing: 0.5px;
+    color: var(--muted2);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* LAYOUT */
+  .container { padding: 28px 32px; }
+
+  /* OVERVIEW CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--accent); }
+  .stat-card .label { font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .stat-card .value { font-family: 'Bebas Neue'; font-size: 36px; color: var(--accent); line-height: 1; }
+  .stat-card .sub { font-size: 12px; color: var(--muted2); margin-top: 4px; }
+
+  /* PANELS */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .panel-title { font-family: 'Bebas Neue'; font-size: 18px; letter-spacing: 2px; color: var(--text); }
+  .panel-sub { font-size: 12px; color: var(--muted2); margin-left: auto; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; padding: 10px 14px;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; user-select: none;
+  }
+  th:hover { color: var(--text); }
+  th.sorted { color: var(--accent); }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono'; font-size: 12px;
+    color: var(--muted2);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  td.name { font-family: 'DM Sans'; font-weight: 600; color: var(--text); font-size: 13px; }
+  td.pos { }
+  td.highlight { color: var(--text); }
+  td.good { color: var(--green); }
+  td.bad { color: var(--red); }
+  td.neutral { color: var(--accent2); }
+
+  /* POSITION BADGE */
+  .pos-badge {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+    font-family: 'DM Mono';
+  }
+  .pos-1 { background: rgba(74,158,232,0.15); color: var(--accent2); }
+  .pos-2 { background: rgba(74,158,232,0.1); color: #7ab8f0; }
+  .pos-combo { background: rgba(232,200,74,0.15); color: var(--accent); }
+  .pos-3 { background: rgba(74,232,122,0.1); color: #7af0a0; }
+  .pos-4 { background: rgba(232,122,74,0.12); color: #f0a07a; }
+  .pos-5 { background: rgba(180,74,232,0.12); color: #c07af0; }
+
+  /* BAR */
+  .bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .bar { height: 5px; border-radius: 3px; background: var(--border); flex: 1; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.5s ease; }
+
+  /* PLAYER CARD GRID */
+  .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 20px; }
+  .player-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px;
+    cursor: pointer; transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .player-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .player-card.selected { border-color: var(--accent); background: rgba(232,200,74,0.05); }
+  .pc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .pc-name { font-size: 16px; font-weight: 700; color: var(--text); }
+  .pc-pos { }
+  .pc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .pc-stat { text-align: center; }
+  .pc-stat .v { font-family: 'Bebas Neue'; font-size: 24px; color: var(--accent); line-height: 1; }
+  .pc-stat .l { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+  .pc-bar-row { margin-top: 12px; }
+  .pc-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .pc-mini-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+  .pc-mini-fill { height: 100%; border-radius: 2px; }
+  .pm-pos { background: var(--green); }
+  .pm-neg { background: var(--red); }
+
+  /* LINEUP TABLE */
+  .lu-pm { font-weight: 700; }
+  .lu-players { font-family: 'DM Sans'; font-size: 12px; color: var(--text); }
+  .lu-tag {
+    display: inline-block; background: var(--surface2); color: var(--muted2);
+    padding: 2px 6px; border-radius: 4px; margin: 2px; font-size: 11px;
+  }
+
+  /* FILTER BAR */
+  .filter-bar { display: flex; gap: 8px; padding: 16px 20px; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+  .filter-btn {
+    padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted2); cursor: pointer;
+    font-family: 'DM Sans'; font-size: 12px; transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--muted2); color: var(--text); }
+  .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+
+  /* PROFILE DETAIL */
+  .profile-detail { padding: 20px; display: none; }
+  .profile-detail.show { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pd-section { background: var(--surface2); border-radius: 8px; padding: 16px; }
+  .pd-title { font-family: 'Bebas Neue'; font-size: 14px; letter-spacing: 2px; color: var(--muted2); margin-bottom: 12px; }
+  .pd-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .pd-key { font-size: 12px; color: var(--muted2); }
+  .pd-val { font-family: 'DM Mono'; font-size: 13px; font-weight: 500; color: var(--text); }
+
+  /* CHART */
+  .sparkline { display: flex; align-items: flex-end; gap: 3px; height: 32px; }
+  .spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-width: 6px; transition: all 0.3s; }
+  .spark-bar:hover { opacity: 0.7; }
+
+  /* ROTATION VIEW */
+  .rotation-grid { padding: 20px; }
+  .rotation-header { display: grid; grid-template-columns: 140px repeat(4, 1fr); gap: 2px; margin-bottom: 4px; }
+  .rotation-row { display: grid; grid-template-columns: 140px repeat(4, 1fr); gap: 2px; margin-bottom: 2px; align-items: center; }
+  .q-label { font-size: 10px; color: var(--muted); text-align: center; letter-spacing: 1px; text-transform: uppercase; }
+  .player-label { font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+  .q-cell {
+    height: 28px; border-radius: 4px; background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-family: 'DM Mono'; color: var(--muted2);
+  }
+  .q-cell.starter { background: rgba(232,200,74,0.2); color: var(--accent); }
+  .q-cell.bench { background: rgba(74,158,232,0.12); color: var(--accent2); }
+  .q-cell.empty { background: transparent; }
+
+  /* WIN/LOSS BADGE */
+  .result-w { color: var(--green); font-weight: 700; }
+  .result-l { color: var(--red); font-weight: 700; }
+
+  /* SEARCH */
+  .search-wrap { padding: 0 20px 16px; border-bottom: 1px solid var(--border); }
+  .search-input {
+    width: 100%; padding: 8px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'DM Sans'; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+
+  /* HIDDEN */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* TREND DOT */
+  .trend { display: flex; align-items: center; gap: 3px; }
+  .tdot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* PROFILE ARCHETYPE */
+  /* ARCHETYPE TWO-TIER */
+  .archetype-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .arch-main {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 4px;
+  }
+  .archetype-badge {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+    padding: 3px 8px; border-radius: 5px;
+  }
+  /* CREATOR — blau */
+  .arch-main-creator { background: rgba(74,158,232,0.18); color: var(--accent2); }
+  .arch-secondary-creator { background: rgba(74,158,232,0.1); color: #85c5f5; }
+  .arch-lead-playmaker { background: rgba(74,158,232,0.15); color: #60b0ff; border: 1px solid rgba(74,158,232,0.25); }
+  /* SCORER — rot/orange */
+  .arch-main-scorer { background: rgba(232,90,74,0.2); color: #f0907a; }
+  .arch-volume-scorer { background: rgba(232,90,74,0.12); color: #f5a090; }
+  .arch-spot-up { background: rgba(232,150,74,0.12); color: #f5c090; }
+  .arch-slasher { background: rgba(232,70,100,0.12); color: #f590a8; }
+  .arch-stretch-big { background: rgba(200,90,232,0.12); color: #d490f5; }
+  /* TWO-WAY — grün */
+  .arch-main-twoway { background: rgba(74,232,122,0.18); color: var(--green); }
+  .arch-twoway-wing { background: rgba(74,232,122,0.1); color: #90f5b0; }
+  .arch-twoway-guard { background: rgba(74,232,150,0.12); color: #80f0c0; border: 1px solid rgba(74,232,150,0.2); }
+  .arch-3d { background: rgba(74,200,122,0.1); color: #85eaa8; }
+  /* ANCHOR — lila */
+  .arch-main-anchor { background: rgba(180,74,232,0.18); color: #c07af0; }
+  .arch-def-anchor { background: rgba(180,74,232,0.1); color: #d0a0f8; }
+  .arch-rim-runner { background: rgba(140,74,232,0.1); color: #b890f0; }
+  /* GLUE — grau/gelb */
+  .arch-main-glue { background: rgba(255,255,255,0.08); color: var(--muted2); }
+  .arch-energy { background: rgba(232,200,74,0.1); color: var(--accent); }
+  .arch-in-dev { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px dashed var(--border); }
+
+  /* SCROLL */
+  .table-wrap { overflow-x: auto; }
+
+  /* MINI PIR STARS */
+  .pir-stars { color: var(--accent); font-size: 11px; }
+
+  /* SECTION DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 0; }
+
+  /* 2-col layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } .stat-grid { grid-template-columns: repeat(3,1fr); } }
+  /* AUTO-BUILD */
+  .ab-player-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface2);
+    transition: all 0.15s;
+  }
+  .ab-player-row.present { border-color: rgba(74,232,122,0.25); background: rgba(74,232,122,0.04); }
+  .ab-player-row.absent { border-color: rgba(232,90,74,0.2); opacity: 0.5; }
+  .attend-toggle {
+    width: 38px; height: 20px; border-radius: 10px;
+    background: var(--border); border: none; cursor: pointer;
+    position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .attend-toggle::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; border-radius: 50%; background: var(--muted);
+    transition: all 0.2s;
+  }
+  .attend-toggle.on { background: rgba(74,232,122,0.4); }
+  .attend-toggle.on::after { left: 21px; background: var(--green); }
+  .ab-btn {
+    padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted2); cursor: pointer;
+    font-family: 'DM Sans'; font-size: 12px; transition: all 0.15s;
+  }
+  .ab-starter-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    border: 1px solid rgba(232,200,74,0.25);
+    background: rgba(232,200,74,0.06);
+  }
+  .ab-bench-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    border: 1px solid rgba(74,158,232,0.2);
+    background: rgba(74,158,232,0.05);
+  }
+  .ab-min-badge {
+    margin-left: auto; font-family: 'DM Mono'; font-size: 11px;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--surface); color: var(--accent);
+  }
+  .ab-bench-min-badge {
+    margin-left: auto; font-family: 'DM Mono'; font-size: 11px;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--surface); color: var(--accent2);
+  }
+  .cheat-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 10px; border-radius: 6px;
+    background: var(--surface2); margin-bottom: 5px;
+  }
+  .cheat-min { font-family: 'Bebas Neue'; font-size: 18px; color: var(--accent); min-width: 36px; }
+  .cheat-out { color: var(--red); font-size: 12px; }
+  .cheat-in { color: var(--green); font-size: 12px; }
+  .q-header-cell {
+    text-align: center; font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted); padding: 6px;
+    background: var(--surface2); border-radius: 4px;
+  }
+  .rp-name { font-size: 11px; font-weight: 600; color: var(--text); min-width: 60px; }
+  .rp-cell {
+    height: 24px; border-radius: 3px; display: flex;
+    align-items: center; justify-content: center;
+    font-size: 9px; font-family: 'DM Mono';
+  }
+  .rp-starter { background: rgba(232,200,74,0.2); color: var(--accent); }
+  .rp-bench { background: rgba(74,158,232,0.15); color: var(--accent2); }
+  .rp-off { background: transparent; }
+  .pos-chip {
+    display: inline-flex; gap: 4px; flex-wrap: wrap;
+  }
+  .pos-slot {
+    padding: 3px 10px; border-radius: 4px; font-size: 11px;
+    font-family: 'DM Mono'; font-weight: 600;
+  }
+  .pos-ok { background: rgba(74,232,122,0.1); color: var(--green); border: 1px solid rgba(74,232,122,0.2); }
+  .pos-warn { background: rgba(232,200,74,0.1); color: var(--accent); border: 1px solid rgba(232,200,74,0.2); }
+  .pos-missing { background: rgba(232,90,74,0.1); color: var(--red); border: 1px solid rgba(232,90,74,0.2); }
+  .warn-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 12px; border-radius: 6px; margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .warn-red { background: rgba(232,90,74,0.08); border: 1px solid rgba(232,90,74,0.2); color: #f0907a; }
+  .warn-yellow { background: rgba(232,200,74,0.08); border: 1px solid rgba(232,200,74,0.2); color: var(--accent); }
+  .warn-green { background: rgba(74,232,122,0.08); border: 1px solid rgba(74,232,122,0.2); color: var(--green); }
+  .ab-score-bar { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .ab-score-fill { height: 3px; border-radius: 2px; background: var(--accent); }
+  input[type="number"].min-input {
+    width: 60px; padding: 4px 8px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: 'DM Mono'; font-size: 12px;
+    outline: none; transition: border-color 0.2s;
+  }
+  input[type="number"].min-input:focus { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <span class="logo">WIESEL 2 <span>ANALYTICS</span></span>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div class="season-badge">SAISON 2025/26 · LANDESLIGA B</div>
+    <div id="record-badge" style="font-family:'DM Mono';font-size:12px;color:var(--muted2);"></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showView('overview')">Übersicht</div>
+  <div class="tab" onclick="showView('profiles')">Spielerprofile</div>
+  <div class="tab" onclick="showView('table')">Stats-Tabelle</div>
+  <div class="tab" onclick="showView('lineups')">Lineups</div>
+  <div class="tab" onclick="showView('rotation')">Rotation Builder</div>
+  <div class="tab" onclick="showView('attendance')">Anwesenheit</div>
+  <div class="tab" onclick="showView('autobuild')" style="color:#4ae87a;border-bottom:2px solid transparent;" id="tab-autobuild">⚡ Auto-Build</div>
+</div>
+
+<div class="container">
+
+<!-- OVERVIEW -->
+<div class="view active" id="view-overview">
+  <div class="stat-grid" id="overview-cards"></div>
+  <!-- Archetype Legend -->
+  <div class="panel" style="margin-bottom:20px;">
+    <div class="panel-header"><span class="panel-title">Archetype System</span><span class="panel-sub">Haupt- & Unterkategorien</span></div>
+    <div id="arch-legend" style="padding:16px 20px;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;"></div>
+  </div>
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Top Scorer</span>
+        <span class="panel-sub">PPG Season</span>
+      </div>
+      <div id="top-scorers" style="padding:16px;"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Best Plus/Minus</span>
+        <span class="panel-sub">Raw +/- gesamt</span>
+      </div>
+      <div id="top-pm" style="padding:16px;"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Adjusted +/-</span>
+        <span class="panel-sub" title="Game Strength Index: schwere Spiele zählen mehr">GSI-gewichtet ⓘ</span>
+      </div>
+      <div id="top-adj-pm" style="padding:16px;"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Lineup Impact</span>
+        <span class="panel-sub">On/Off Net Rating · min. 20 Lineup-Min</span>
+      </div>
+      <div id="top-onoff" style="padding:16px;"></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Spielergebnisse</span>
+        <span class="panel-sub">Saison 2025/26</span>
+      </div>
+      <div id="game-results" style="padding:12px 16px;"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Beste Lineups</span>
+        <span class="panel-sub">min. 5 Min · nach Net Rating</span>
+      </div>
+      <div id="top-lineups-overview" style="padding:16px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILES -->
+<div class="view" id="view-profiles">
+  <div class="panel" style="margin-bottom:20px;">
+    <div class="filter-bar" id="pos-filter">
+      <button class="filter-btn active" onclick="filterPos(this,'all')">Alle</button>
+      <button class="filter-btn" onclick="filterPos(this,'1')">PG (1)</button>
+      <button class="filter-btn" onclick="filterPos(this,'2')">SG (2)</button>
+      <button class="filter-btn" onclick="filterPos(this,'combo')">Combo</button>
+      <button class="filter-btn" onclick="filterPos(this,'3')">SF (3)</button>
+      <button class="filter-btn" onclick="filterPos(this,'4')">PF (4)</button>
+      <button class="filter-btn" onclick="filterPos(this,'5')">C (5)</button>
+      <span style="width:1px;background:var(--border);margin:0 4px;"></span>
+      <button class="filter-btn" onclick="filterArch(this,'CREATOR')" style="color:var(--accent2);border-color:rgba(74,158,232,0.3);">CREATOR</button>
+      <button class="filter-btn" onclick="filterArch(this,'SCORER')" style="color:#f0907a;border-color:rgba(232,90,74,0.3);">SCORER</button>
+      <button class="filter-btn" onclick="filterArch(this,'TWO-WAY')" style="color:var(--green);border-color:rgba(74,232,122,0.3);">TWO-WAY</button>
+      <button class="filter-btn" onclick="filterArch(this,'ANCHOR')" style="color:#c07af0;border-color:rgba(180,74,232,0.3);">ANCHOR</button>
+      <button class="filter-btn" onclick="filterArch(this,'GLUE')" style="color:var(--muted2);border-color:var(--border);">GLUE</button>
+    </div>
+    <div class="player-grid" id="player-cards"></div>
+  </div>
+  <div class="panel" id="profile-panel" style="display:none;">
+    <div class="panel-header">
+      <span class="panel-title" id="profile-title">Spielerprofil</span>
+      <button onclick="closeProfile()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted2);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'DM Sans';">✕ Schließen</button>
+    </div>
+    <div class="profile-detail show" id="profile-detail"></div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="view" id="view-table">
+  <div class="panel">
+    <div class="filter-bar">
+      <span style="font-size:12px;color:var(--muted2);align-self:center;">Sortieren:</span>
+    </div>
+    <div class="table-wrap">
+      <table id="stats-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('name')">Spieler</th>
+            <th onclick="sortTable('pos')">Pos</th>
+            <th onclick="sortTable('spiele')">Sp</th>
+            <th onclick="sortTable('mpg')">Min</th>
+            <th onclick="sortTable('ppg')" class="sorted">PPG</th>
+            <th onclick="sortTable('fw_pct')">FT%</th>
+            <th onclick="sortTable('two_pct')">2P%</th>
+            <th onclick="sortTable('three_pct')">3P%</th>
+            <th onclick="sortTable('reb')">REB</th>
+            <th onclick="sortTable('apg')">AST</th>
+            <th onclick="sortTable('tpg')">TO</th>
+            <th onclick="sortTable('stl')">STL</th>
+            <th onclick="sortTable('pm_total')">+/-</th>
+            <th onclick="sortTable('pir')">PIR</th>
+          </tr>
+        </thead>
+        <tbody id="stats-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LINEUPS -->
+<div class="view" id="view-lineups">
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Lineup Effizienz</span>
+      <span class="panel-sub">Alle 5er-Kombinationen · sortiert nach Net Rating</span>
+    </div>
+    <div class="filter-bar">
+      <span style="font-size:12px;color:var(--muted2);align-self:center;">Min. Minuten:</span>
+      <button class="filter-btn active" onclick="filterLineups(this,2)">2+</button>
+      <button class="filter-btn" onclick="filterLineups(this,5)">5+</button>
+      <button class="filter-btn" onclick="filterLineups(this,8)">8+</button>
+      <button class="filter-btn" onclick="filterLineups(this,12)">12+</button>
+    </div>
+    <div class="search-wrap" style="padding:12px 20px;">
+      <input class="search-input" id="lineup-search" placeholder="Spieler suchen (z.B. Felix, Jari)..." oninput="filterLineupsSearch()">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Lineup</th>
+            <th>Min</th>
+            <th>Pkt</th>
+            <th>Opp</th>
+            <th>+/-</th>
+            <th>Net Rtg</th>
+            <th>Spiele</th>
+          </tr>
+        </thead>
+        <tbody id="lineup-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ROTATION BUILDER -->
+<div class="view" id="view-rotation">
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header">
+      <span class="panel-title">Rotation Builder</span>
+      <span class="panel-sub">Wähle Starter & Bank → sieh Spielerprofile & Empfehlungen</span>
+    </div>
+    <div style="padding:16px 20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">STARTER (5)</div>
+          <div id="starter-slots" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+        <div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:10px;">BANK</div>
+          <div id="bank-slots" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">SPIELER AUSWÄHLEN</div>
+        <div id="player-select-grid" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+  <div id="rotation-analysis" class="panel" style="display:none;"></div>
+</div>
+
+<!-- ANWESENHEIT VIEW -->
+<div class="view" id="view-attendance">
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header">
+      <span class="panel-title">Trainingsanwesenheit</span>
+      <span class="panel-sub">Saison 2025/26 · 57 Trainings · Aug 2025 – Mär 2026</span>
+      <button onclick="document.getElementById('att-csv-upload').click()" style="margin-left:16px;padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:'DM Sans';font-size:12px;">↑ CSV aktualisieren</button>
+      <input type="file" id="att-csv-upload" accept=".csv" style="display:none;" onchange="reloadAttendanceCSV(event)">
+    </div>
+    <!-- Legend -->
+    <div style="display:flex;gap:16px;padding:10px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:var(--muted2);">Status:</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#4ae87a;display:inline-block;opacity:0.85;"></span>Dabei (CONFIRMED)</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#e85a4a;display:inline-block;opacity:0.6;"></span>Abwesend</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:#e8c84a;display:inline-block;opacity:0.4;"></span>Unsicher</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--border);display:inline-block;"></span>Keine Angabe</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--muted);font-family:'DM Mono';">letzte 8 Trainings = letzte ~4 Wochen</span>
+    </div>
+    <!-- Heatmap -->
+    <div style="overflow-x:auto;padding:16px 20px;">
+      <div id="att-heatmap"></div>
+    </div>
+  </div>
+  <!-- Summary Cards -->
+  <div class="panel">
+    <div class="panel-header"><span class="panel-title">Anwesenheits-Stufen</span><span class="panel-sub">Berechnet aus Trainingsdaten</span></div>
+    <div style="padding:14px 20px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">
+        <b style="color:var(--green);">●●●</b> letzte Woche da + letzte 4W ≥50% + gesamt ≥40% &nbsp;·&nbsp;
+        <b style="color:var(--accent);">●●○</b> letzte 4W ≥30% oder gesamt ≥35% &nbsp;·&nbsp;
+        <b style="color:var(--muted2);">●○○</b> sonst
+      </div>
+      <div id="att-summary-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTO-BUILD VIEW -->
+<div class="view" id="view-autobuild">
+
+  <!-- GESPEICHERTE ROTATIONEN -->
+  <div class="panel" style="margin-bottom:16px;" id="saved-rotations-panel">
+    <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('saved-rotations-body')">
+      <span class="panel-title">📂 Gespeicherte Rotationen</span>
+      <span id="saved-rotations-count" class="panel-sub">wird geladen…</span>
+    </div>
+    <div id="saved-rotations-body" style="padding:16px 20px;display:none;">
+      <div id="saved-rotations-list" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="color:var(--muted);font-size:12px;">Keine gespeicherten Rotationen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 1: ANWESENHEIT -->
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('ab-attend')">
+      <span class="panel-title">① Anwesenheit</span>
+      <span style="font-size:11px;letter-spacing:1px;color:var(--green);margin-left:12px;" id="attend-summary">— noch nicht gesetzt</span>
+      <span id="roster-limit-badge" style="display:none;margin-left:10px;padding:2px 10px;border-radius:12px;font-size:11px;font-family:'DM Mono';font-weight:700;"></span>
+      <span class="panel-sub">max. 12 Spieler im Kader</span>
+    </div>
+    <div id="ab-attend" style="padding:16px 20px;">
+      <!-- CSV Import -->
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border-radius:8px;border:1px dashed var(--border);">
+        <span style="font-size:12px;color:var(--muted2);">📥 CSV Import:</span>
+        <input type="file" id="csv-upload" accept=".csv,.json" style="font-family:'DM Sans';font-size:12px;color:var(--muted2);background:transparent;border:none;cursor:pointer;" onchange="importAttendanceCSV(event)">
+        <span style="font-size:11px;color:var(--muted);">Format: name,status (dabei/nicht dabei) — oder JSON: {"Felix":"dabei",...}</span>
+      </div>
+      <!-- Manual Grid -->
+      <div id="attend-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;"></div>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="ab-btn" onclick="setAllAttend(true)" style="background:rgba(74,232,122,0.1);border-color:rgba(74,232,122,0.3);color:var(--green);">✓ Alle dabei</button>
+        <button class="ab-btn" onclick="setAllAttend(false)" style="background:rgba(232,90,74,0.1);border-color:rgba(232,90,74,0.3);color:var(--red);">✗ Alle raus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: MINUTENZIELE -->
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('ab-minutes')">
+      <span class="panel-title">② Minutenziele <span style="font-size:12px;font-family:'DM Sans';font-weight:400;color:var(--muted2);">(optional)</span></span>
+      <span class="panel-sub">Gesamt = 200 Min</span>
+    </div>
+    <div id="ab-minutes" style="padding:16px 20px;display:none;">
+      <div style="font-size:12px;color:var(--muted2);margin-bottom:12px;">Nur ausfüllen wenn du konkrete Vorgaben hast — sonst automatisch via Adj. +/- & Anwesenheit</div>
+      <div id="min-targets-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;"></div>
+      <div id="min-total" style="margin-top:12px;font-family:'DM Mono';font-size:12px;color:var(--muted2);"></div>
+    </div>
+  </div>
+
+  <!-- GENERATE BUTTON -->
+  <div style="text-align:center;margin-bottom:20px;">
+    <button onclick="runAutoBuild()" style="padding:14px 48px;background:var(--accent);color:#000;border:none;border-radius:8px;font-family:'Bebas Neue';font-size:22px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 20px rgba(232,200,74,0.2);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 30px rgba(232,200,74,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(232,200,74,0.2)'">
+      ⚡ LINEUP GENERIEREN
+    </button>
+  </div>
+
+  <!-- RESULT -->
+  <div id="ab-result" style="display:none;">
+
+    <!-- Positions Balance -->
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-header">
+        <span class="panel-title">Positions-Balance</span>
+        <span id="posbalance-status" class="panel-sub"></span>
+      </div>
+      <div id="ab-posbalance" style="padding:16px 20px;"></div>
+    </div>
+
+    <!-- Starter & Bank -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title" style="color:var(--accent);">★ STARTER (5)</span>
+          <span class="panel-sub" id="ab-starter-netrtg"></span>
+        </div>
+        <div id="ab-starters" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title" style="color:var(--accent2);">BANK</span>
+          <span class="panel-sub" id="ab-bench-summary"></span>
+        </div>
+        <div id="ab-bench" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+
+    <!-- Rotation Plan (Quarterwise) -->
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-header">
+        <span class="panel-title">Rotation Plan</span>
+        <span class="panel-sub">Minutenverteilung nach Viertel · Gesamt = 200 Min</span>
+      </div>
+      <div id="ab-rotation-plan" style="padding:16px 20px;overflow-x:auto;"></div>
+    </div>
+
+    <!-- Wechsel-Cheatsheet -->
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-header">
+        <span class="panel-title">Wechsel-Cheatsheet</span>
+        <span class="panel-sub">Empfohlene Auswechselungen pro Minute</span>
+      </div>
+      <div id="ab-cheatsheet" style="padding:16px 20px;"></div>
+    </div>
+
+    <!-- Warnungen & Empfehlungen -->
+    <div class="panel" style="margin-bottom:16px;">
+      <div id="ab-warnings" style="padding:16px 20px;"></div>
+    </div>
+
+    <!-- Speichern -->
+    <div class="panel" style="margin-bottom:16px;padding:16px 20px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <input id="save-rotation-name" type="text" placeholder="Gegner / Spieltag (z.B. BASS Südwest 2 – Spiel 16)"
+          style="flex:1;min-width:200px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans';font-size:13px;">
+        <button onclick="saveCurrentRotation()" style="padding:9px 22px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;cursor:pointer;">
+          💾 SPEICHERN
+        </button>
+        <span id="save-feedback" style="font-size:12px;color:var(--green);display:none;">✓ Gespeichert!</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ========== DATA ==========
+const RAW = {"players": {"Oskar": {"vollname": "Oskar Dawid", "pos": "?", "spiele": 7, "ppg": 1.9, "mpg": 18.6, "fw_pct": 38, "two_pct": 33, "three_pct": 0, "fw_a_pg": 1.9, "two_a_pg": 0.9, "three_a_pg": 0.7, "reb": 0.1, "or_pg": 0.0, "dr_pg": 0.1, "apg": 0.3, "tpg": 0.9, "stl": 0.1, "blk": 0.0, "pm_total": -22, "adj_pm": -42.1, "pir": -1.3, "ast_to": 0.33, "games": [{"gid": "G1", "pkt": 1, "pm": -4, "gsi": 0.553}, {"gid": "G2", "pkt": 0, "pm": 9, "gsi": 0.488}, {"gid": "G4", "pkt": 4, "pm": 3, "gsi": 0.518}, {"gid": "G6", "pkt": 1, "pm": 9, "gsi": 0.449}, {"gid": "G7", "pkt": 3, "pm": -42, "gsi": 0.686}, {"gid": "G8", "pkt": 4, "pm": 10, "gsi": 0.4}, {"gid": "G9", "pkt": 0, "pm": -7, "gsi": 0.573}], "lineup_score": {"on_net": 17.5, "off_net": 36.3, "on_off": -18.8, "on_min": 84.0, "lu_count": 25, "consistency": 44}, "shot_dist": {"two_pct_share": 56, "three_pct_share": 44, "two_a_total": 6, "three_a_total": 5, "ft_a_total": 13}}, "Mattias": {"vollname": "Mattias Coeli", "pos": "1/2", "spiele": 9, "ppg": 4.9, "mpg": 23.7, "fw_pct": 45, "two_pct": 46, "three_pct": 60, "fw_a_pg": 1.2, "two_a_pg": 2.7, "three_a_pg": 0.6, "reb": 1.7, "or_pg": 0.1, "dr_pg": 1.6, "apg": 1.0, "tpg": 1.6, "stl": 0.6, "blk": 0.1, "pm_total": -36, "adj_pm": -42.6, "pir": 1.7, "ast_to": 0.64, "games": [{"gid": "G1", "pkt": 4, "pm": -13, "gsi": 0.553}, {"gid": "G2", "pkt": 5, "pm": -2, "gsi": 0.488}, {"gid": "G4", "pkt": 2, "pm": -4, "gsi": 0.518}, {"gid": "G9", "pkt": 5, "pm": -9, "gsi": 0.573}, {"gid": "G10", "pkt": 6, "pm": 1, "gsi": 0.526}, {"gid": "G12", "pkt": 8, "pm": -19, "gsi": 0.529}, {"gid": "G13", "pkt": 9, "pm": -7, "gsi": 0.476}, {"gid": "G14", "pkt": 5, "pm": 6, "gsi": 0.394}, {"gid": "G15", "pkt": 0, "pm": 11, "gsi": 0.415}], "lineup_score": {"on_net": 40.7, "off_net": 29.6, "on_off": 11.1, "on_min": 146.4, "lu_count": 38, "consistency": 58}, "shot_dist": {"two_pct_share": 82, "three_pct_share": 18, "two_a_total": 24, "three_a_total": 5, "ft_a_total": 11}}, "Thore": {"vollname": "Thore Jacobs", "pos": "3/4", "spiele": 7, "ppg": 9.1, "mpg": 21.4, "fw_pct": 65, "two_pct": 67, "three_pct": 40, "fw_a_pg": 2.9, "two_a_pg": 1.7, "three_a_pg": 1.4, "reb": 0.7, "or_pg": 0.1, "dr_pg": 0.6, "apg": 0.3, "tpg": 0.3, "stl": 0.1, "blk": 0.1, "pm_total": 21, "adj_pm": 8.2, "pir": 1.6, "ast_to": 1.0, "games": [{"gid": "G1", "pkt": 16, "pm": -8, "gsi": 0.553}, {"gid": "G2", "pkt": 7, "pm": -10, "gsi": 0.488}, {"gid": "G3", "pkt": 3, "pm": 3, "gsi": 0.435}, {"gid": "G5", "pkt": 14, "pm": 23, "gsi": 0.422}, {"gid": "G8", "pkt": 8, "pm": 17, "gsi": 0.4}, {"gid": "G9", "pkt": 6, "pm": -16, "gsi": 0.573}, {"gid": "G14", "pkt": 10, "pm": 12, "gsi": 0.394}], "lineup_score": {"on_net": 30.7, "off_net": 33.7, "on_off": -3.0, "on_min": 117.0, "lu_count": 36, "consistency": 47}, "shot_dist": {"two_pct_share": 55, "three_pct_share": 45, "two_a_total": 12, "three_a_total": 10, "ft_a_total": 20}}, "Jeff": {"vollname": "Jeffrey Van Der Geest", "pos": "1/2", "spiele": 13, "ppg": 6.8, "mpg": 22.2, "fw_pct": 72, "two_pct": 48, "three_pct": 36, "fw_a_pg": 1.9, "two_a_pg": 3.1, "three_a_pg": 1.1, "reb": 1.7, "or_pg": 0.5, "dr_pg": 1.2, "apg": 0.7, "tpg": 1.2, "stl": 0.5, "blk": 0.2, "pm_total": 31, "adj_pm": -3.1, "pir": 1.7, "ast_to": 0.6, "games": [{"gid": "G1", "pkt": 6, "pm": -7, "gsi": 0.553}, {"gid": "G2", "pkt": 1, "pm": 6, "gsi": 0.488}, {"gid": "G3", "pkt": 10, "pm": 9, "gsi": 0.435}, {"gid": "G4", "pkt": 3, "pm": -4, "gsi": 0.518}, {"gid": "G5", "pkt": 9, "pm": 4, "gsi": 0.422}, {"gid": "G6", "pkt": 17, "pm": 12, "gsi": 0.449}, {"gid": "G7", "pkt": 7, "pm": -51, "gsi": 0.686}, {"gid": "G8", "pkt": 4, "pm": 21, "gsi": 0.4}, {"gid": "G9", "pkt": 5, "pm": 3, "gsi": 0.573}, {"gid": "G10", "pkt": 3, "pm": -7, "gsi": 0.526}, {"gid": "G13", "pkt": 3, "pm": 13, "gsi": 0.476}, {"gid": "G14", "pkt": 15, "pm": 22, "gsi": 0.394}, {"gid": "G15", "pkt": 6, "pm": 10, "gsi": 0.415}], "lineup_score": {"on_net": 15.9, "off_net": 51.7, "on_off": -35.8, "on_min": 213.2, "lu_count": 55, "consistency": 47}, "shot_dist": {"two_pct_share": 74, "three_pct_share": 26, "two_a_total": 40, "three_a_total": 14, "ft_a_total": 25}}, "Andi": {"vollname": "Andreas Lamoth", "pos": "3", "spiele": 8, "ppg": 5.1, "mpg": 17.6, "fw_pct": 75, "two_pct": 50, "three_pct": 36, "fw_a_pg": 0.5, "two_a_pg": 0.8, "three_a_pg": 3.1, "reb": 1.4, "or_pg": 0.2, "dr_pg": 1.1, "apg": 0.0, "tpg": 1.0, "stl": 0.4, "blk": 0.1, "pm_total": -29, "adj_pm": -45.7, "pir": 0.2, "ast_to": 0.0, "games": [{"gid": "G1", "pkt": 6, "pm": -8, "gsi": 0.553}, {"gid": "G2", "pkt": 0, "pm": -7, "gsi": 0.488}, {"gid": "G3", "pkt": 12, "pm": 10, "gsi": 0.435}, {"gid": "G4", "pkt": 4, "pm": -3, "gsi": 0.518}, {"gid": "G5", "pkt": 9, "pm": 0, "gsi": 0.422}, {"gid": "G6", "pkt": 2, "pm": 0, "gsi": 0.449}, {"gid": "G7", "pkt": 3, "pm": -33, "gsi": 0.686}, {"gid": "G8", "pkt": 5, "pm": 12, "gsi": 0.4}], "lineup_score": {"on_net": 4.1, "off_net": 44.2, "on_off": -40.1, "on_min": 107.5, "lu_count": 30, "consistency": 50}, "shot_dist": {"two_pct_share": 21, "three_pct_share": 79, "two_a_total": 6, "three_a_total": 25, "ft_a_total": 4}}, "Theo": {"vollname": "Theo", "pos": "4/5", "spiele": 9, "ppg": 2.4, "mpg": 20.0, "fw_pct": 29, "two_pct": 32, "three_pct": null, "fw_a_pg": 1.6, "two_a_pg": 3.1, "three_a_pg": 0.0, "reb": 1.6, "or_pg": 0.2, "dr_pg": 1.3, "apg": 0.1, "tpg": 0.9, "stl": 0.8, "blk": 0.0, "pm_total": -74, "adj_pm": -96.6, "pir": null, "ast_to": 0.12, "games": [{"gid": "G1", "pkt": 4, "pm": -3, "gsi": 0.553}, {"gid": "G4", "pkt": 2, "pm": -9, "gsi": 0.518}, {"gid": "G5", "pkt": 4, "pm": 1, "gsi": 0.422}, {"gid": "G7", "pkt": 4, "pm": -44, "gsi": 0.686}, {"gid": "G9", "pkt": 0, "pm": -18, "gsi": 0.573}, {"gid": "G10", "pkt": 0, "pm": -11, "gsi": 0.526}, {"gid": "G13", "pkt": 6, "pm": -2, "gsi": 0.476}, {"gid": "G14", "pkt": 0, "pm": 7, "gsi": 0.394}, {"gid": "G15", "pkt": 2, "pm": 5, "gsi": 0.415}], "lineup_score": {"on_net": 10.0, "off_net": 37.8, "on_off": -27.8, "on_min": 93.8, "lu_count": 23, "consistency": 35}, "shot_dist": {"two_pct_share": 100, "three_pct_share": 0, "two_a_total": 28, "three_a_total": 0, "ft_a_total": 14}}, "Jari": {"vollname": "Jari Begemann", "pos": "4/5", "spiele": 13, "ppg": 9.7, "mpg": 24.6, "fw_pct": 67, "two_pct": 54, "three_pct": 100, "fw_a_pg": 1.2, "two_a_pg": 6.1, "three_a_pg": 0.2, "reb": 7.0, "or_pg": 2.7, "dr_pg": 4.3, "apg": 0.2, "tpg": 1.0, "stl": 0.4, "blk": 0.2, "pm_total": 59, "adj_pm": 28.5, "pir": 7.8, "ast_to": 0.15, "games": [{"gid": "G1", "pkt": 8, "pm": -6, "gsi": 0.553}, {"gid": "G2", "pkt": 3, "pm": -14, "gsi": 0.488}, {"gid": "G3", "pkt": 6, "pm": 14, "gsi": 0.435}, {"gid": "G4", "pkt": 18, "pm": 5, "gsi": 0.518}, {"gid": "G5", "pkt": 8, "pm": 25, "gsi": 0.422}, {"gid": "G6", "pkt": 8, "pm": 8, "gsi": 0.449}, {"gid": "G7", "pkt": 6, "pm": -30, "gsi": 0.686}, {"gid": "G8", "pkt": 24, "pm": 16, "gsi": 0.4}, {"gid": "G10", "pkt": 8, "pm": -1, "gsi": 0.526}, {"gid": "G12", "pkt": 5, "pm": -10, "gsi": 0.529}, {"gid": "G13", "pkt": 6, "pm": 8, "gsi": 0.476}, {"gid": "G14", "pkt": 4, "pm": 25, "gsi": 0.394}, {"gid": "G15", "pkt": 22, "pm": 19, "gsi": 0.415}], "lineup_score": {"on_net": 35.6, "off_net": 26.8, "on_off": 8.8, "on_min": 239.4, "lu_count": 62, "consistency": 55}, "shot_dist": {"two_pct_share": 97, "three_pct_share": 3, "two_a_total": 79, "three_a_total": 3, "ft_a_total": 16}}, "Niklas": {"vollname": "Niklas Beckmannshagen", "pos": "4/5", "spiele": 11, "ppg": 12.9, "mpg": 24.2, "fw_pct": 77, "two_pct": 55, "three_pct": 37, "fw_a_pg": 2.0, "two_a_pg": 5.3, "three_a_pg": 1.7, "reb": 2.8, "or_pg": 1.4, "dr_pg": 1.5, "apg": 0.5, "tpg": 0.7, "stl": 0.3, "blk": 0.0, "pm_total": 4, "adj_pm": -18.5, "pir": 4.9, "ast_to": 0.75, "games": [{"gid": "G1", "pkt": 6, "pm": -11, "gsi": 0.553}, {"gid": "G2", "pkt": 8, "pm": 15, "gsi": 0.488}, {"gid": "G3", "pkt": 7, "pm": 13, "gsi": 0.435}, {"gid": "G4", "pkt": 17, "pm": -8, "gsi": 0.518}, {"gid": "G7", "pkt": 14, "pm": -31, "gsi": 0.686}, {"gid": "G8", "pkt": 16, "pm": 4, "gsi": 0.4}, {"gid": "G9", "pkt": 13, "pm": -4, "gsi": 0.573}, {"gid": "G10", "pkt": 17, "pm": -3, "gsi": 0.526}, {"gid": "G12", "pkt": 13, "pm": -2, "gsi": 0.529}, {"gid": "G14", "pkt": 17, "pm": 15, "gsi": 0.394}, {"gid": "G15", "pkt": 14, "pm": 16, "gsi": 0.415}], "lineup_score": {"on_net": 33.8, "off_net": 33.3, "on_off": 0.5, "on_min": 199.5, "lu_count": 50, "consistency": 58}, "shot_dist": {"two_pct_share": 76, "three_pct_share": 24, "two_a_total": 58, "three_a_total": 19, "ft_a_total": 22}}, "Moritz": {"vollname": "Moritz Winkler", "pos": "1/2", "spiele": 8, "ppg": 9.6, "mpg": 27.5, "fw_pct": 56, "two_pct": 38, "three_pct": 34, "fw_a_pg": 2.2, "two_a_pg": 1.6, "three_a_pg": 5.5, "reb": 1.0, "or_pg": 0.0, "dr_pg": 1.0, "apg": 0.5, "tpg": 0.0, "stl": 0.2, "blk": 0.0, "pm_total": 5, "adj_pm": -0.3, "pir": 1.8, "ast_to": null, "games": [{"gid": "G2", "pkt": 3, "pm": -11, "gsi": 0.488}, {"gid": "G3", "pkt": 14, "pm": 7, "gsi": 0.435}, {"gid": "G4", "pkt": 16, "pm": -2, "gsi": 0.518}, {"gid": "G10", "pkt": 4, "pm": -4, "gsi": 0.526}, {"gid": "G12", "pkt": 4, "pm": -6, "gsi": 0.529}, {"gid": "G13", "pkt": 16, "pm": 1, "gsi": 0.476}, {"gid": "G14", "pkt": 15, "pm": 14, "gsi": 0.394}, {"gid": "G15", "pkt": 5, "pm": 6, "gsi": 0.415}], "lineup_score": {"on_net": 52.5, "off_net": 19.9, "on_off": 32.6, "on_min": 147.8, "lu_count": 33, "consistency": 61}, "shot_dist": {"two_pct_share": 23, "three_pct_share": 77, "two_a_total": 13, "three_a_total": 44, "ft_a_total": 18}}, "Felix": {"vollname": "Felix von Heymann", "pos": "Combo", "spiele": 10, "ppg": 12.7, "mpg": 28.4, "fw_pct": 57, "two_pct": 48, "three_pct": 36, "fw_a_pg": 5.1, "two_a_pg": 6.3, "three_a_pg": 2.8, "reb": 3.4, "or_pg": 0.9, "dr_pg": 2.5, "apg": 2.3, "tpg": 2.8, "stl": 1.4, "blk": 0.0, "pm_total": 38, "adj_pm": 16.0, "pir": 6.6, "ast_to": 0.82, "games": [{"gid": "G2", "pkt": 22, "pm": 11, "gsi": 0.488}, {"gid": "G3", "pkt": 13, "pm": 18, "gsi": 0.435}, {"gid": "G4", "pkt": 13, "pm": -8, "gsi": 0.518}, {"gid": "G5", "pkt": 10, "pm": 14, "gsi": 0.422}, {"gid": "G6", "pkt": 15, "pm": 10, "gsi": 0.449}, {"gid": "G7", "pkt": 8, "pm": -31, "gsi": 0.686}, {"gid": "G8", "pkt": 8, "pm": 24, "gsi": 0.4}, {"gid": "G10", "pkt": 9, "pm": 8, "gsi": 0.526}, {"gid": "G12", "pkt": 14, "pm": -4, "gsi": 0.529}, {"gid": "G13", "pkt": 15, "pm": -4, "gsi": 0.476}], "lineup_score": {"on_net": 41.5, "off_net": 25.4, "on_off": 16.1, "on_min": 215.5, "lu_count": 52, "consistency": 65}, "shot_dist": {"two_pct_share": 69, "three_pct_share": 31, "two_a_total": 63, "three_a_total": 28, "ft_a_total": 51}}, "Mattis": {"vollname": "Johannes Mattis Beckmannshagen", "pos": "4/5", "spiele": 10, "ppg": 6.4, "mpg": 20.4, "fw_pct": 69, "two_pct": 37, "three_pct": null, "fw_a_pg": 3.2, "two_a_pg": 3.8, "three_a_pg": 0.0, "reb": 3.6, "or_pg": 1.3, "dr_pg": 2.3, "apg": 0.6, "tpg": 1.3, "stl": 0.1, "blk": 0.1, "pm_total": 15, "adj_pm": -0.3, "pir": 2.6, "ast_to": 0.46, "games": [{"gid": "G2", "pkt": 17, "pm": 18, "gsi": 0.488}, {"gid": "G5", "pkt": 9, "pm": -7, "gsi": 0.422}, {"gid": "G6", "pkt": 7, "pm": 7, "gsi": 0.449}, {"gid": "G7", "pkt": 3, "pm": -25, "gsi": 0.686}, {"gid": "G8", "pkt": 10, "pm": 21, "gsi": 0.4}, {"gid": "G9", "pkt": 4, "pm": 4, "gsi": 0.573}, {"gid": "G10", "pkt": 5, "pm": 5, "gsi": 0.526}, {"gid": "G12", "pkt": 7, "pm": -14, "gsi": 0.529}, {"gid": "G13", "pkt": 2, "pm": -3, "gsi": 0.476}, {"gid": "G14", "pkt": 0, "pm": 9, "gsi": 0.394}], "lineup_score": {"on_net": 44.2, "off_net": 26.4, "on_off": 17.8, "on_min": 163.9, "lu_count": 36, "consistency": 67}, "shot_dist": {"two_pct_share": 100, "three_pct_share": 0, "two_a_total": 38, "three_a_total": 0, "ft_a_total": 32}}, "Mello": {"vollname": "Mello Melloni", "pos": "3/4", "spiele": 7, "ppg": 1.4, "mpg": 11.8, "fw_pct": null, "two_pct": 36, "three_pct": 0, "fw_a_pg": 0.0, "two_a_pg": 1.6, "three_a_pg": 0.6, "reb": 1.1, "or_pg": 0.4, "dr_pg": 0.7, "apg": 0.1, "tpg": 0.4, "stl": 0.1, "blk": 0.1, "pm_total": 11, "adj_pm": -1.6, "pir": -0.1, "ast_to": 0.33, "games": [{"gid": "G3", "pkt": 0, "pm": 4, "gsi": 0.435}, {"gid": "G5", "pkt": 0, "pm": 13, "gsi": 0.422}, {"gid": "G6", "pkt": 4, "pm": 4, "gsi": 0.449}, {"gid": "G7", "pkt": 0, "pm": -21, "gsi": 0.686}, {"gid": "G8", "pkt": 2, "pm": 10, "gsi": 0.4}, {"gid": "G10", "pkt": 0, "pm": -7, "gsi": 0.526}, {"gid": "G12", "pkt": 4, "pm": 8, "gsi": 0.529}], "lineup_score": {"on_net": 90.0, "off_net": 20.7, "on_off": 69.3, "on_min": 66.9, "lu_count": 21, "consistency": 81}, "shot_dist": {"two_pct_share": 73, "three_pct_share": 27, "two_a_total": 11, "three_a_total": 4, "ft_a_total": 0}}, "Jon": {"vollname": "Jon", "pos": "2/3", "spiele": 6, "ppg": 7.5, "mpg": 19.1, "fw_pct": 33, "two_pct": 72, "three_pct": 40, "fw_a_pg": 1.5, "two_a_pg": 3.0, "three_a_pg": 0.8, "reb": 1.0, "or_pg": 0.3, "dr_pg": 0.7, "apg": 0.3, "tpg": 0.5, "stl": 0.0, "blk": 0.0, "pm_total": 35, "adj_pm": 30.4, "pir": 1.7, "ast_to": 0.67, "games": [{"gid": "G3", "pkt": 9, "pm": 8, "gsi": 0.435}, {"gid": "G9", "pkt": 5, "pm": -4, "gsi": 0.573}, {"gid": "G12", "pkt": 10, "pm": 7, "gsi": 0.529}, {"gid": "G13", "pkt": 5, "pm": 9, "gsi": 0.476}, {"gid": "G14", "pkt": 7, "pm": 9, "gsi": 0.394}, {"gid": "G15", "pkt": 9, "pm": 6, "gsi": 0.415}], "lineup_score": {"on_net": 60.5, "off_net": 25.5, "on_off": 35.0, "on_min": 90.6, "lu_count": 27, "consistency": 59}, "shot_dist": {"two_pct_share": 79, "three_pct_share": 21, "two_a_total": 18, "three_a_total": 5, "ft_a_total": 9}}, "Deniz": {"vollname": "Deniz", "pos": "4/5", "spiele": 5, "ppg": 3.6, "mpg": 14.0, "fw_pct": 50, "two_pct": 22, "three_pct": 67, "fw_a_pg": 0.8, "two_a_pg": 1.8, "three_a_pg": 1.2, "reb": 2.6, "or_pg": 0.6, "dr_pg": 2.0, "apg": 0.6, "tpg": 0.6, "stl": 0.4, "blk": 0.0, "pm_total": 14, "adj_pm": 8.4, "pir": 3.6, "ast_to": 1.0, "games": [{"gid": "G5", "pkt": 4, "pm": 17, "gsi": 0.422}, {"gid": "G6", "pkt": 11, "pm": 9, "gsi": 0.449}, {"gid": "G9", "pkt": 0, "pm": -8, "gsi": 0.573}, {"gid": "G10", "pkt": 3, "pm": -11, "gsi": 0.526}, {"gid": "G13", "pkt": 0, "pm": 7, "gsi": 0.476}], "lineup_score": {"on_net": 11.7, "off_net": 34.5, "on_off": -22.8, "on_min": 59.3, "lu_count": 20, "consistency": 40}, "shot_dist": {"two_pct_share": 60, "three_pct_share": 40, "two_a_total": 9, "three_a_total": 6, "ft_a_total": 4}}, "Frowin": {"vollname": "Frowin", "pos": "1/2", "spiele": 3, "ppg": 3.3, "mpg": 18.2, "fw_pct": 50, "two_pct": 0, "three_pct": 100, "fw_a_pg": 0.7, "two_a_pg": 1.0, "three_a_pg": 0.7, "reb": 1.7, "or_pg": 1.0, "dr_pg": 0.7, "apg": 0.7, "tpg": 2.3, "stl": 0.0, "blk": 0.0, "pm_total": -25, "adj_pm": -32.7, "pir": -0.3, "ast_to": 0.29, "games": [{"gid": "G6", "pkt": 0, "pm": 1, "gsi": 0.449}, {"gid": "G7", "pkt": 7, "pm": -17, "gsi": 0.686}, {"gid": "G9", "pkt": 3, "pm": -9, "gsi": 0.573}], "lineup_score": {"on_net": -13.1, "off_net": 36.3, "on_off": -49.4, "on_min": 37.6, "lu_count": 13, "consistency": 38}, "shot_dist": {"two_pct_share": 59, "three_pct_share": 41, "two_a_total": 3, "three_a_total": 2, "ft_a_total": 2}}, "Yang": {"vollname": "Yang", "pos": "5", "spiele": 1, "ppg": 0.0, "mpg": 2.0, "fw_pct": null, "two_pct": null, "three_pct": null, "fw_a_pg": 0.0, "two_a_pg": 0.0, "three_a_pg": 0.0, "reb": 0.0, "or_pg": 0.0, "dr_pg": 0.0, "apg": 0.0, "tpg": 0.0, "stl": 0.0, "blk": 0.0, "pm_total": -2, "adj_pm": -2.3, "pir": null, "ast_to": null, "games": [{"gid": "G9", "pkt": 0, "pm": -2, "gsi": 0.573}], "lineup_score": {"on_net": -200.0, "off_net": 33.3, "on_off": -233.3, "on_min": 2.0, "lu_count": 1, "consistency": 0}, "shot_dist": {"two_pct_share": null, "three_pct_share": null, "two_a_total": 0, "three_a_total": 0, "ft_a_total": 0}}, "Martin": {"vollname": "Martin", "pos": "3/4", "spiele": 1, "ppg": 3.0, "mpg": 14.0, "fw_pct": null, "two_pct": null, "three_pct": 33, "fw_a_pg": 0.0, "two_a_pg": 0.0, "three_a_pg": 3.0, "reb": 4.0, "or_pg": 1.0, "dr_pg": 3.0, "apg": 0.0, "tpg": 1.0, "stl": 0.0, "blk": 0.0, "pm_total": 8, "adj_pm": 7.6, "pir": 3.0, "ast_to": 0.0, "games": [{"gid": "G13", "pkt": 3, "pm": 8, "gsi": 0.476}], "lineup_score": {"on_net": 0.0, "off_net": 32.7, "on_off": -32.7, "on_min": 10.8, "lu_count": 4, "consistency": 0}, "shot_dist": {"two_pct_share": 0, "three_pct_share": 100, "two_a_total": 0, "three_a_total": 3, "ft_a_total": 0}}, "Serdar": {"vollname": "Serdar Subasigüller", "pos": "Combo", "spiele": 2, "ppg": 4.5, "mpg": 20.1, "fw_pct": 0, "two_pct": 100, "three_pct": null, "fw_a_pg": 0.5, "two_a_pg": 0.5, "three_a_pg": 0.0, "reb": 0.0, "or_pg": 0.0, "dr_pg": 0.0, "apg": 0.0, "tpg": 0.0, "stl": 0.0, "blk": 0.0, "pm_total": 27, "adj_pm": 21.5, "pir": null, "ast_to": null, "games": [{"gid": "G14", "pkt": 7, "pm": 21, "gsi": 0.394}, {"gid": "G15", "pkt": 2, "pm": 6, "gsi": 0.415}], "lineup_score": {"on_net": 39.3, "off_net": 31.3, "on_off": 8.0, "on_min": 26.1, "lu_count": 7, "consistency": 29}, "shot_dist": {"two_pct_share": 100, "three_pct_share": 0, "two_a_total": 1, "three_a_total": 0, "ft_a_total": 1}}, "Cedi": {"vollname": "Cedrick Kinsumba", "pos": "Combo", "spiele": 1, "ppg": 9.0, "mpg": 18.7, "fw_pct": null, "two_pct": 100, "three_pct": 100, "fw_a_pg": 0.0, "two_a_pg": 3.0, "three_a_pg": 1.0, "reb": 0.0, "or_pg": 0.0, "dr_pg": 0.0, "apg": 0.0, "tpg": 0.0, "stl": 0.0, "blk": 0.0, "pm_total": 21, "adj_pm": 17.4, "pir": null, "ast_to": null, "games": [{"gid": "G15", "pkt": 9, "pm": 21, "gsi": 0.415}], "lineup_score": {"on_net": 109.5, "off_net": 28.8, "on_off": 80.7, "on_min": 15.2, "lu_count": 7, "consistency": 100}, "shot_dist": {"two_pct_share": 75, "three_pct_share": 25, "two_a_total": 3, "three_a_total": 1, "ft_a_total": 0}}}, "lineups": [{"players": ["Felix", "Jari", "Jeff", "Moritz", "Niklas"], "min": 16.6, "pkt": 34, "opp": 25, "pm": 9, "net_rtg": 30.5, "count": 1}, {"players": ["Andi", "Felix", "Jari", "Jeff", "Mattis"], "min": 13.5, "pkt": 24, "opp": 27, "pm": -3, "net_rtg": -11.8, "count": 3}, {"players": ["Mattias", "Niklas", "Oskar", "Theo", "Thore"], "min": 13.1, "pkt": 16, "opp": 21, "pm": -5, "net_rtg": -27.0, "count": 1}, {"players": ["Felix", "Mattias", "Mattis", "Moritz", "Niklas"], "min": 12.0, "pkt": 5, "opp": 8, "pm": -3, "net_rtg": -46.2, "count": 2}, {"players": ["Felix", "Jari", "Mattias", "Mattis", "Moritz"], "min": 11.3, "pkt": 8, "opp": 6, "pm": 2, "net_rtg": 28.6, "count": 2}, {"players": ["Jeff", "Jon", "Niklas", "Serdar", "Theo"], "min": 10.9, "pkt": 4, "opp": 4, "pm": 0, "net_rtg": 0.0, "count": 2}, {"players": ["Jeff", "Mattis", "Oskar", "Theo", "Thore"], "min": 9.6, "pkt": 11, "opp": 12, "pm": -1, "net_rtg": -8.7, "count": 1}, {"players": ["Jari", "Jeff", "Jon", "Moritz", "Niklas"], "min": 9.2, "pkt": 17, "opp": 16, "pm": 1, "net_rtg": 6.1, "count": 1}, {"players": ["Felix", "Jari", "Jeff", "Mattis", "Moritz"], "min": 8.6, "pkt": 10, "opp": 6, "pm": 4, "net_rtg": 50.0, "count": 2}, {"players": ["Deniz", "Frowin", "Jon", "Mattias", "Niklas"], "min": 8.4, "pkt": 8, "opp": 14, "pm": -6, "net_rtg": -54.5, "count": 1}, {"players": ["Deniz", "Jari", "Jeff", "Mello", "Thore"], "min": 8.3, "pkt": 17, "opp": 6, "pm": 11, "net_rtg": 95.7, "count": 1}, {"players": ["Felix", "Jari", "Mattias", "Moritz", "Niklas"], "min": 8.2, "pkt": 17, "opp": 4, "pm": 13, "net_rtg": 123.8, "count": 3}, {"players": ["Andi", "Felix", "Jeff", "Mattis", "Theo"], "min": 7.3, "pkt": 5, "opp": 12, "pm": -7, "net_rtg": -82.4, "count": 1}, {"players": ["Felix", "Jari", "Jeff", "Mattis", "Thore"], "min": 7.1, "pkt": 10, "opp": 9, "pm": 1, "net_rtg": 10.5, "count": 2}, {"players": ["Andi", "Felix", "Jari", "Jeff", "Niklas"], "min": 7.0, "pkt": 18, "opp": 13, "pm": 5, "net_rtg": 32.3, "count": 2}, {"players": ["Andi", "Felix", "Jari", "Moritz", "Niklas"], "min": 6.5, "pkt": 10, "opp": 7, "pm": 3, "net_rtg": 35.3, "count": 1}, {"players": ["Jari", "Mattias", "Mattis", "Moritz", "Thore"], "min": 6.2, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Jon", "Mattias", "Mattis", "Moritz", "Niklas"], "min": 6.1, "pkt": 7, "opp": 0, "pm": 7, "net_rtg": 200.0, "count": 2}, {"players": ["Andi", "Jari", "Jeff", "Mattias", "Theo"], "min": 6.1, "pkt": 14, "opp": 11, "pm": 3, "net_rtg": 24.0, "count": 1}, {"players": ["Felix", "Jeff", "Mattis", "Mello", "Niklas"], "min": 5.8, "pkt": 12, "opp": 9, "pm": 3, "net_rtg": 28.6, "count": 1}, {"players": ["Felix", "Jeff", "Mattis", "Moritz", "Niklas"], "min": 5.6, "pkt": 4, "opp": 6, "pm": -2, "net_rtg": -40.0, "count": 1}, {"players": ["Jon", "Mattias", "Moritz", "Niklas", "Theo"], "min": 5.5, "pkt": 4, "opp": 2, "pm": 2, "net_rtg": 66.7, "count": 2}, {"players": ["Andi", "Felix", "Mattis", "Theo", "Thore"], "min": 5.5, "pkt": 14, "opp": 10, "pm": 4, "net_rtg": 33.3, "count": 1}, {"players": ["Felix", "Jari", "Jeff", "Niklas", "Oskar"], "min": 5.2, "pkt": 13, "opp": 16, "pm": -3, "net_rtg": -20.7, "count": 1}, {"players": ["Felix", "Mattis", "Mello", "Moritz", "Niklas"], "min": 5.2, "pkt": 7, "opp": 0, "pm": 7, "net_rtg": 200.0, "count": 1}, {"players": ["Felix", "Jari", "Jeff", "Niklas", "Thore"], "min": 5.0, "pkt": 9, "opp": 9, "pm": 0, "net_rtg": 0.0, "count": 1}, {"players": ["Felix", "Mattis", "Mello", "Oskar", "Thore"], "min": 4.9, "pkt": 8, "opp": 2, "pm": 6, "net_rtg": 120.0, "count": 1}, {"players": ["Andi", "Deniz", "Felix", "Frowin", "Jari"], "min": 4.6, "pkt": 8, "opp": 9, "pm": -1, "net_rtg": -11.8, "count": 1}, {"players": ["Deniz", "Felix", "Jeff", "Mello", "Oskar"], "min": 4.5, "pkt": 10, "opp": 5, "pm": 5, "net_rtg": 66.7, "count": 1}, {"players": ["Andi", "Jari", "Jeff", "Niklas", "Oskar"], "min": 4.4, "pkt": 8, "opp": 9, "pm": -1, "net_rtg": -11.8, "count": 1}, {"players": ["Felix", "Jari", "Jeff", "Mattis", "Mello"], "min": 4.4, "pkt": 7, "opp": 6, "pm": 1, "net_rtg": 15.4, "count": 1}, {"players": ["Andi", "Jari", "Niklas", "Oskar", "Thore"], "min": 4.4, "pkt": 6, "opp": 12, "pm": -6, "net_rtg": -66.7, "count": 1}, {"players": ["Jeff", "Jon", "Martin", "Niklas", "Theo"], "min": 4.3, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Jari", "Jon", "Mattias", "Serdar", "Theo"], "min": 4.2, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Andi", "Felix", "Jari", "Theo", "Thore"], "min": 3.9, "pkt": 10, "opp": 2, "pm": 8, "net_rtg": 133.3, "count": 1}, {"players": ["Andi", "Jari", "Mattis", "Oskar", "Thore"], "min": 3.9, "pkt": 8, "opp": 1, "pm": 7, "net_rtg": 155.6, "count": 1}, {"players": ["Cedi", "Mattias", "Moritz", "Serdar", "Theo"], "min": 3.8, "pkt": 3, "opp": 0, "pm": 3, "net_rtg": 200.0, "count": 1}, {"players": ["Jari", "Jon", "Martin", "Mattias", "Moritz"], "min": 3.8, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Jari", "Jon", "Mattias", "Mattis", "Moritz"], "min": 3.6, "pkt": 3, "opp": 0, "pm": 3, "net_rtg": 200.0, "count": 1}, {"players": ["Andi", "Jari", "Jeff", "Mattias", "Niklas"], "min": 3.6, "pkt": 2, "opp": 10, "pm": -8, "net_rtg": -133.3, "count": 1}, {"players": ["Andi", "Deniz", "Frowin", "Jari", "Jeff"], "min": 3.6, "pkt": 9, "opp": 11, "pm": -2, "net_rtg": -20.0, "count": 1}, {"players": ["Felix", "Jari", "Mattias", "Mattis", "Mello"], "min": 3.5, "pkt": 5, "opp": 0, "pm": 5, "net_rtg": 200.0, "count": 1}, {"players": ["Andi", "Deniz", "Jeff", "Mattis", "Oskar"], "min": 3.4, "pkt": 3, "opp": 10, "pm": -7, "net_rtg": -107.7, "count": 1}, {"players": ["Andi", "Felix", "Jon", "Mello", "Thore"], "min": 3.4, "pkt": 4, "opp": 4, "pm": 0, "net_rtg": 0.0, "count": 1}, {"players": ["Deniz", "Felix", "Jari", "Jeff", "Thore"], "min": 3.4, "pkt": 7, "opp": 0, "pm": 7, "net_rtg": 200.0, "count": 1}, {"players": ["Felix", "Jon", "Mello", "Moritz", "Niklas"], "min": 3.3, "pkt": 11, "opp": 0, "pm": 11, "net_rtg": 200.0, "count": 1}, {"players": ["Felix", "Jari", "Jon", "Mattias", "Mattis"], "min": 3.3, "pkt": 4, "opp": 0, "pm": 4, "net_rtg": 200.0, "count": 1}, {"players": ["Deniz", "Frowin", "Mattis", "Mello", "Oskar"], "min": 3.1, "pkt": 7, "opp": 3, "pm": 4, "net_rtg": 80.0, "count": 1}, {"players": ["Frowin", "Jeff", "Mattias", "Mattis", "Niklas"], "min": 3.1, "pkt": 14, "opp": 2, "pm": 12, "net_rtg": 150.0, "count": 1}, {"players": ["Felix", "Jeff", "Mattis", "Moritz", "Theo"], "min": 3.0, "pkt": 3, "opp": 8, "pm": -5, "net_rtg": -90.9, "count": 1}, {"players": ["Deniz", "Felix", "Jari", "Jeff", "Mattias"], "min": 3.0, "pkt": 5, "opp": 7, "pm": -2, "net_rtg": -33.3, "count": 1}, {"players": ["Andi", "Jeff", "Jon", "Mello", "Thore"], "min": 2.9, "pkt": 8, "opp": 3, "pm": 5, "net_rtg": 90.9, "count": 1}, {"players": ["Felix", "Frowin", "Jari", "Mattis", "Oskar"], "min": 2.9, "pkt": 6, "opp": 11, "pm": -5, "net_rtg": -58.8, "count": 1}, {"players": ["Jari", "Jeff", "Mattis", "Moritz", "Serdar"], "min": 2.6, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Jari", "Jeff", "Mattias", "Theo", "Thore"], "min": 2.6, "pkt": 2, "opp": 2, "pm": 0, "net_rtg": 0.0, "count": 1}, {"players": ["Andi", "Jari", "Mattias", "Moritz", "Thore"], "min": 2.6, "pkt": 3, "opp": 9, "pm": -6, "net_rtg": -100.0, "count": 1}, {"players": ["Deniz", "Felix", "Jari", "Mello", "Thore"], "min": 2.5, "pkt": 5, "opp": 2, "pm": 3, "net_rtg": 85.7, "count": 1}, {"players": ["Jon", "Mattias", "Niklas", "Theo", "Thore"], "min": 2.4, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Cedi", "Jari", "Mattias", "Niklas", "Serdar"], "min": 2.4, "pkt": 7, "opp": 2, "pm": 5, "net_rtg": 111.1, "count": 1}, {"players": ["Cedi", "Jari", "Jeff", "Moritz", "Niklas"], "min": 2.4, "pkt": 7, "opp": 2, "pm": 5, "net_rtg": 111.1, "count": 1}, {"players": ["Felix", "Jari", "Jon", "Mattis", "Moritz"], "min": 2.4, "pkt": 6, "opp": 0, "pm": 6, "net_rtg": 200.0, "count": 1}, {"players": ["Andi", "Jari", "Mattias", "Oskar", "Thore"], "min": 2.4, "pkt": 3, "opp": 4, "pm": -1, "net_rtg": -28.6, "count": 1}, {"players": ["Felix", "Jeff", "Mattis", "Niklas", "Oskar"], "min": 2.3, "pkt": 12, "opp": 1, "pm": 11, "net_rtg": 169.2, "count": 1}, {"players": ["Andi", "Felix", "Jari", "Oskar", "Thore"], "min": 2.3, "pkt": 4, "opp": 6, "pm": -2, "net_rtg": -40.0, "count": 1}, {"players": ["Jari", "Jeff", "Mello", "Moritz", "Niklas"], "min": 2.3, "pkt": 4, "opp": 10, "pm": -6, "net_rtg": -85.7, "count": 1}, {"players": ["Deniz", "Frowin", "Jari", "Jeff", "Oskar"], "min": 2.3, "pkt": 3, "opp": 3, "pm": 0, "net_rtg": 0.0, "count": 1}, {"players": ["Jari", "Mattias", "Mello", "Moritz", "Niklas"], "min": 2.2, "pkt": 5, "opp": 0, "pm": 5, "net_rtg": 200.0, "count": 1}, {"players": ["Jon", "Mattias", "Mattis", "Niklas", "Oskar"], "min": 2.1, "pkt": 4, "opp": 2, "pm": 2, "net_rtg": 66.7, "count": 1}, {"players": ["Andi", "Jari", "Mattias", "Moritz", "Niklas"], "min": 2.1, "pkt": 5, "opp": 4, "pm": 1, "net_rtg": 22.2, "count": 1}, {"players": ["Cedi", "Jari", "Jon", "Mattias", "Niklas"], "min": 2.1, "pkt": 6, "opp": 2, "pm": 4, "net_rtg": 100.0, "count": 1}, {"players": ["Felix", "Jari", "Jon", "Moritz", "Niklas"], "min": 2.1, "pkt": 5, "opp": 3, "pm": 2, "net_rtg": 50.0, "count": 1}, {"players": ["Andi", "Deniz", "Felix", "Frowin", "Mello"], "min": 2.0, "pkt": 3, "opp": 2, "pm": 1, "net_rtg": 40.0, "count": 1}, {"players": ["Cedi", "Jari", "Jeff", "Mattias", "Niklas"], "min": 2.0, "pkt": 5, "opp": 4, "pm": 1, "net_rtg": 22.2, "count": 1}, {"players": ["Jeff", "Niklas", "Oskar", "Theo", "Thore"], "min": 2.0, "pkt": 2, "opp": 0, "pm": 2, "net_rtg": 200.0, "count": 1}, {"players": ["Andi", "Frowin", "Jari", "Jeff", "Niklas"], "min": 2.0, "pkt": 5, "opp": 4, "pm": 1, "net_rtg": 22.2, "count": 1}, {"players": ["Deniz", "Frowin", "Mattias", "Thore", "Yang"], "min": 2.0, "pkt": 0, "opp": 2, "pm": -2, "net_rtg": -200.0, "count": 1}, {"players": ["Cedi", "Jari", "Jeff", "Moritz", "Theo"], "min": 1.9, "pkt": 6, "opp": 4, "pm": 2, "net_rtg": 40.0, "count": 1}, {"players": ["Andi", "Felix", "Jari", "Mattias", "Mattis"], "min": 1.9, "pkt": 3, "opp": 2, "pm": 1, "net_rtg": 40.0, "count": 1}, {"players": ["Felix", "Jeff", "Mattis", "Mello", "Oskar"], "min": 1.8, "pkt": 4, "opp": 2, "pm": 2, "net_rtg": 66.7, "count": 1}, {"players": ["Jeff", "Jon", "Mattis", "Niklas", "Oskar"], "min": 1.8, "pkt": 2, "opp": 2, "pm": 0, "net_rtg": 0.0, "count": 1}, {"players": ["Felix", "Jari", "Mattias", "Moritz", "Theo"], "min": 1.7, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Andi", "Felix", "Jari", "Mello", "Thore"], "min": 1.7, "pkt": 3, "opp": 4, "pm": -1, "net_rtg": -28.6, "count": 1}, {"players": ["Deniz", "Frowin", "Jeff", "Niklas", "Oskar"], "min": 1.6, "pkt": 2, "opp": 8, "pm": -6, "net_rtg": -120.0, "count": 1}, {"players": ["Deniz", "Felix", "Jeff", "Theo", "Thore"], "min": 1.5, "pkt": 2, "opp": 4, "pm": -2, "net_rtg": -66.7, "count": 1}, {"players": ["Felix", "Jon", "Mattias", "Mello", "Niklas"], "min": 1.5, "pkt": 3, "opp": 0, "pm": 3, "net_rtg": 200.0, "count": 1}, {"players": ["Felix", "Jeff", "Mattis", "Niklas", "Thore"], "min": 1.5, "pkt": 5, "opp": 0, "pm": 5, "net_rtg": 200.0, "count": 1}, {"players": ["Andi", "Felix", "Jari", "Mattias", "Thore"], "min": 1.5, "pkt": 3, "opp": 2, "pm": 1, "net_rtg": 40.0, "count": 1}, {"players": ["Felix", "Jari", "Jon", "Mello", "Moritz"], "min": 1.5, "pkt": 4, "opp": 0, "pm": 4, "net_rtg": 200.0, "count": 1}, {"players": ["Felix", "Jari", "Jeff", "Martin", "Theo"], "min": 1.4, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Andi", "Jari", "Mattias", "Niklas", "Oskar"], "min": 1.4, "pkt": 2, "opp": 0, "pm": 2, "net_rtg": 200.0, "count": 1}, {"players": ["Deniz", "Felix", "Mattias", "Mattis", "Moritz"], "min": 1.4, "pkt": 5, "opp": 0, "pm": 5, "net_rtg": 200.0, "count": 1}, {"players": ["Jari", "Mattias", "Niklas", "Oskar", "Thore"], "min": 1.3, "pkt": 2, "opp": 3, "pm": -1, "net_rtg": -40.0, "count": 1}, {"players": ["Jeff", "Jon", "Martin", "Moritz", "Niklas"], "min": 1.3, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Jari", "Jeff", "Mattis", "Moritz", "Thore"], "min": 1.2, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Felix", "Jeff", "Mattis", "Oskar", "Thore"], "min": 1.2, "pkt": 4, "opp": 0, "pm": 4, "net_rtg": 200.0, "count": 1}, {"players": ["Jari", "Mattias", "Niklas", "Serdar", "Thore"], "min": 1.2, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Andi", "Jeff", "Jon", "Niklas", "Thore"], "min": 1.1, "pkt": 2, "opp": 0, "pm": 2, "net_rtg": 200.0, "count": 1}, {"players": ["Felix", "Jari", "Mello", "Oskar", "Thore"], "min": 1.1, "pkt": 4, "opp": 3, "pm": 1, "net_rtg": 28.6, "count": 1}, {"players": ["Deniz", "Felix", "Jari", "Jeff", "Oskar"], "min": 1.0, "pkt": 2, "opp": 3, "pm": -1, "net_rtg": -40.0, "count": 1}, {"players": ["Andi", "Felix", "Jon", "Niklas", "Thore"], "min": 1.0, "pkt": 4, "opp": 0, "pm": 4, "net_rtg": 200.0, "count": 1}, {"players": ["Deniz", "Frowin", "Jeff", "Mello", "Niklas"], "min": 1.0, "pkt": 3, "opp": 5, "pm": -2, "net_rtg": -50.0, "count": 1}, {"players": ["Jari", "Jeff", "Jon", "Serdar", "Theo"], "min": 1.0, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Deniz", "Felix", "Frowin", "Jari", "Jeff"], "min": 1.0, "pkt": 2, "opp": 1, "pm": 1, "net_rtg": 66.7, "count": 1}, {"players": ["Jeff", "Mattias", "Mattis", "Niklas", "Thore"], "min": 0.8, "pkt": 2, "opp": 0, "pm": 2, "net_rtg": 200.0, "count": 1}, {"players": ["Jeff", "Jon", "Moritz", "Niklas", "Theo"], "min": 0.8, "pkt": 0, "opp": 0, "pm": 0, "net_rtg": 0, "count": 1}, {"players": ["Andi", "Jeff", "Moritz", "Niklas", "Thore"], "min": 0.8, "pkt": 3, "opp": 6, "pm": -3, "net_rtg": -66.7, "count": 1}, {"players": ["Andi", "Deniz", "Felix", "Theo", "Thore"], "min": 0.7, "pkt": 0, "opp": 2, "pm": -2, "net_rtg": -200.0, "count": 1}, {"players": ["Cedi", "Jeff", "Jon", "Niklas", "Theo"], "min": 0.6, "pkt": 4, "opp": 2, "pm": 2, "net_rtg": 66.7, "count": 1}], "games": [{"id": "G1", "datum": "27.09.2025", "gegner": "BG Zehlendorf 3", "ergebnis": "L", "ww": 51, "opp": 63, "gsi": 0.553}, {"id": "G2", "datum": "05.10.2025", "gegner": "Berliner TSC 1", "ergebnis": "W", "ww": 66, "opp": 63, "gsi": 0.488}, {"id": "G3", "datum": "18.10.2025", "gegner": "DBV Charlottenburg 5", "ergebnis": "W", "ww": 74, "opp": 57, "gsi": 0.435}, {"id": "G4", "datum": "08.11.2025", "gegner": "Berliner SC 2", "ergebnis": "L", "ww": 79, "opp": 85, "gsi": 0.518}, {"id": "G5", "datum": "15.11.2025", "gegner": "BASS Südwest 2", "ergebnis": "W", "ww": 67, "opp": 49, "gsi": 0.422}, {"id": "G6", "datum": "23.11.2025", "gegner": "TSV Sportuniversum 1", "ergebnis": "W", "ww": 65, "opp": 53, "gsi": 0.449}, {"id": "G7", "datum": "29.11.2025", "gegner": "ALBA Berlin 4", "ergebnis": "L", "ww": 55, "opp": 120, "gsi": 0.686}, {"id": "G8", "datum": "07.12.2025", "gegner": "TUS Lichterfelde 3", "ergebnis": "W", "ww": 81, "opp": 54, "gsi": 0.4}, {"id": "G9", "datum": "13.12.2025", "gegner": "BC Lions Moabit 1", "ergebnis": "L", "ww": 41, "opp": 55, "gsi": 0.573}, {"id": "G10", "datum": "10.01.2026", "gegner": "Türkiyemspor Berlin 2", "ergebnis": "L", "ww": 55, "opp": 61, "gsi": 0.526}, {"id": "G11", "datum": "24.01.2026", "gegner": "DBV Charlottenburg", "ergebnis": "W", "ww": 92, "opp": 56, "gsi": 0.378}, {"id": "G12", "datum": "31.01.2026", "gegner": "BG Zehlendorf 3", "ergebnis": "L", "ww": 65, "opp": 73, "gsi": 0.529}, {"id": "G13", "datum": "15.02.2026", "gegner": "Berliner TSC 1", "ergebnis": "W", "ww": 65, "opp": 59, "gsi": 0.476}, {"id": "G14", "datum": "28.02.2026", "gegner": "Berliner SC 2", "ergebnis": "W", "ww": 80, "opp": 52, "gsi": 0.394}, {"id": "G15", "datum": "07.03.2026", "gegner": "BASS Südwest 2", "ergebnis": "W", "ww": 69, "opp": 49, "gsi": 0.415}], "meta": {"gsi_explanation": "Game Strength Index: opp/(ww+opp). Adj+/- = sum(pm*2*GSI). Lineups <30s removed.", "team_avg_net": 32.0}};
+
+const PLAYERS = RAW.players;
+const LINEUPS = RAW.lineups;
+const GAMES = RAW.games;
+
+// ========== HELPERS ==========
+function posBadge(pos) {
+  if (!pos || pos==='?') return `<span class="pos-badge pos-combo">${pos||'?'}</span>`;
+  const p = pos.toLowerCase();
+  if (p.includes('combo')) return `<span class="pos-badge pos-combo">COMBO</span>`;
+  if (p==='1') return `<span class="pos-badge pos-1">PG</span>`;
+  if (p==='2') return `<span class="pos-badge pos-2">SG</span>`;
+  if (p.includes('1') && p.includes('2')) return `<span class="pos-badge pos-1">PG/SG</span>`;
+  if (p==='3') return `<span class="pos-badge pos-3">SF</span>`;
+  if (p.includes('3') && p.includes('4')) return `<span class="pos-badge pos-3">SF/PF</span>`;
+  if (p.includes('4') && p.includes('5')) return `<span class="pos-badge pos-4">PF/C</span>`;
+  if (p==='5') return `<span class="pos-badge pos-5">C</span>`;
+  if (p.includes('4')) return `<span class="pos-badge pos-4">PF</span>`;
+  return `<span class="pos-badge pos-combo">${pos}</span>`;
+}
+
+function pct(v) { return v != null ? v+'%' : '—'; }
+function num(v, dec=1) { return v != null ? Number(v).toFixed(dec) : '—'; }
+
+function pmColor(v) {
+  if (v > 10) return 'good';
+  if (v < -10) return 'bad';
+  return 'highlight';
+}
+
+// Two-tier archetype system: returns [mainLabel, mainClass, subLabel, subClass, description]
+const ARCHETYPE_MAP = {
+  'Felix':   ['CREATOR','arch-main-creator','Lead Playmaker','arch-lead-playmaker','Combo-Playmaker: 2.3 APG, 1.4 STL, 12.7 PPG — primärer Ballhandler, generiert Offense für andere'],
+  'Mattias': ['CREATOR','arch-main-creator','Secondary Creator','arch-secondary-creator','Potential: 60% 3P, 1.0 APG — braucht Konsistenz & Selbstvertrauen'],
+  'Niklas':  ['SCORER','arch-main-scorer','Stretch Big','arch-stretch-big','4/5 mit 37% von der Dreierlinie + 55% aus dem Zweier — zieht Defense raus'],
+  'Moritz':  ['SCORER','arch-main-scorer','Spot-Up Shooter','arch-spot-up','Perimeter-Spieler, 34% 3P — lebt vom Spacing, kaum TOs'],
+  'Thore':   ['SCORER','arch-main-scorer','Slasher','arch-slasher','67% aus dem Zweier, selten dribbelt — reiner Finisher & Cutter'],
+  'Jon':     ['SCORER','arch-main-scorer','Slasher','arch-slasher','Athletischer Wing (2–4), zieht zum Ring statt zu werfen — 72% 2P, gefährlichster Finisher im Team ohne den Ball zu brauchen'],
+  'Jeff':    ['TWO-WAY','arch-main-twoway','Two-Way Guard','arch-twoway-guard','10 PPG, 4.5 REB, 43% 3P — verlässlich auf beiden Seiten, Guard mit Scoring & Defensivanker-Qualitäten'],
+  'Serdar':  ['SCORER','arch-main-scorer','Slasher','arch-slasher','100% 2P (small sample) — sehr effizienter Finisher, wenig Einsatz bisher'],
+  
+  'Andi':    ['TWO-WAY','arch-main-twoway','3&D','arch-3d','36% 3P, 0.4 STL, gibt Spacing — hohes TO-Volumen ist Schwäche'],
+  'Jari':    ['ANCHOR','arch-main-anchor','Def. Anchor','arch-def-anchor','7.0 RPG, bester +/- Team (+59) — dominanter Rebounder & physischer Anker'],
+  'Mattis':  ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','3.6 REB, 69% FT, kein 3P-Versuch — finisht Cuts & Screens physisch'],
+  'Deniz':   ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','2.6 REB, finisht Cuts — Dreier ist Bonus (small sample), guter +/- (+14)'],
+  'Cedi':    ['SCORER','arch-main-scorer','Slasher','arch-slasher','Starkes Debüt G15: 9P, 100% 2P, +21 in 18 Min — Combo mit Finisher-Qualitäten'],
+  'Mello':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','Kurze Stints, 36% 2P — bringt Energie & Intensität von der Bank'],
+  'Theo':    ['GLUE','arch-main-glue','Energy Guy','arch-energy','-74 Raw / -96 Adj +/- — bringt Intensität, braucht aber stabilere Rolle & bessere Effizienz'],
+  'Frowin':  ['GLUE','arch-main-glue','In Development','arch-in-dev','2.3 TPG in kleiner Stichprobe — Rolle noch unklar, Ballsicherheit fehlt'],
+  'Oskar':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','-22 Raw / -42 Adj — gibt Energie & Hustle, Scoring-Effizienz muss wachsen'],
+};
+
+const ARCHETYPE_META = {
+  'CREATOR':  { color: 'var(--accent2)', desc: 'Generiert Offense für andere, Ballhandling & Kreation' },
+  'SCORER':   { color: '#f0907a',        desc: 'Primäre Scoring-Option in verschiedenen Ausprägungen' },
+  'TWO-WAY':  { color: 'var(--green)',   desc: 'Verlässlich auf beiden Seiten, gibt Stabilität' },
+  'ANCHOR':   { color: '#c07af0',        desc: 'Physische Präsenz, Rebounds, interner Finisher' },
+  'GLUE':     { color: 'var(--muted2)',  desc: 'Energie, Hustle oder noch in Entwicklung' },
+};
+
+function archetype(p, name) {
+  const entry = ARCHETYPE_MAP[name];
+  if (entry) return entry; // [main, mainClass, sub, subClass, desc]
+  // fallback
+  return ['GLUE','arch-main-glue','Roleplayer','arch-in-dev','Rolle noch nicht bestimmt'];
+}
+
+function archetypeBadgeHTML(p, name, compact=false) {
+  const [main, mainCls, sub, subCls, desc] = archetype(p, name);
+  if (compact) return `<span class="archetype-badge ${subCls}">${sub}</span>`;
+  return `<div class="archetype-wrap">
+    <span class="arch-main ${mainCls}">${main}</span>
+    <span class="archetype-badge ${subCls}">${sub}</span>
+  </div>`;
+}
+
+// ========== VIEWS ==========
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ========== OVERVIEW ==========
+function buildOverview() {
+  // Archetype Legend
+  const archGroups = {};
+  Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).forEach(([name,p])=>{
+    const [main, mainCls, sub, subCls] = archetype(p, name);
+    if (!archGroups[main]) archGroups[main] = { mainCls, players: [] };
+    archGroups[main].players.push({ name, sub, subCls });
+  });
+  document.getElementById('arch-legend').innerHTML = Object.entries(archGroups).map(([main, g])=>`
+    <div>
+      <div class="arch-main ${g.mainCls}" style="margin-bottom:8px;display:inline-block;">${main}</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">${ARCHETYPE_META[main]?.desc||''}</div>
+      ${g.players.map(pl=>`
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text);min-width:52px;">${pl.name}</span>
+          <span class="archetype-badge ${pl.subCls}" style="font-size:9px;padding:2px 6px;">${pl.sub}</span>
+        </div>`).join('')}
+    </div>`).join('');
+
+  // Season record
+  let wins=0, losses=0;
+  GAMES.forEach(g => {
+    const er = g.ergebnis;
+    if (er==='W' || (typeof er==='string' && er.toUpperCase()==='W')) wins++;
+    else if (er==='L' || (typeof er==='string' && er.toUpperCase()==='L')) losses++;
+    else {
+      // numeric
+      if (g.ww != null && g.opp != null) {
+        if (g.ww > g.opp) wins++; else losses++;
+      }
+    }
+  });
+  document.getElementById('record-badge').textContent = `${wins}W — ${losses}L`;
+
+  const pList = Object.values(PLAYERS).filter(p=>p.spiele>=1);
+  const avgPPG = (pList.reduce((a,p)=>a+p.ppg,0)/pList.length).toFixed(1);
+  const topScorer = pList.sort((a,b)=>b.ppg-a.ppg)[0];
+  const topReb = [...pList].sort((a,b)=>b.reb-a.reb)[0];
+  const topPM = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].pm_total-a[1].pm_total)[0];
+  const topAdjPM = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].adj_pm-a[1].adj_pm)[0];
+  const totalGames = GAMES.length;
+
+  const cards = [
+    { label:'Spiele', value: totalGames, sub: `${wins}W / ${losses}L` },
+    { label:'Top Scorer', value: topScorer?.ppg, sub: topScorer?.vollname?.split(' ')[0] },
+    { label:'Top Rebounder', value: topReb?.reb, sub: topReb?.vollname?.split(' ')[0] },
+    { label:'Best Raw+/-', value: (topPM?.[1]?.pm_total > 0 ? '+':'')+topPM?.[1]?.pm_total, sub: topPM?.[0] },
+    { label:'Best Adj+/-', value: (topAdjPM?.[1]?.adj_pm > 0 ? '+':'')+topAdjPM?.[1]?.adj_pm, sub: topAdjPM?.[0] },
+    { label:'Roster', value: Object.keys(PLAYERS).length, sub: 'Spieler' }
+  ];
+
+  document.getElementById('overview-cards').innerHTML = cards.map(c=>`
+    <div class="stat-card">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value}</div>
+      <div class="sub">${c.sub}</div>
+    </div>`).join('');
+
+  // Top scorers bar
+  const top5 = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].ppg-a[1].ppg).slice(0,8);
+  const maxPPG = top5[0][1].ppg;
+  document.getElementById('top-scorers').innerHTML = top5.map(([n,p])=>`
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;">${n} <span style="color:var(--muted);font-size:11px;">${p.pos}</span></span>
+        <span style="font-family:'DM Mono';font-size:13px;color:var(--accent);">${p.ppg} PPG</span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:${p.ppg/maxPPG*100}%;"></div></div>
+    </div>`).join('');
+
+  // Top PM
+  const topPMs = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].pm_total-a[1].pm_total).slice(0,8);
+  const maxPM = Math.max(...topPMs.map(([,p])=>Math.abs(p.pm_total)));
+  document.getElementById('top-pm').innerHTML = topPMs.map(([n,p])=>`
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;">${n} <span style="color:var(--muted);font-size:11px;">${p.pos}</span></span>
+        <span style="font-family:'DM Mono';font-size:13px;color:${p.pm_total>=0?'var(--green)':'var(--red)'};">${p.pm_total>0?'+':''}${p.pm_total}</span>
+      </div>
+      <div class="bar">
+        <div class="bar-fill" style="width:${Math.abs(p.pm_total)/maxPM*100}%;background:${p.pm_total>=0?'var(--green)':'var(--red)'};"></div>
+      </div>
+    </div>`).join('');
+
+  // Top Adj PM
+  const adjPMs = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].adj_pm-a[1].adj_pm).slice(0,8);
+  const maxAdjPM = Math.max(...adjPMs.map(([,p])=>Math.abs(p.adj_pm)));
+  document.getElementById('top-adj-pm').innerHTML = adjPMs.map(([n,p])=>`
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;">${n} <span style="color:var(--muted);font-size:11px;">${p.pos}</span></span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">Raw ${p.pm_total>0?'+':''}${p.pm_total}</span>
+          <span style="font-family:'DM Mono';font-size:13px;color:${p.adj_pm>=0?'var(--green)':'var(--red)'};">${p.adj_pm>0?'+':''}${p.adj_pm}</span>
+        </div>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:${Math.abs(p.adj_pm)/maxAdjPM*100}%;background:${p.adj_pm>=0?'var(--green)':'var(--red)'};"></div></div>
+    </div>`).join('');
+
+  // Top On/Off
+  const onOffs = Object.entries(PLAYERS)
+    .filter(([,p])=>p.lineup_score && p.lineup_score.on_min>=20)
+    .sort((a,b)=>b[1].lineup_score.on_off-a[1].lineup_score.on_off).slice(0,8);
+  const maxOnOff = Math.max(...onOffs.map(([,p])=>Math.abs(p.lineup_score.on_off)));
+  const teamNet = RAW.meta?.team_avg_net || 0;
+  if (document.getElementById('top-onoff')) {
+    document.getElementById('top-onoff').innerHTML = `<div style="font-size:10px;color:var(--muted);margin-bottom:8px;">Team Ø Net Rtg: <span style="color:var(--accent);">${teamNet>0?'+':''}${teamNet}</span></div>` +
+    onOffs.map(([n,p])=>`
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;font-weight:600;">${n} <span style="color:var(--muted);font-size:11px;">${p.pos}</span></span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">On ${p.lineup_score.on_net>0?'+':''}${p.lineup_score.on_net}</span>
+            <span style="font-family:'DM Mono';font-size:13px;color:${p.lineup_score.on_off>=0?'var(--green)':'var(--red)'};">${p.lineup_score.on_off>0?'+':''}${p.lineup_score.on_off}</span>
+          </div>
+        </div>
+        <div class="bar"><div class="bar-fill" style="width:${Math.abs(p.lineup_score.on_off)/maxOnOff*100}%;background:${p.lineup_score.on_off>=0?'var(--green)':'var(--red)'};"></div></div>
+      </div>`).join('');
+  }
+
+  // Games
+  document.getElementById('game-results').innerHTML = GAMES.map(g=>{
+    let ww = g.ww, opp = g.opp;
+    let res = g.ergebnis;
+    let isW = res==='W' || (ww!=null && opp!=null && ww>opp);
+    let isL = res==='L' || (ww!=null && opp!=null && ww<opp);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);width:30px;">${g.id}</span>
+      <span class="${isW?'result-w':isL?'result-l':''}" style="width:16px;">${isW?'W':isL?'L':'?'}</span>
+      <span style="flex:1;font-size:12px;color:var(--text);">${g.gegner}</span>
+      <span style="font-family:'DM Mono';font-size:12px;color:var(--muted2);">${ww!=null?ww+'-'+opp:'?'}</span>
+      <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${g.gsi>0.55?'rgba(232,90,74,0.12)':g.gsi<0.45?'rgba(74,232,122,0.1)':'rgba(255,255,255,0.05)'};color:${g.gsi>0.55?'#f0907a':g.gsi<0.45?'var(--green)':'var(--muted)'};">GSI ${g.gsi}</span>
+      <span style="font-size:10px;color:var(--muted);">${g.datum}</span>
+    </div>`;
+  }).join('');
+
+  // Best lineups
+  const best = LINEUPS.filter(l=>l.min>=5).sort((a,b)=>b.net_rtg-a.net_rtg).slice(0,5);
+  document.getElementById('top-lineups-overview').innerHTML = best.map(l=>`
+    <div style="margin-bottom:12px;padding:10px;background:var(--surface2);border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:10px;font-family:'DM Mono';color:${l.net_rtg>0?'var(--green)':'var(--red)'};">Net: ${l.net_rtg>0?'+':''}${l.net_rtg} · ${l.min}min · ${l.pm>0?'+':''}${l.pm}</span>
+      </div>
+      <div>${l.players.map(p=>`<span class="lu-tag">${p}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ========== PLAYER PROFILES ==========
+let currentPosFilter = 'all';
+let currentArchFilter = null;
+
+function posMatchesFilter(pos, filter) {
+  if (filter === 'all') return true;
+  if (!pos || pos==='?') return false;
+  const p = pos.toLowerCase();
+  if (filter==='1') return p.includes('1');
+  if (filter==='2') return p.includes('2') || p==='2';
+  if (filter==='combo') return p.includes('combo');
+  if (filter==='3') return p.includes('3');
+  if (filter==='4') return p.includes('4');
+  if (filter==='5') return p.includes('5');
+  return true;
+}
+
+function filterPos(btn, pos) {
+  currentPosFilter = pos;
+  currentArchFilter = null;
+  document.querySelectorAll('#pos-filter .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPlayerCards();
+}
+
+function filterArch(btn, arch) {
+  currentArchFilter = arch;
+  currentPosFilter = 'all';
+  document.querySelectorAll('#pos-filter .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPlayerCards();
+}
+
+function buildPlayerCards() {
+  const POS_ORDER = ['1','1/2','2','combo','3','3/4','4','4/5','5'];
+  const posRank = pos => {
+    const p = (pos||'').toLowerCase();
+    const idx = POS_ORDER.findIndex(o => p === o);
+    return idx >= 0 ? idx : 99;
+  };
+
+  const all = Object.entries(PLAYERS).filter(([name,p])=>{
+    if (p.spiele < 1) return false;
+    if (currentArchFilter) {
+      const [main] = archetype(p, name);
+      return main === currentArchFilter;
+    }
+    return posMatchesFilter(p.pos, currentPosFilter);
+  });
+
+  // If filtered by specific pos or arch → flat sorted by PPG (original behavior)
+  if (currentArchFilter || currentPosFilter !== 'all') {
+    const sorted = all.sort((a,b)=>b[1].ppg-a[1].ppg);
+    document.getElementById('player-cards').innerHTML = sorted.map(([name,p])=>playerCardHTML(name,p)).join('');
+    return;
+  }
+
+  // "Alle" → group by position, within group sort by PPG
+  const POS_GROUPS = [
+    { label: 'Point Guard', key: '1', match: p => p === '1' || p === '1/2' },
+    { label: 'Shooting Guard / Combo', key: '2', match: p => p === '2' || p.toLowerCase() === 'combo' },
+    { label: 'Small Forward', key: '3', match: p => p === '3' || p === '3/4' },
+    { label: 'Power Forward / Center', key: '4', match: p => p === '4' || p === '4/5' || p === '5' },
+  ];
+
+  let html = '';
+  POS_GROUPS.forEach(group => {
+    const players = all
+      .filter(([,p]) => group.match((p.pos||'').toLowerCase()))
+      .sort((a,b) => b[1].ppg - a[1].ppg);
+    if (!players.length) return;
+    html += `<div style="grid-column:1/-1;margin:8px 0 4px;">
+      <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-left:2px solid var(--accent);padding-left:8px;">${group.label}</span>
+    </div>`;
+    html += players.map(([name,p]) => playerCardHTML(name,p)).join('');
+  });
+  document.getElementById('player-cards').innerHTML = html;
+}
+
+function playerCardHTML(name, p) {
+  const [main, mainCls, sub, subCls, archDesc] = archetype(p, name);
+  const pmW = Math.min(Math.abs(p.pm_total)/60*100,100);
+  return `<div class="player-card" id="card-${name}" onclick="showProfile('${name}')">
+      <div class="pc-top">
+        <div>
+          <div class="pc-name">${name}</div>
+          <div style="font-size:11px;color:var(--muted2);margin-top:2px;">${p.vollname}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+          ${posBadge(p.pos)}
+          <span class="arch-main ${mainCls}">${main}</span>
+          <span class="archetype-badge ${subCls}">${sub}</span>
+        </div>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><div class="v">${p.ppg}</div><div class="l">PPG</div></div>
+        <div class="pc-stat"><div class="v">${p.reb}</div><div class="l">REB</div></div>
+        <div class="pc-stat"><div class="v">${p.apg}</div><div class="l">AST</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;">
+        <div style="background:var(--surface);border-radius:6px;padding:6px 6px;text-align:center;">
+          <div style="font-family:'DM Mono';font-size:13px;font-weight:600;color:${p.pm_total>=0?'var(--green)':'var(--red)'};">${p.pm_total>0?'+':''}${p.pm_total}</div>
+          <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Raw +/-</div>
+        </div>
+        <div style="background:var(--surface);border-radius:6px;padding:6px 6px;text-align:center;" title="Gegnerstärke-gewichtet">
+          <div style="font-family:'DM Mono';font-size:13px;font-weight:600;color:${p.adj_pm>=0?'var(--green)':'var(--red)'};">${p.adj_pm>0?'+':''}${p.adj_pm}</div>
+          <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Adj +/-</div>
+        </div>
+        <div style="background:var(--surface);border-radius:6px;padding:6px 6px;text-align:center;" title="On/Off Net Rating">
+          <div style="font-family:'DM Mono';font-size:13px;font-weight:600;color:${p.lineup_score?.on_off>=0?'var(--green)':'var(--red)'};">${p.lineup_score ? (p.lineup_score.on_off>0?'+':'')+p.lineup_score.on_off : '—'}</div>
+          <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">On/Off</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:10px;color:var(--muted);">2P% ${pct(p.two_pct)}</span>
+          <span style="font-size:10px;color:var(--muted);">3P% ${pct(p.three_pct)}</span>
+        </div>
+        <div style="height:6px;border-radius:3px;overflow:hidden;background:var(--border);display:flex;">
+          ${p.shot_dist?.two_pct_share != null ? `
+            <div style="width:${p.shot_dist.two_pct_share}%;background:var(--accent2);height:100%;"></div>
+            <div style="width:1px;background:var(--bg);"></div>
+            <div style="flex:1;background:var(--accent);height:100%;opacity:0.7;"></div>
+          ` : '<div style="width:100%;background:var(--border);"></div>'}
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:3px;">
+          <span style="font-size:9px;color:var(--accent2);">${p.shot_dist?.two_pct_share ?? '—'}% der Würfe</span>
+          <span style="font-size:9px;color:var(--accent);">${p.shot_dist?.three_pct_share ?? '—'}% der Würfe</span>
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <span style="font-size:10px;color:var(--muted);">${p.spiele} Sp · ${p.mpg}min/G</span>
+      </div>
+    </div>`;
+}
+
+function showProfile(name) {
+  const p = PLAYERS[name];
+  if (!p) return;
+
+  document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected'));
+  const card = document.getElementById('card-'+name);
+  if (card) card.classList.add('selected');
+
+  const panel = document.getElementById('profile-panel');
+  panel.style.display = 'block';
+  document.getElementById('profile-title').textContent = `${p.vollname} · ${name}`;
+
+  const [main, mainCls, sub, subCls, archDesc] = archetype(p, name);
+  const meta = ARCHETYPE_META[main] || {};
+
+  // Scoring sparkline
+  const maxPkt = Math.max(...p.games.map(g=>g.pkt), 1);
+  const sparkline = p.games.map(g=>{
+    const h = Math.max(g.pkt/maxPkt*100, 4);
+    return `<div class="spark-bar" style="height:${h}%;background:var(--accent);opacity:0.8;" title="${g.gid}: ${g.pkt}pts"></div>`;
+  }).join('');
+
+  // Find lineups with this player
+  const myLineups = LINEUPS.filter(l=>l.players.includes(name) && l.min>=3)
+    .sort((a,b)=>b.net_rtg-a.net_rtg).slice(0,4);
+
+  const astToStr = p.ast_to ? p.ast_to.toFixed(2) : '—';
+
+  document.getElementById('profile-detail').innerHTML = `
+    <div class="pd-section">
+      <div class="pd-title">SPIELERPROFIL</div>
+      <div class="pd-row" style="margin-bottom:12px;">
+        <span class="pd-key">Archetype</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="arch-main ${mainCls}">${main}</span>
+          <span class="archetype-badge ${subCls}">${sub}</span>
+        </div>
+      </div>
+      <div style="padding:8px 10px;background:var(--surface);border-radius:6px;margin-bottom:12px;border-left:2px solid ${meta.color||'var(--muted)'};">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">SCOUT NOTE</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.5;">${archDesc}</div>
+      </div>
+      ${(()=>{
+        const rf=FULL_ROSTER[name]||{};
+        const FL={ballhandler:{l:'Ballhandler',c:'#4fc3f7'},stretch:{l:'Stretch',c:'#aed581'},rim_runner:{l:'Rim Runner',c:'#ff8a65'},can_guard_big:{l:'Guard Big',c:'#ce93d8'},wing_defender:{l:'Wing-Def',c:'#80cbc4'},playmaker:{l:'Playmaker',c:'#e8c84a'},can_play_big:{l:'Play Big',c:'#f48fb1'}};
+        const active=Object.entries(FL).filter(([k])=>rf[k]);
+        if(!active.length)return '';
+        return `<div style="margin-bottom:12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Fähigkeiten</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${active.map(([,v])=>`<span style="font-size:10px;padding:3px 8px;border-radius:12px;background:${v.c}22;color:${v.c};border:1px solid ${v.c}44;font-weight:600;">${v.l}</span>`).join('')}</div></div>`;
+      })()}
+      <div class="pd-row"><span class="pd-key">Spiele</span><span class="pd-val">${p.spiele} (${p.mpg} min/G)</span></div>
+      <div class="pd-row"><span class="pd-key">Punkte</span><span class="pd-val" style="color:var(--accent);">${p.ppg} PPG</span></div>
+      <div class="pd-row"><span class="pd-key">Rebounds</span><span class="pd-val">${p.reb} (${p.or_pg} off / ${p.dr_pg} def)</span></div>
+      <div class="pd-row"><span class="pd-key">Assists</span><span class="pd-val">${p.apg}</span></div>
+      <div class="pd-row"><span class="pd-key">Turnover</span><span class="pd-val">${p.tpg}</span></div>
+      <div class="pd-row"><span class="pd-key">AST/TO</span><span class="pd-val" style="color:${p.ast_to>=1?'var(--green)':'var(--red)'};">${astToStr}</span></div>
+      <div class="pd-row"><span class="pd-key">Steals</span><span class="pd-val">${p.stl}</span></div>
+      <div class="pd-row"><span class="pd-key">Blocks</span><span class="pd-val">${p.blk}</span></div>
+      <div class="pd-row"><span class="pd-key">Fouls</span><span class="pd-val">${p.pf}</span></div>
+      <div class="pd-row"><span class="pd-key">Adj. +/- <span style='font-size:9px;color:var(--muted);'>(GSI-gewichtet)</span></span><span class="pd-val" style="color:${p.adj_pm>=0?'var(--green)':'var(--red)'};">${p.adj_pm>0?'+':''}${p.adj_pm}</span></div>
+      <div class="pd-row"><span class="pd-key">Raw +/-</span><span class="pd-val" style="color:${p.pm_total>=0?'var(--green)':'var(--red)'};">${p.pm_total>0?'+':''}${p.pm_total}</span></div>
+      ${p.pir != null ? `<div class="pd-row"><span class="pd-key">PIR / Spiel</span><span class="pd-val">${p.pir}</span></div>` : ''}
+    </div>
+    <div class="pd-section">
+      <div class="pd-title">SHOOTING</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">SHOT DISTRIBUTION (${p.shot_dist?.two_a_total||0} × 2P · ${p.shot_dist?.three_a_total||0} × 3P · ${p.shot_dist?.ft_a_total||0} × FT)</div>
+        <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;gap:1px;">
+          ${p.shot_dist?.two_pct_share != null ? `
+            <div style="width:${p.shot_dist.two_pct_share}%;background:var(--accent2);border-radius:5px 0 0 5px;" title="2P: ${p.shot_dist.two_pct_share}%"></div>
+            <div style="flex:1;background:var(--accent);opacity:0.8;border-radius:0 5px 5px 0;" title="3P: ${p.shot_dist.three_pct_share}%"></div>
+          ` : ''}
+        </div>
+        <div style="display:flex;gap:16px;margin-top:5px;">
+          <span style="font-size:11px;"><span style="color:var(--accent2);">■</span> 2P ${p.shot_dist?.two_pct_share??'—'}%</span>
+          <span style="font-size:11px;"><span style="color:var(--accent);">■</span> 3P ${p.shot_dist?.three_pct_share??'—'}%</span>
+        </div>
+      </div>
+      <div class="pd-row"><span class="pd-key">FT%</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
+          <div class="bar" style="width:80px;"><div class="bar-fill" style="width:${p.fw_pct||0}%;background:var(--green);"></div></div>
+          <span class="pd-val">${pct(p.fw_pct)} (${p.fw_a_pg}/G)</span>
+        </div>
+      </div>
+      <div class="pd-row"><span class="pd-key">2P%</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
+          <div class="bar" style="width:80px;"><div class="bar-fill" style="width:${p.two_pct||0}%;background:var(--accent2);"></div></div>
+          <span class="pd-val">${pct(p.two_pct)} (${p.two_a_pg}/G)</span>
+        </div>
+      </div>
+      <div class="pd-row"><span class="pd-key">3P%</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;">
+          <div class="bar" style="width:80px;"><div class="bar-fill" style="width:${p.three_pct||0}%;background:var(--accent);"></div></div>
+          <span class="pd-val">${pct(p.three_pct)} (${p.three_a_pg}/G)</span>
+        </div>
+      </div>
+    </div>
+    <div class="pd-section">
+      <div class="pd-title">PUNKTE VERLAUF</div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:8px;">
+        ${sparkline}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        ${p.games.map(g=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--muted);">${g.gid}</div>`).join('')}
+      </div>
+    </div>
+    <div class="pd-section">
+      <div class="pd-title">BESTE LINEUPS (mit ${name})</div>
+      ${myLineups.length ? myLineups.map(l=>`
+        <div style="margin-bottom:8px;padding:8px;background:var(--surface);border-radius:6px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="font-family:'DM Mono';font-size:11px;color:${l.net_rtg>0?'var(--green)':'var(--red)'};">Net ${l.net_rtg>0?'+':''}${l.net_rtg} · ${l.min}min</span>
+            <span style="font-size:11px;color:${l.pm>0?'var(--green)':'var(--red)'};">${l.pm>0?'+':''}${l.pm}</span>
+          </div>
+          <div>${l.players.map(p2=>`<span class="lu-tag" style="${p2===name?'background:rgba(232,200,74,0.2);color:var(--accent);':''}">${p2}</span>`).join('')}</div>
+        </div>`).join('')
+      : '<div style="color:var(--muted);font-size:12px;">Nicht genug Lineup-Daten</div>'}
+    </div>`;
+
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function closeProfile() {
+  document.getElementById('profile-panel').style.display = 'none';
+  document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected'));
+}
+
+// ========== STATS TABLE ==========
+let tableSortKey = 'ppg';
+let tableSortDir = -1;
+
+function buildTable() {
+  renderTable();
+}
+
+function sortTable(key) {
+  if (tableSortKey === key) tableSortDir *= -1;
+  else { tableSortKey = key; tableSortDir = -1; }
+  document.querySelectorAll('#stats-table th').forEach(t=>t.classList.remove('sorted'));
+  event.target.classList.add('sorted');
+  renderTable();
+}
+
+function renderTable() {
+  const POS_RANK = {'1':0,'1/2':1,'2':2,'combo':3,'3':4,'3/4':5,'4':6,'4/5':7,'5':8};
+  const posRank = v => POS_RANK[(v||'').toLowerCase()] ?? 99;
+
+  const rows = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1);
+  rows.sort((a,b)=>{
+    const av = a[1][tableSortKey] ?? (tableSortKey==='name'?a[0]:0);
+    const bv = b[1][tableSortKey] ?? (tableSortKey==='name'?b[0]:0);
+    if (tableSortKey==='name') return av.localeCompare(bv)*tableSortDir;
+    if (tableSortKey==='pos') return (posRank(av)-posRank(bv))*tableSortDir;
+    return (bv-av)*tableSortDir;
+  });
+
+  document.getElementById('stats-tbody').innerHTML = rows.map(([name, p])=>`
+    <tr onclick="showView2('profiles'); showProfile('${name}')" style="cursor:pointer;">
+      <td class="name">${name}</td>
+      <td>${posBadge(p.pos)}</td>
+      <td class="highlight">${p.spiele}</td>
+      <td>${p.mpg}</td>
+      <td class="highlight" style="color:var(--accent);font-weight:600;">${p.ppg}</td>
+      <td>${pct(p.fw_pct)}</td>
+      <td>${pct(p.two_pct)}</td>
+      <td>${pct(p.three_pct)}</td>
+      <td>${p.reb}</td>
+      <td>${p.apg}</td>
+      <td>${p.tpg}</td>
+      <td>${p.stl}</td>
+      <td class="${pmColor(p.pm_total)}">${p.pm_total>0?'+':''}${p.pm_total}</td>
+      <td class="${pmColor(p.adj_pm)}" title="Gegnerstärke-gewichtetes +/-">${p.adj_pm>0?'+':''}${p.adj_pm}</td>
+      <td>${p.pir != null ? p.pir : '—'}</td>
+    </tr>`).join('');
+}
+
+function showView2(name) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+}
+
+// ========== LINEUPS ==========
+let lineupMinFilter = 2;
+
+function buildLineups() {
+  renderLineups();
+}
+
+function filterLineups(btn, min) {
+  lineupMinFilter = min;
+  document.querySelectorAll('#view-lineups .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLineups();
+}
+
+function filterLineupsSearch() {
+  renderLineups();
+}
+
+function renderLineups() {
+  const search = document.getElementById('lineup-search').value.toLowerCase().trim();
+  const searchTerms = search ? search.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+  let data = LINEUPS.filter(l=>l.min>=lineupMinFilter);
+  if (searchTerms.length) {
+    data = data.filter(l=>searchTerms.every(t=>l.players.some(p=>p.toLowerCase().includes(t))));
+  }
+  data.sort((a,b)=>b.net_rtg-a.net_rtg);
+
+  document.getElementById('lineup-tbody').innerHTML = data.map(l=>`
+    <tr>
+      <td><div class="lu-players">${l.players.map(p=>`<span class="lu-tag">${p}</span>`).join('')}</div></td>
+      <td class="highlight">${l.min}</td>
+      <td>${l.pkt}</td>
+      <td>${l.opp}</td>
+      <td class="${l.pm>=0?'good':'bad'}">${l.pm>0?'+':''}${l.pm}</td>
+      <td class="lu-pm ${l.net_rtg>=0?'good':'bad'}">${l.net_rtg>0?'+':''}${l.net_rtg}</td>
+      <td style="color:var(--muted);">${l.count}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px;">Keine Lineups gefunden</td></tr>';
+}
+
+// ========== ROTATION BUILDER ==========
+let starters = [];
+let bench = [];
+
+function buildRotation() {
+  const allPlayers = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1);
+
+  const POS_GROUPS = [
+    { label: 'PG / SG', match: p => p==='1'||p==='1/2'||p==='2' },
+    { label: 'Combo',   match: p => p.toLowerCase()==='combo' },
+    { label: 'SF',      match: p => p==='3'||p==='3/4' },
+    { label: 'PF / C',  match: p => p==='4'||p==='4/5'||p==='5' },
+  ];
+
+  let html = '';
+  POS_GROUPS.forEach(group => {
+    const players = allPlayers
+      .filter(([,p]) => group.match((p.pos||'').toLowerCase()))
+      .sort((a,b) => b[1].ppg - a[1].ppg);
+    if (!players.length) return;
+    html += `<div style="width:100%;margin:6px 0 3px;"><span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-left:2px solid var(--accent);padding-left:6px;">${group.label}</span></div>`;
+    html += players.map(([name,p]) => `
+      <button class="filter-btn" id="rb-${name}" onclick="togglePlayer('${name}')" title="${p.ppg}ppg ${p.reb}reb">
+        ${name} <span style="color:var(--muted);font-size:10px;">${p.pos}</span>
+      </button>`).join('');
+  });
+
+  document.getElementById('player-select-grid').innerHTML = html;
+  renderRotationSlots();
+}
+
+function togglePlayer(name) {
+  if (starters.includes(name)) {
+    starters = starters.filter(n=>n!==name);
+  } else if (bench.includes(name)) {
+    bench = bench.filter(n=>n!==name);
+  } else if (starters.length < 5) {
+    starters.push(name);
+  } else {
+    bench.push(name);
+  }
+  renderRotationSlots();
+  analyzeRotation();
+}
+
+function renderRotationSlots() {
+  const posLabels = ['PG','SG','SF','PF','C'];
+  document.getElementById('starter-slots').innerHTML = Array(5).fill(0).map((_,i)=>{
+    const name = starters[i];
+    if (name) {
+      const p = PLAYERS[name];
+      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(232,200,74,0.08);border:1px solid rgba(232,200,74,0.2);border-radius:8px;">
+        ${posBadge(p.pos)}
+        <span style="font-weight:600;">${name}</span>
+        <span style="margin-left:auto;font-family:'DM Mono';font-size:11px;color:var(--accent);">${p.ppg}ppg</span>
+        <button onclick="togglePlayer('${name}')" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>
+      </div>`;
+    }
+    return `<div style="padding:8px 12px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;">${posLabels[i]} — Leer</div>`;
+  }).join('');
+
+  document.getElementById('bank-slots').innerHTML = bench.length ? bench.map(name=>{
+    const p = PLAYERS[name];
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(74,158,232,0.06);border:1px solid rgba(74,158,232,0.15);border-radius:8px;">
+      ${posBadge(p.pos)}
+      <span style="font-weight:600;">${name}</span>
+      <span style="margin-left:auto;font-family:'DM Mono';font-size:11px;color:var(--accent2);">${p.ppg}ppg</span>
+      <button onclick="togglePlayer('${name}')" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>
+    </div>`;
+  }).join('') : `<div style="padding:8px 12px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;">Spieler oben auswählen</div>`;
+
+  // Update button states
+  document.querySelectorAll('[id^="rb-"]').forEach(btn=>{
+    const name = btn.id.replace('rb-','');
+    btn.classList.toggle('active', starters.includes(name) || bench.includes(name));
+  });
+}
+
+function analyzeRotation() {
+  const panel = document.getElementById('rotation-analysis');
+  if (starters.length < 3) { panel.style.display='none'; return; }
+  panel.style.display = 'block';
+
+  const startKey = tuple => tuple.sort().join(',');
+  const relevant = LINEUPS.filter(l=>{
+    const inStarters = l.players.filter(p=>starters.includes(p)).length;
+    return inStarters >= 3 && l.min >= 2;
+  }).sort((a,b)=>b.net_rtg-a.net_rtg);
+
+  const allSelected = [...starters, ...bench];
+  const starterStats = starters.map(n=>PLAYERS[n]).filter(Boolean);
+  const avgPPG = (starterStats.reduce((a,p)=>a+p.ppg,0)/starterStats.length).toFixed(1);
+  const avgReb = (starterStats.reduce((a,p)=>a+p.reb,0)/starterStats.length).toFixed(1);
+  const totalPM = allSelected.reduce((a,n)=>a+(PLAYERS[n]?.pm_total||0),0);
+
+  // Position check
+  const positions = starters.map(n=>PLAYERS[n]?.pos||'?');
+  const has1 = positions.some(p=>p.includes('1') || p.toLowerCase().includes('combo'));
+  const has5 = positions.some(p=>p.includes('5') || p.includes('4'));
+
+  panel.innerHTML = `
+    <div class="panel-header">
+      <span class="panel-title">Rotation Analyse</span>
+    </div>
+    <div style="padding:16px 20px;">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+        <div class="stat-card" style="padding:12px 16px;">
+          <div class="label">Ø PPG Starter</div>
+          <div class="value" style="font-size:28px;">${avgPPG}</div>
+        </div>
+        <div class="stat-card" style="padding:12px 16px;">
+          <div class="label">Ø Reb Starter</div>
+          <div class="value" style="font-size:28px;">${avgReb}</div>
+        </div>
+        <div class="stat-card" style="padding:12px 16px;">
+          <div class="label">Total +/-</div>
+          <div class="value" style="font-size:28px;color:${totalPM>=0?'var(--green)':'var(--red)'};">${totalPM>0?'+':''}${totalPM}</div>
+        </div>
+        <div class="stat-card" style="padding:12px 16px;">
+          <div class="label">Roster Größe</div>
+          <div class="value" style="font-size:28px;">${allSelected.length}</div>
+        </div>
+      </div>
+      
+      ${!has1 ? '<div style="padding:8px 12px;background:rgba(232,90,74,0.1);border:1px solid rgba(232,90,74,0.2);border-radius:6px;margin-bottom:12px;color:#f0907a;font-size:12px;">⚠️ Kein klassischer PG im Starter-Lineup</div>' : ''}
+      ${!has5 ? '<div style="padding:8px 12px;background:rgba(232,90,74,0.1);border:1px solid rgba(232,90,74,0.2);border-radius:6px;margin-bottom:12px;color:#f0907a;font-size:12px;">⚠️ Kein großer Mann (4/5) im Starter-Lineup</div>' : ''}
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">BEKANNTE LINEUP-DATEN (3+ gemeinsame Starter)</div>
+        ${relevant.slice(0,6).map(l=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;">
+            <div style="flex:1">${l.players.map(p=>`<span class="lu-tag" style="${starters.includes(p)?'background:rgba(232,200,74,0.15);color:var(--accent);':''}">${p}</span>`).join('')}</div>
+            <span style="font-family:'DM Mono';font-size:11px;color:${l.net_rtg>=0?'var(--green)':'var(--red)'};">${l.net_rtg>0?'+':''}${l.net_rtg} · ${l.min}min</span>
+          </div>`).join('') || '<div style="color:var(--muted);font-size:12px;">Noch keine gemeinsamen Spieldaten</div>'}
+      </div>
+    </div>`;
+}
+
+
+// ========== ATTENDANCE DATA (from CSV export) ==========
+const ATT_DATA = {"dates":["04-08-2025","06-08-2025","11-08-2025","13-08-2025","18-08-2025","20-08-2025","25-08-2025","27-08-2025","01-09-2025","03-09-2025","08-09-2025","10-09-2025","15-09-2025","17-09-2025","22-09-2025","24-09-2025","29-09-2025","01-10-2025","06-10-2025","08-10-2025","13-10-2025","15-10-2025","20-10-2025","22-10-2025","27-10-2025","29-10-2025","03-11-2025","05-11-2025","10-11-2025","12-11-2025","17-11-2025","19-11-2025","24-11-2025","26-11-2025","01-12-2025","03-12-2025","08-12-2025","10-12-2025","15-12-2025","17-12-2025","05-01-2026","07-01-2026","12-01-2026","14-01-2026","19-01-2026","21-01-2026","26-01-2026","28-01-2026","02-02-2026","04-02-2026","09-02-2026","11-02-2026","16-02-2026","18-02-2026","25-02-2026","02-03-2026","04-03-2026"],"stats":{"Felix":{"total":33,"of":57,"last3":0,"last8":3,"was_last_week":false,"rate_all":58,"rate_last8":38,"att":2},"Cedi":{"total":10,"of":57,"last3":1,"last8":1,"was_last_week":true,"rate_all":18,"rate_last8":12,"att":1},"Niklas":{"total":21,"of":57,"last3":2,"last8":4,"was_last_week":true,"rate_all":37,"rate_last8":50,"att":2},"Jeff":{"total":28,"of":57,"last3":2,"last8":4,"was_last_week":true,"rate_all":49,"rate_last8":50,"att":3},"Jari":{"total":37,"of":57,"last3":2,"last8":5,"was_last_week":true,"rate_all":65,"rate_last8":62,"att":3},"Moritz":{"total":32,"of":57,"last3":2,"last8":4,"was_last_week":true,"rate_all":56,"rate_last8":50,"att":3},"Jon":{"total":25,"of":57,"last3":2,"last8":5,"was_last_week":true,"rate_all":44,"rate_last8":62,"att":3},"Mattis":{"total":35,"of":57,"last3":1,"last8":4,"was_last_week":false,"rate_all":61,"rate_last8":50,"att":2},"Theo":{"total":28,"of":57,"last3":3,"last8":5,"was_last_week":true,"rate_all":49,"rate_last8":62,"att":3},"Thore":{"total":25,"of":57,"last3":1,"last8":3,"was_last_week":false,"rate_all":44,"rate_last8":38,"att":2},"Mello":{"total":37,"of":57,"last3":0,"last8":5,"was_last_week":false,"rate_all":65,"rate_last8":62,"att":2},"Deniz":{"total":27,"of":57,"last3":1,"last8":4,"was_last_week":false,"rate_all":47,"rate_last8":50,"att":2},"Serdar":{"total":12,"of":57,"last3":2,"last8":5,"was_last_week":true,"rate_all":21,"rate_last8":62,"att":2},"Frowin":{"total":14,"of":57,"last3":0,"last8":1,"was_last_week":false,"rate_all":25,"rate_last8":12,"att":1},"Dariush":{"total":27,"of":57,"last3":0,"last8":0,"was_last_week":false,"rate_all":47,"rate_last8":0,"att":2},"Martin":{"total":27,"of":57,"last3":1,"last8":6,"was_last_week":true,"rate_all":47,"rate_last8":75,"att":3},"Yang":{"total":27,"of":57,"last3":1,"last8":4,"was_last_week":false,"rate_all":47,"rate_last8":50,"att":2},"Jakob":{"total":17,"of":57,"last3":0,"last8":3,"was_last_week":false,"rate_all":30,"rate_last8":38,"att":2},"Max":{"total":18,"of":57,"last3":0,"last8":0,"was_last_week":false,"rate_all":32,"rate_last8":0,"att":1}},"timeline":{"Felix":["STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE"],"Cedi":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_CONFIRMED"],"Niklas":["STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Jeff":["STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Jari":["STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Moritz":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Jon":["STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Mattis":["STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE"],"Theo":["STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED"],"Thore":["STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE"],"Mello":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE"],"Deniz":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED"],"Serdar":["STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED"],"Frowin":["STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED"],"Dariush":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED"],"Martin":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_REJECTED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_UNSURE"],"Yang":["STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED"],"Jakob":["STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED"],"Max":["STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_NOT_CHOOSED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_ABSENCE","STATUS_REJECTED","STATUS_ABSENCE","STATUS_ABSENCE","STATUS_CONFIRMED","STATUS_REJECTED","STATUS_CONFIRMED","STATUS_CONFIRMED","STATUS_NOT_CHOOSED","STATUS_NOT_CHOOSED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED","STATUS_REJECTED"]}};
+
+// ========== ATTENDANCE HEATMAP ==========
+function buildAttendanceView() {
+  const dates = ATT_DATA.dates;
+  const stats = ATT_DATA.stats;
+  const timeline = ATT_DATA.timeline;
+  const last8Start = dates.length - 8;
+
+  // Sort players by att desc, then rate_all desc
+  const sortedPlayers = Object.keys(stats).sort((a,b) => {
+    if (stats[b].att !== stats[a].att) return stats[b].att - stats[a].att;
+    return stats[b].rate_all - stats[a].rate_all;
+  });
+
+  // Month labels for header
+  const monthLabels = [];
+  let lastMonth = '';
+  dates.forEach((d, i) => {
+    const parts = d.split('-');
+    const monthKey = parts[1] + '-' + parts[2];
+    const monthNames = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    const label = monthNames[parseInt(parts[1])];
+    if (label !== lastMonth) {
+      monthLabels.push({ idx: i, label });
+      lastMonth = label;
+    }
+  });
+
+  const CELL = 11; // px per cell
+  const NAME_W = 70;
+  const GAP = 1;
+  const totalW = NAME_W + dates.length * (CELL + GAP);
+
+  function statusColor(s, isRecent) {
+    if (s === 'STATUS_CONFIRMED') return isRecent ? '#4ae87a' : '#3ab86a';
+    if (s === 'STATUS_ABSENCE') return isRecent ? '#e85a4a' : '#b84a3a';
+    if (s === 'STATUS_REJECTED') return isRecent ? '#c84a3a' : '#883530';
+    if (s === 'STATUS_UNSURE') return '#e8c84a';
+    return 'var(--border)'; // NOT_CHOOSED
+  }
+  function statusOpacity(s, isRecent) {
+    if (s === 'STATUS_CONFIRMED') return isRecent ? 0.9 : 0.65;
+    if (s === 'STATUS_ABSENCE') return isRecent ? 0.7 : 0.45;
+    if (s === 'STATUS_REJECTED') return isRecent ? 0.55 : 0.3;
+    if (s === 'STATUS_UNSURE') return 0.5;
+    return 0.15;
+  }
+
+  // Build HTML
+  let html = `<div style="min-width:${totalW}px;">`;
+
+  // Date header row — show month transitions + mark last 8
+  html += `<div style="display:flex;align-items:flex-end;margin-bottom:4px;padding-left:${NAME_W}px;">`;
+  dates.forEach((d, i) => {
+    const isRecent = i >= last8Start;
+    const monthParts = d.split('-');
+    const monthNames = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    const isMonthStart = i === 0 || d.split('-')[1] !== dates[i-1].split('-')[1];
+    html += `<div style="width:${CELL}px;margin-right:${GAP}px;text-align:center;position:relative;">
+      ${isMonthStart ? `<span style="position:absolute;left:0;top:-14px;font-size:9px;color:${isRecent?'var(--accent)':'var(--muted)'};white-space:nowrap;font-family:'DM Mono';">${monthNames[parseInt(monthParts[1])]}</span>` : ''}
+      ${isRecent ? `<div style="width:${CELL}px;height:3px;background:rgba(232,200,74,0.3);border-radius:1px;margin-bottom:1px;" title="Letzte 4 Wochen"></div>` : '<div style="height:4px;"></div>'}
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Player rows
+  sortedPlayers.forEach(name => {
+    const s = stats[name];
+    const tl = timeline[name] || [];
+    const dots = s.att === 3 ? '●●●' : s.att === 2 ? '●●○' : '●○○';
+    const attColor = s.att === 3 ? 'var(--green)' : s.att === 2 ? 'var(--accent)' : 'var(--muted2)';
+    const pos = FULL_ROSTER[name]?.pos || '?';
+
+    html += `<div style="display:flex;align-items:center;margin-bottom:3px;">`;
+    html += `<div style="width:${NAME_W}px;flex-shrink:0;display:flex;align-items:center;gap:4px;">
+      <span style="font-size:11px;font-weight:600;color:var(--text);min-width:46px;">${name}</span>
+      <span style="font-size:9px;color:${attColor};font-family:'DM Mono';" title="${dots}">${dots}</span>
+    </div>`;
+
+    dates.forEach((d, i) => {
+      const status = tl[i] || 'STATUS_NOT_CHOOSED';
+      const isRecent = i >= last8Start;
+      const color = statusColor(status, isRecent);
+      const opacity = statusOpacity(status, isRecent);
+      const tooltip = `${d}: ${status.replace('STATUS_','')}`;
+      html += `<div title="${tooltip}" style="width:${CELL}px;height:${CELL}px;border-radius:2px;background:${color};opacity:${opacity};margin-right:${GAP}px;flex-shrink:0;"></div>`;
+    });
+
+    // Stats at end
+    html += `<div style="margin-left:10px;display:flex;gap:8px;align-items:center;white-space:nowrap;">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted2);" title="Gesamt">${s.total}/${s.of}</span>
+      <span style="font-family:'DM Mono';font-size:10px;color:${s.rate_all>=50?'var(--green)':s.rate_all>=35?'var(--accent)':'var(--red)'};">${s.rate_all}%</span>
+      <span style="font-family:'DM Mono';font-size:10px;color:${s.rate_last8>=50?'var(--green)':s.rate_last8>=30?'var(--accent)':'var(--red)'};" title="Letzte 4 Wochen">${s.rate_last8}%▲</span>
+      ${s.was_last_week ? '<span style="font-size:10px;color:var(--green);" title="Letzte Woche dabei">✓</span>' : '<span style="font-size:10px;color:var(--red);" title="Letzte Woche NICHT dabei">✗</span>'}
+    </div>`;
+    html += `</div>`;
+  });
+
+  html += `<div style="margin-top:8px;font-size:10px;color:var(--muted);font-family:'DM Mono';">% gesamt &nbsp;·&nbsp; %▲ letzte 4 Wochen &nbsp;·&nbsp; ✓/✗ letzte Woche da</div>`;
+  html += `</div>`;
+
+  document.getElementById('att-heatmap').innerHTML = html;
+
+  // Summary cards sorted by att
+  document.getElementById('att-summary-grid').innerHTML = sortedPlayers.map(name => {
+    const s = stats[name];
+    const dots = s.att === 3 ? '●●●' : s.att === 2 ? '●●○' : '●○○';
+    const attColor = s.att === 3 ? 'var(--green)' : s.att === 2 ? 'var(--accent)' : 'var(--muted2)';
+    const borderColor = s.att === 3 ? 'rgba(74,232,122,0.2)' : s.att === 2 ? 'rgba(232,200,74,0.2)' : 'rgba(255,255,255,0.05)';
+    return `<div style="padding:10px 14px;border-radius:8px;border:1px solid ${borderColor};background:var(--surface2);display:flex;align-items:center;gap:10px;">
+      <span style="font-size:13px;font-weight:700;min-width:52px;">${name}</span>
+      <span style="font-size:11px;color:${attColor};font-family:'DM Mono';">${dots}</span>
+      <span style="margin-left:auto;font-family:'DM Mono';font-size:10px;color:var(--muted2);">${s.rate_all}% / ${s.rate_last8}%▲</span>
+      ${s.was_last_week ? '<span style="color:var(--green);font-size:11px;">✓</span>' : '<span style="color:var(--red);font-size:11px;">✗</span>'}
+    </div>`;
+  }).join('');
+}
+
+function reloadAttendanceCSV(event) {
+  // Future: re-parse and update ATT_DATA dynamically
+  alert('CSV-Import für zukünftige Updates wird in einer späteren Version unterstützt. Aktuell sind die Daten vom 08.03.2026 eingebettet.');
+}
+
+// ========== AUTO-BUILD MODULE ==========
+
+// Full roster from /WWRotation knowledge — att values now from ATT_DATA.stats
+const FULL_ROSTER = {
+  // flags: ballhandler | stretch | rim_runner | can_guard_big | wing_defender | playmaker | can_play_big
+  'Jeff':    { pos:'1/2',   ballhandler:true,  stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Moritz':  { pos:'2',     ballhandler:false, stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Jon':     { pos:'2/3',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Mattias': { pos:'1/2',   ballhandler:true,  stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:true,  playmaker:true,  can_play_big:false },
+  'Frowin':  { pos:'1/2',   ballhandler:true,  stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Dariush': { pos:'1',     ballhandler:true,  stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:true,  can_play_big:false },
+  'Max':     { pos:'2',     ballhandler:false, stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Jakob':   { pos:'2',     ballhandler:false, stretch:false, rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Serdar':  { pos:'combo', ballhandler:true,  stretch:false, rim_runner:true,  can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Felix':   { pos:'combo', ballhandler:true,  stretch:true,  rim_runner:true,  can_guard_big:false, wing_defender:true,  playmaker:true,  can_play_big:false },
+  'Cedi':    { pos:'combo', ballhandler:true,  stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:false, playmaker:false, can_play_big:false },
+  'Andi':    { pos:'3',     ballhandler:false, stretch:true,  rim_runner:false, can_guard_big:false, wing_defender:true,  playmaker:false, can_play_big:false },
+  'Mello':   { pos:'3/4',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:true,  playmaker:false, can_play_big:true  },
+  'Thore':   { pos:'3/4',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:true,  playmaker:false, can_play_big:true  },
+  'Martin':  { pos:'3/4',   ballhandler:false, stretch:true,  rim_runner:false, can_guard_big:true,  wing_defender:true,  playmaker:false, can_play_big:true  },
+  'Niklas':  { pos:'4/5',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Mattis':  { pos:'4/5',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Theo':    { pos:'4/5',   ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Deniz':   { pos:'4/5',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Jari':    { pos:'4/5',   ballhandler:false, stretch:true,  rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+  'Yang':    { pos:'5',     ballhandler:false, stretch:false, rim_runner:true,  can_guard_big:true,  wing_defender:false, playmaker:false, can_play_big:true  },
+};
+
+// Merge real att from CSV data into FULL_ROSTER
+Object.keys(FULL_ROSTER).forEach(name => {
+  FULL_ROSTER[name].att = ATT_DATA.stats[name]?.att ?? 1;
+});
+
+// Attendance state: name -> true/false
+let abAttendance = {};
+// Manual minute targets: name -> minutes (null = auto)
+let abMinTargets = {};
+
+// ========== INIT AUTO-BUILD ==========
+function initAutoBuild() {
+  // Merge FULL_ROSTER with PLAYERS data
+  const allNames = new Set([...Object.keys(FULL_ROSTER), ...Object.keys(PLAYERS)]);
+  allNames.forEach(n => {
+    if (abAttendance[n] === undefined) {
+      // Default: present if in PLAYERS with spiele >= 1, else by att level
+      const hasSeason = PLAYERS[n] && PLAYERS[n].spiele >= 1;
+      const att = FULL_ROSTER[n]?.att || 1;
+      abAttendance[n] = hasSeason && att >= 2;
+    }
+  });
+  renderAttendGrid();
+  renderMinTargets();
+}
+
+function renderAttendGrid() {
+  const allNames = Object.keys(FULL_ROSTER);
+  const present = allNames.filter(n => abAttendance[n]);
+  const absent = allNames.filter(n => !abAttendance[n]);
+  const overLimit = present.length > 12;
+
+  document.getElementById('attend-summary').textContent =
+    `${present.length} dabei · ${absent.length} nicht da`;
+
+  // Roster limit badge
+  const badge = document.getElementById('roster-limit-badge');
+  if (present.length === 0) {
+    badge.style.display = 'none';
+  } else {
+    badge.style.display = 'inline-block';
+    if (overLimit) {
+      badge.textContent = `${present.length}/12 ⚠ zu viele`;
+      badge.style.background = 'rgba(232,90,74,0.15)';
+      badge.style.color = 'var(--red)';
+      badge.style.border = '1px solid rgba(232,90,74,0.3)';
+    } else {
+      badge.textContent = `${present.length}/12`;
+      badge.style.background = 'rgba(74,232,122,0.1)';
+      badge.style.color = present.length === 12 ? 'var(--green)' : 'var(--muted2)';
+      badge.style.border = '1px solid rgba(74,232,122,0.2)';
+    }
+  }
+
+  // Sort: present first (by score desc), then absent (by score desc)
+  const scored = allNames.map(n => ({ name: n, score: scorePlayer(n) }));
+  const sortedPresent = scored.filter(x => abAttendance[x.name]).sort((a,b) => b.score - a.score);
+  const sortedAbsent = scored.filter(x => !abAttendance[x.name]).sort((a,b) => b.score - a.score);
+  const sortedAll = [...sortedPresent, ...sortedAbsent];
+
+  document.getElementById('attend-grid').innerHTML = sortedAll.map(({name: n}, idx) => {
+    const isOn = abAttendance[n];
+    const p = PLAYERS[n];
+    const att = FULL_ROSTER[n]?.att || 1;
+    const attDots = att === 3 ? '●●●' : att === 2 ? '●●○' : '●○○';
+    const attColor = att === 3 ? 'var(--green)' : att === 2 ? 'var(--accent)' : 'var(--muted)';
+    const pos = FULL_ROSTER[n]?.pos || p?.pos || '?';
+    // If over limit, show rank number for present players
+    const rankLabel = isOn && overLimit && idx < present.length
+      ? `<span style="font-size:9px;font-family:'DM Mono';color:var(--red);margin-left:4px;">#${idx+1}</span>`
+      : (isOn && !overLimit && present.length >= 8
+        ? `<span style="font-size:9px;font-family:'DM Mono';color:var(--muted);margin-left:4px;">#${idx+1}</span>`
+        : '');
+    return `<div class="ab-player-row ${isOn ? 'present' : 'absent'}" id="attend-row-${n}">
+      <button class="attend-toggle ${isOn ? 'on' : ''}" onclick="toggleAttend('${n}')" title="${isOn ? 'Dabei' : 'Nicht dabei'}"></button>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${n}${rankLabel}</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
+          <span style="font-size:10px;color:var(--muted);font-family:'DM Mono';">${pos}</span>
+          <span style="font-size:10px;color:${attColor};font-family:'DM Mono';" title="Anwesenheits-Stufe">${attDots}</span>
+        </div>
+      </div>
+      ${p ? `<span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">${p.adj_pm > 0 ? '+' : ''}${p.adj_pm ?? '—'}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleAttend(name) {
+  const present = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
+  // If trying to add a player and already at 12, warn but allow
+  if (!abAttendance[name] && present.length >= 12) {
+    if (!confirm(`Bereits ${present.length} Spieler im Kader (Maximum: 12).\n\n${name} trotzdem hinzufügen?`)) return;
+  }
+  abAttendance[name] = !abAttendance[name];
+  renderAttendGrid();
+  renderMinTargets();
+}
+
+function setAllAttend(val) {
+  if (val) {
+    // Auto-select best 12 by score
+    const allNames = Object.keys(FULL_ROSTER);
+    const scored = allNames.map(n => ({ name: n, score: scorePlayer(n) }))
+      .sort((a, b) => b.score - a.score);
+    allNames.forEach(n => abAttendance[n] = false);
+    scored.slice(0, 12).forEach(x => abAttendance[x.name] = true);
+  } else {
+    Object.keys(FULL_ROSTER).forEach(n => abAttendance[n] = false);
+  }
+  renderAttendGrid();
+  renderMinTargets();
+}
+
+function renderMinTargets() {
+  const available = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
+  document.getElementById('min-targets-grid').innerHTML = available.map(n => {
+    const cur = abMinTargets[n] || '';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);">
+      <span style="font-size:12px;font-weight:600;min-width:52px;">${n}</span>
+      <input type="number" class="min-input" id="min-${n}" value="${cur}" min="0" max="40"
+        placeholder="Auto" oninput="updateMinTarget('${n}',this.value)">
+      <span style="font-size:10px;color:var(--muted);">Min</span>
+    </div>`;
+  }).join('');
+  updateMinTotal();
+}
+
+function updateMinTarget(name, val) {
+  abMinTargets[name] = val ? parseInt(val) : null;
+  updateMinTotal();
+}
+
+function updateMinTotal() {
+  const vals = Object.values(abMinTargets).filter(v => v != null);
+  const sum = vals.reduce((a, v) => a + v, 0);
+  const remaining = 200 - sum;
+  document.getElementById('min-total').textContent =
+    `Gesetzt: ${sum} Min | Verbleibend (Auto): ${remaining} Min | Gesamt: 200 Min`;
+  document.getElementById('min-total').style.color = remaining < 0 ? 'var(--red)' : 'var(--muted2)';
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+// ========== CSV/JSON IMPORT ==========
+function importAttendanceCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result.trim();
+    try {
+      // Try JSON first
+      const json = JSON.parse(text);
+      Object.entries(json).forEach(([name, val]) => {
+        const present = val === 'dabei' || val === true || val === 1 || val === '1';
+        if (name in FULL_ROSTER) abAttendance[name] = present;
+      });
+    } catch {
+      // CSV: name,status
+      text.split('\n').forEach(line => {
+        const parts = line.split(',').map(s => s.trim());
+        if (parts.length >= 2) {
+          const name = parts[0];
+          const status = parts[1].toLowerCase();
+          const present = status === 'dabei' || status === 'true' || status === '1' || status === 'ja' || status === 'yes';
+          if (name in FULL_ROSTER) abAttendance[name] = present;
+        }
+      });
+    }
+    renderAttendGrid();
+    renderMinTargets();
+    alert(`✓ Import erfolgreich! ${Object.keys(FULL_ROSTER).filter(n=>abAttendance[n]).length} Spieler dabei.`);
+  };
+  reader.readAsText(file);
+}
+
+// ========== SCORING ALGORITHM ==========
+function scorePlayer(name) {
+  const p = PLAYERS[name];
+  if (!p) return 0;
+  let score = 0;
+  // Adj +/- (most important)
+  score += (p.adj_pm || 0) * 2;
+  // Raw +/-
+  score += (p.pm_total || 0) * 0.5;
+  // PPG (weighted lower)
+  score += (p.ppg || 0) * 1.5;
+  // Attendance weight
+  const att = FULL_ROSTER[name]?.att || 1;
+  score += att * 15;
+  // Games played bonus (reliability)
+  score += (p.spiele || 0) * 2;
+  // Best lineup appearances bonus
+  const inTopLineups = LINEUPS.filter(l => l.players.includes(name) && l.net_rtg > 0).length;
+  score += inTopLineups * 3;
+  return Math.round(score);
+}
+
+function getPositionGroup(pos) {
+  if (!pos) return 'combo';
+  const p = pos.toLowerCase();
+  if (p === '1' || p === 'pg') return '1';
+  if (p.includes('combo')) return 'combo';
+  if (p.includes('1')) return '1';
+  if (p === '2') return '2';
+  if (p.includes('3') || p === '3') return '3';
+  if (p.includes('4') || p.includes('5') || p === '5') return 'big';
+  return 'combo';
+}
+
+function hasPosition(players, posCheck) {
+  return players.some(n => {
+    const pos = (FULL_ROSTER[n]?.pos || PLAYERS[n]?.pos || '').toLowerCase();
+    return posCheck(pos);
+  });
+}
+
+// ========== MAIN AUTO-BUILD LOGIC ==========
+function runAutoBuild() {
+  const available = Object.keys(FULL_ROSTER).filter(n => abAttendance[n]);
+
+  if (available.length < 5) {
+    alert('Mindestens 5 Spieler müssen dabei sein!');
+    return;
+  }
+
+  if (available.length > 12) {
+    if (!confirm(`${available.length} Spieler ausgewählt — Maximum sind 12.\n\nTrotzdem generieren? (Die besten 12 nach Score werden verwendet.)`)) return;
+    // Trim to best 12
+    const best12 = available.map(n => ({ name: n, score: scorePlayer(n) }))
+      .sort((a,b) => b.score - a.score)
+      .slice(0, 12)
+      .map(x => x.name);
+    Object.keys(abAttendance).forEach(n => { if (!best12.includes(n)) abAttendance[n] = false; });
+    renderAttendGrid();
+    renderMinTargets();
+  }
+
+  // Score all available players
+  const scored = available.map(n => ({ name: n, score: scorePlayer(n) }))
+    .sort((a, b) => b.score - a.score);
+
+  // ---- STARTER SELECTION ----
+  // Constraints via flags: 1x ballhandler, 1x can_play_big, fill rest by score
+  let starters5 = [];
+  const remaining = [...scored];
+
+  // 1. Pick best ballhandler
+  const bh = remaining.find(x => FULL_ROSTER[x.name]?.ballhandler);
+  if (bh) { starters5.push(bh.name); remaining.splice(remaining.indexOf(bh), 1); }
+
+  // 2. Pick best big (can_play_big flag)
+  const big = remaining.find(x => FULL_ROSTER[x.name]?.can_play_big);
+  if (big) { starters5.push(big.name); remaining.splice(remaining.indexOf(big), 1); }
+
+  // 3. Fill remaining 3 spots with best available
+  while (starters5.length < 5 && remaining.length > 0) {
+    starters5.push(remaining.shift().name);
+  }
+
+  const bench5 = remaining.map(x => x.name);
+
+  // ---- MINUTE DISTRIBUTION ----
+  // Score-proportional mit 34→8 min Spread (26 min Differenz)
+  // Basis: linearer Score-Gradient, dann auf [8, 34] skalieren
+  const totalMin = 200;
+  const assignedMin = {};
+  let fixedSum = 0;
+
+  // Apply manual targets first
+  available.forEach(n => {
+    if (abMinTargets[n] != null) {
+      assignedMin[n] = abMinTargets[n];
+      fixedSum += abMinTargets[n];
+    }
+  });
+
+  const autoPlayers = available.filter(n => assignedMin[n] == null);
+  let remaining200 = totalMin - fixedSum;
+
+  if (autoPlayers.length > 0) {
+    // Score-proportional mit linearem Gradient auf [minMin, maxMin]
+    const MIN_MIN = 8, MAX_MIN = 34;
+    const autoScored = autoPlayers
+      .map(n => ({ name: n, score: scorePlayer(n) }))
+      .sort((a, b) => b.score - a.score);
+
+    const n = autoScored.length;
+    if (n === 1) {
+      assignedMin[autoScored[0].name] = remaining200;
+    } else {
+      // Lineare Gewichte: Rang 0 → MAX_MIN-Gewicht, Rang n-1 → MIN_MIN-Gewicht
+      // Normiert sodass Summe = remaining200
+      const rawWeights = autoScored.map((_, i) => MAX_MIN - (MAX_MIN - MIN_MIN) * (i / (n - 1)));
+      const weightSum = rawWeights.reduce((s, w) => s + w, 0);
+      const scale = remaining200 / weightSum;
+      autoScored.forEach((p, i) => {
+        assignedMin[p.name] = Math.max(MIN_MIN, Math.round(rawWeights[i] * scale));
+      });
+    }
+  }
+
+  // Adjust rounding to exactly 200
+  const sumCheck = Object.values(assignedMin).reduce((a, v) => a + v, 0);
+  const diff2 = totalMin - sumCheck;
+  if (diff2 !== 0 && starters5[0]) assignedMin[starters5[0]] = (assignedMin[starters5[0]] || 0) + diff2;
+
+  // ---- QUARTER PLAN ----
+  // Q1-Q4: 10 min each, 5 players * 4 quarters * 10 = 200
+  // Generate stint plan: which players play in which quarter
+  const quarterPlan = generateQuarterPlan(starters5, bench5, assignedMin, available);
+
+  // ---- CHEATSHEET ----
+  const cheatsheet = generateCheatsheet(quarterPlan, starters5);
+
+  // ---- POSITION BALANCE ----
+  const posBalance = checkPosBalance(starters5, available);
+
+  // ---- WARNINGS ----
+  const warnings = generateWarnings(starters5, bench5, available, assignedMin, posBalance);
+
+  // ---- RENDER ----
+  renderAutoBuildResult(starters5, bench5, assignedMin, quarterPlan, cheatsheet, posBalance, warnings);
+
+  // Store for save function
+  _lastRotationData = {
+    starters: starters5,
+    bench: bench5,
+    mins: assignedMin,
+    minTargets: {...abMinTargets},
+    available: Object.keys(FULL_ROSTER).filter(n => abAttendance[n]),
+    quarterPlan,
+    cheatsheet,
+    posBalance,
+    warnings
+  };
+
+  document.getElementById('ab-result').style.display = 'block';
+  document.getElementById('ab-result').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ---- QUARTER PLAN GENERATOR ----
+function generateQuarterPlan(starters, bench, mins, available) {
+  // Create a simple stint plan: who plays in Q1..Q4 (each 10 min)
+  // Starters play Q1 always, then rotate based on minutes
+  const plan = {}; // name -> [q1bool, q2bool, q3bool, q4bool]
+  available.forEach(n => {
+    const m = mins[n] || 0;
+    // Roughly: 30+ min = 3Q, 20+ = 2Q, 10+ = 1Q, <10 = spot
+    if (starters.includes(n)) {
+      if (m >= 34) plan[n] = [true, true, true, true];
+      else if (m >= 26) plan[n] = [true, true, true, false];
+      else if (m >= 18) plan[n] = [true, true, false, true];
+      else plan[n] = [true, false, false, false];
+    } else {
+      if (m >= 28) plan[n] = [true, true, true, false];
+      else if (m >= 20) plan[n] = [false, true, true, false];
+      else if (m >= 12) plan[n] = [false, true, false, true];
+      else plan[n] = [false, false, true, false];
+    }
+  });
+  return plan;
+}
+
+// ---- CHEATSHEET GENERATOR ----
+function generateCheatsheet(quarterPlan, starters) {
+  // Key substitution moments: 4', 8', 12', 16', 20', 24', 28', 32', 36'
+  const subMinutes = [4, 8, 12, 16, 20, 24, 28, 32];
+  const sheet = [];
+
+  starters.forEach((starter, i) => {
+    const mins = [4 + i * 1.5, 24 + i * 1.5]; // rough sub moments
+    mins.forEach(m => {
+      const t = Math.round(m);
+      const benchForThis = Object.keys(quarterPlan).filter(n => !starters.includes(n));
+      const sub = benchForThis[i % benchForThis.length];
+      if (sub) sheet.push({ minute: t, out: starter, in: sub });
+    });
+  });
+
+  // Sort and deduplicate by minute
+  const byMin = {};
+  sheet.forEach(s => {
+    if (!byMin[s.minute]) byMin[s.minute] = { outs: [], ins: [] };
+    byMin[s.minute].outs.push(s.out);
+    byMin[s.minute].ins.push(s.in);
+  });
+
+  return Object.entries(byMin)
+    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+    .map(([m, v]) => ({ minute: parseInt(m), outs: [...new Set(v.outs)], ins: [...new Set(v.ins)] }));
+}
+
+// ---- POSITION BALANCE CHECK ----
+function checkPosBalance(starters, available) {
+  const f = n => FULL_ROSTER[n] || {};
+  const checks = {
+    hasBallhandler:  starters.some(n => f(n).ballhandler),
+    hasBig:          starters.some(n => f(n).can_play_big),
+    hasStretch:      starters.some(n => f(n).stretch),
+    hasWingDefender: starters.some(n => f(n).wing_defender),
+    hasBenchBig:     available.filter(n => !starters.includes(n)).some(n => f(n).can_play_big),
+    hasBenchBH:      available.filter(n => !starters.includes(n)).some(n => f(n).ballhandler),
+  };
+  return checks;
+}
+
+// ---- WARNINGS ----
+function generateWarnings(starters, bench, available, mins, posBalance) {
+  const warnings = [];
+  const f = n => FULL_ROSTER[n] || {};
+
+  if (!posBalance.hasBallhandler)
+    warnings.push({ type: 'red', text: '⚠️ Kein Ballhandler in den Startern — Ballvortrag unklar' });
+
+  if (!posBalance.hasBig)
+    warnings.push({ type: 'red', text: '⚠️ Kein Big Man (can_play_big) in Startern — Rebound & Rimschutz fehlt' });
+
+  if (!posBalance.hasBenchBig)
+    warnings.push({ type: 'yellow', text: '⚡ Kein Big auf der Bank — Foul-Trouble wird kritisch' });
+
+  if (!posBalance.hasBenchBH)
+    warnings.push({ type: 'yellow', text: '⚡ Kein Backup-Ballhandler — Starter-BH kann nicht rausgehen' });
+
+  if (!posBalance.hasStretch)
+    warnings.push({ type: 'yellow', text: '⚡ Kein Stretch-Spieler in Startern — Defense zieht nicht raus' });
+
+  if (available.length < 8)
+
+  if (available.length < 8)
+    warnings.push({ type: 'yellow', text: `ℹ️ Nur ${available.length} Spieler verfügbar — Rotation sehr eng, Ermüdung beachten` });
+
+  if (available.length >= 12)
+    warnings.push({ type: 'green', text: `✓ ${available.length} Spieler verfügbar — tiefe Rotation möglich` });
+
+  // Check for high adj_pm players on bench
+  const missedStars = bench.filter(n => PLAYERS[n] && PLAYERS[n].adj_pm > 20);
+  if (missedStars.length > 0)
+    warnings.push({ type: 'yellow', text: `💡 ${missedStars.join(', ')} auf Bank — starke Adj. +/- Spieler, evtl. Starter-Rolle prüfen` });
+
+  // Theo warning (known negative impact)
+  if (available.includes('Theo') && starters.includes('Theo'))
+    warnings.push({ type: 'yellow', text: '⚠️ Theo als Starter — historisch -96 Adj +/-, besser in kurzen Bankstints' });
+
+  return warnings;
+}
+
+// ---- RENDER RESULT ----
+function renderAutoBuildResult(starters, bench, mins, quarterPlan, cheatsheet, posBalance, warnings) {
+
+  // Starter cards
+  const starterAvgAdjPM = starters
+    .map(n => PLAYERS[n]?.adj_pm || 0)
+    .reduce((a, v) => a + v, 0) / starters.length;
+  document.getElementById('ab-starter-netrtg').textContent =
+    `Ø Adj +/-: ${starterAvgAdjPM > 0 ? '+' : ''}${starterAvgAdjPM.toFixed(1)}`;
+
+  document.getElementById('ab-starters').innerHTML = starters.map((n, i) => {
+    const p = PLAYERS[n];
+    const pos = FULL_ROSTER[n]?.pos || p?.pos || '?';
+    const score = scorePlayer(n);
+    return `<div class="ab-starter-card">
+      <span style="font-family:'Bebas Neue';font-size:16px;color:var(--muted);min-width:20px;">${i + 1}</span>
+      ${posBadge(pos)}
+      <div>
+        <div style="font-size:14px;font-weight:700;">${n}</div>
+        ${p ? `<div style="font-size:10px;color:var(--muted);font-family:'DM Mono';">${p.ppg}ppg · Adj${p.adj_pm > 0 ? '+' : ''}${p.adj_pm}</div>` : ''}
+      </div>
+      <span class="ab-min-badge">${mins[n] || 0} Min</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('ab-bench-summary').textContent = `${bench.length} Spieler`;
+  document.getElementById('ab-bench').innerHTML = bench.length > 0 ? bench.map(n => {
+    const p = PLAYERS[n];
+    const pos = FULL_ROSTER[n]?.pos || p?.pos || '?';
+    return `<div class="ab-bench-card">
+      ${posBadge(pos)}
+      <div>
+        <div style="font-size:13px;font-weight:600;">${n}</div>
+        ${p ? `<div style="font-size:10px;color:var(--muted);font-family:'DM Mono';">${p.ppg}ppg · Adj${p.adj_pm > 0 ? '+' : ''}${p.adj_pm}</div>` : ''}
+      </div>
+      <span class="ab-bench-min-badge">${mins[n] || 0} Min</span>
+    </div>`;
+  }).join('') : `<div style="color:var(--muted);font-size:12px;padding:8px;">Keine Bankspieler verfügbar</div>`;
+
+  // Position balance
+  const posItems = [
+    { label: 'Ballhandler',    ok: posBalance.hasBallhandler },
+    { label: 'Big (Starter)',  ok: posBalance.hasBig },
+    { label: 'Stretch',        ok: posBalance.hasStretch },
+    { label: 'Wing-Defense',   ok: posBalance.hasWingDefender },
+    { label: 'Backup Big',     ok: posBalance.hasBenchBig },
+    { label: 'Backup BH',      ok: posBalance.hasBenchBH },
+  ];
+  const allOk = posItems.every(x => x.ok);
+  document.getElementById('posbalance-status').textContent = allOk ? '✓ Ausgewogen' : '⚠️ Lücken vorhanden';
+  document.getElementById('posbalance-status').style.color = allOk ? 'var(--green)' : 'var(--accent)';
+
+  document.getElementById('ab-posbalance').innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      ${posItems.map(x => `<span class="pos-slot ${x.ok ? 'pos-ok' : 'pos-missing'}">${x.ok ? '✓' : '✗'} ${x.label}</span>`).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--muted);">Starter-Positionen: ${starters.map(n => {
+      const pos = FULL_ROSTER[n]?.pos || PLAYERS[n]?.pos || '?';
+      return `<b style="color:var(--text)">${n}</b> <span style="color:var(--muted2)">(${pos})</span>`;
+    }).join(' · ')}</div>
+  `;
+
+  // Quarter plan table
+  const allInPlan = Object.keys(quarterPlan);
+  const qLabels = ['Q1 (0-10\')', 'Q2 (10-20\')', 'Q3 (20-30\')', 'Q4 (30-40\')'];
+  document.getElementById('ab-rotation-plan').innerHTML = `
+    <div style="display:grid;grid-template-columns:70px repeat(4,1fr);gap:3px;min-width:420px;">
+      <div></div>
+      ${qLabels.map(q => `<div class="q-header-cell">${q}</div>`).join('')}
+      ${allInPlan.map(n => {
+        const qs = quarterPlan[n];
+        const isStarter = starters.includes(n);
+        return `<div style="display:contents;">
+          <div class="rp-name" style="display:flex;align-items:center;gap:4px;padding:3px 0;">
+            <span style="width:6px;height:6px;border-radius:50%;background:${isStarter ? 'var(--accent)' : 'var(--accent2)'};display:inline-block;flex-shrink:0;"></span>
+            ${n}
+          </div>
+          ${qs.map(active => `<div class="rp-cell ${active ? (isStarter ? 'rp-starter' : 'rp-bench') : 'rp-off'}">${active ? (isStarter ? '★' : '·') : ''}</div>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:10px;display:flex;gap:14px;font-size:10px;">
+      <span><span style="color:var(--accent);">★</span> Starter-Stint</span>
+      <span><span style="color:var(--accent2);">·</span> Bank-Stint</span>
+    </div>
+  `;
+
+  // Cheatsheet
+  document.getElementById('ab-cheatsheet').innerHTML = cheatsheet.length > 0 ? `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;">
+      ${cheatsheet.map(c => `
+        <div class="cheat-row">
+          <span class="cheat-min">${c.minute}'</span>
+          <span style="color:var(--muted);font-size:11px;">▼ OUT</span>
+          <span class="cheat-out">${c.outs.join(', ')}</span>
+          <span style="color:var(--muted);font-size:11px;">▲ IN</span>
+          <span class="cheat-in">${c.ins.join(', ')}</span>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:var(--muted);">Empfehlung — passe Minutenziele an für präzisere Wechsel</div>
+  ` : '<div style="color:var(--muted);font-size:12px;">Keine Wechsel generiert</div>';
+
+  // Warnings
+  document.getElementById('ab-warnings').innerHTML = warnings.length > 0 ? `
+    <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">HINWEISE & WARNUNGEN</div>
+    ${warnings.map(w => `<div class="warn-item warn-${w.type}">${w.text}</div>`).join('')}
+  ` : '<div class="warn-item warn-green">✓ Keine Warnungen — Lineup sieht solide aus!</div>';
+}
+
+// Patch showView to handle autobuild tab styling
+const _origShowView = showView;
+showView = function(name) {
+  _origShowView(name);
+  const abTab = document.getElementById('tab-autobuild');
+  if (name === 'autobuild') {
+    if (Object.keys(abAttendance).length === 0) initAutoBuild();
+    loadSavedRotations();
+    abTab.style.borderBottomColor = 'var(--green)';
+    abTab.style.color = 'var(--green)';
+  } else {
+    abTab.style.borderBottomColor = 'transparent';
+    abTab.style.color = 'var(--green)';
+  }
+};
+
+// ========== ROTATION STORAGE (Firebase) ==========
+let _lastRotationData = null;
+
+async function saveCurrentRotation() {
+  if (!_lastRotationData) { alert('Zuerst eine Rotation generieren!'); return; }
+  if (!window._fbReady) { alert('Firebase noch nicht bereit — kurz warten und nochmal versuchen.'); return; }
+  const nameInput = document.getElementById('save-rotation-name');
+  const label = nameInput.value.trim() || `Rotation ${new Date().toLocaleDateString('de-DE')}`;
+  const entry = { label, savedAt: new Date().toISOString(), ..._lastRotationData };
+  try {
+    const docId = await window._fbSave(entry);
+    entry._docId = docId;
+    const feedback = document.getElementById('save-feedback');
+    feedback.style.display = 'inline';
+    setTimeout(() => feedback.style.display = 'none', 2500);
+    nameInput.value = '';
+    loadSavedRotations();
+  } catch(e) {
+    alert('Speichern fehlgeschlagen: ' + e.message);
+    console.error(e);
+  }
+}
+
+async function loadSavedRotations() {
+  const countEl = document.getElementById('saved-rotations-count');
+  const listEl = document.getElementById('saved-rotations-list');
+  if (!countEl || !listEl) return;
+  if (!window._fbReady) {
+    countEl.textContent = 'wird geladen…';
+    setTimeout(loadSavedRotations, 800);
+    return;
+  }
+  try {
+    countEl.textContent = '⏳ lädt…';
+    const entries = await window._fbLoad();
+    countEl.textContent = entries.length > 0 ? `${entries.length} gespeichert` : 'Keine gespeichert';
+    if (entries.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Noch keine Rotationen gespeichert.</div>';
+      return;
+    }
+    listEl.innerHTML = entries.map(e => {
+      const date = new Date(e.savedAt).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const starters = (e.starters || []).join(', ');
+      const bench = (e.bench || []).join(', ');
+      const docId = e._docId;
+      return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--surface2);">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--text);">${e.label}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono';">${date}</div>
+            <div style="font-size:11px;color:var(--accent);margin-top:4px;">★ ${starters || '—'}</div>
+            <div style="font-size:11px;color:var(--accent2);margin-top:2px;">· ${bench || '—'}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button onclick="loadRotation('${docId}')" style="padding:6px 14px;background:rgba(74,158,232,0.1);border:1px solid rgba(74,158,232,0.25);border-radius:6px;color:var(--accent2);font-family:'DM Sans';font-size:12px;cursor:pointer;">↩ Laden</button>
+            <button onclick="deleteRotation('${docId}')" style="padding:6px 10px;background:rgba(232,90,74,0.08);border:1px solid rgba(232,90,74,0.2);border-radius:6px;color:var(--red);font-family:'DM Sans';font-size:12px;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    countEl.textContent = 'Fehler';
+    listEl.innerHTML = `<div style="color:var(--red);font-size:12px;">Firebase-Fehler: ${e.message}</div>`;
+    console.error(e);
+  }
+}
+
+async function deleteRotation(docId) {
+  if (!confirm('Rotation löschen?')) return;
+  try {
+    await window._fbDelete(docId);
+    loadSavedRotations();
+  } catch(e) { alert('Löschen fehlgeschlagen: ' + e.message); }
+}
+
+async function loadRotation(docId) {
+  try {
+    const entries = await window._fbLoad();
+    const e = entries.find(x => x._docId === docId);
+    if (!e) { alert('Nicht gefunden'); return; }
+    // Restore attendance
+    Object.keys(FULL_ROSTER).forEach(n => abAttendance[n] = false);
+    (e.available || []).forEach(n => { if (n in FULL_ROSTER) abAttendance[n] = true; });
+    // Restore min targets
+    Object.keys(abMinTargets).forEach(k => delete abMinTargets[k]);
+    Object.entries(e.minTargets || {}).forEach(([n,v]) => { if (v != null) abMinTargets[n] = v; });
+    renderAttendGrid();
+    renderMinTargets();
+    // Re-render result
+    if (e.starters && e.bench && e.mins && e.quarterPlan && e.cheatsheet && e.posBalance && e.warnings) {
+      renderAutoBuildResult(e.starters, e.bench, e.mins, e.quarterPlan, e.cheatsheet, e.posBalance, e.warnings);
+      document.getElementById('ab-result').style.display = 'block';
+      _lastRotationData = e;
+      document.getElementById('save-rotation-name').value = e.label;
+    }
+    document.getElementById('saved-rotations-body').style.display = 'none';
+    setTimeout(() => document.getElementById('ab-result').scrollIntoView({ behavior: 'smooth' }), 100);
+  } catch(e) { alert('Laden fehlgeschlagen: ' + e.message); console.error(e); }
+}
+
+// Patch runAutoBuild to also store last result
+const _origRunAutoBuild = runAutoBuild;
+runAutoBuild = async function() {
+  _origRunAutoBuild();
+};
+
+// ========== INIT ==========
+buildOverview();
+buildPlayerCards();
+buildTable();
+buildLineups();
+buildRotation();
+buildAttendanceView();
+initAutoBuild();
+loadSavedRotations();
+</script>
+
+</body>
+</html>
