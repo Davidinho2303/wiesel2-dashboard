@@ -2894,10 +2894,7 @@
       "datum": "29.11.2025",
       "gegner": "ALBA Berlin 4",
       "heim_auswaerts": "Heim",
-      "ergebnis": {
-        "wiesel": 55,
-        "gegner": 120
-      },
+      "ergebnis": "L",
       "viertel": {
         "wiesel": [
           7,
@@ -3298,17 +3295,16 @@
           "ft": "0/0"
         }
       ],
-      "gsi": 0.5
+      "gsi": 0.5,
+      "ww2_punkte": 55,
+      "gegner_punkte": 120
     },
     {
       "id": "G8",
       "datum": "07.12.2025",
       "gegner": "TUS Lichterfelde 3",
       "heim_auswaerts": "Auswaerts",
-      "ergebnis": {
-        "wiesel": 81,
-        "gegner": 54
-      },
+      "ergebnis": "W",
       "viertel": {
         "wiesel": [
           25,
@@ -3654,17 +3650,16 @@
           "ft": "0/0"
         }
       ],
-      "gsi": 0.5
+      "gsi": 0.5,
+      "ww2_punkte": 81,
+      "gegner_punkte": 54
     },
     {
       "id": "G9",
       "datum": "13.12.2025",
       "gegner": "BC Lions Moabit 1",
       "heim_auswaerts": "Heim",
-      "ergebnis": {
-        "wiesel": 41,
-        "gegner": 55
-      },
+      "ergebnis": "L",
       "viertel": {
         "wiesel": [
           19,
@@ -4065,17 +4060,16 @@
           "ft": "0/0"
         }
       ],
-      "gsi": 0.5
+      "gsi": 0.5,
+      "ww2_punkte": 41,
+      "gegner_punkte": 55
     },
     {
       "id": "G10",
       "datum": "10.01.2026",
       "gegner": "Türkiyemspor Berlin 2",
       "heim_auswaerts": "Heim",
-      "ergebnis": {
-        "wiesel": 55,
-        "gegner": 61
-      },
+      "ergebnis": "L",
       "viertel": {
         "wiesel": [
           10,
@@ -4480,14 +4474,16 @@
           "ft": "1/7"
         }
       ],
-      "gsi": 0.5
+      "gsi": 0.5,
+      "ww2_punkte": 55,
+      "gegner_punkte": 61
     },
     {
       "id": "G11",
       "datum": "24.01.2026",
       "gegner": "DBV Charlottenburg",
       "heim_auswaerts": "auswaerts",
-      "ergebnis": "92-56",
+      "ergebnis": "W",
       "ww2_punkte": 92,
       "gegner_punkte": 56,
       "viertel": [],
@@ -4673,7 +4669,7 @@
       "datum": "31.01.2026",
       "gegner": "BG Zehlendorf 3",
       "heim_auswaerts": "auswaerts",
-      "ergebnis": "65-73",
+      "ergebnis": "L",
       "ww2_punkte": 65,
       "gegner_punkte": 73,
       "viertel": {
@@ -5025,10 +5021,7 @@
       "datum": "15.02.2026",
       "gegner": "Berliner TSC 1",
       "heim_auswaerts": "Heim",
-      "ergebnis": {
-        "ww2": 65,
-        "gegner": 59
-      },
+      "ergebnis": "W",
       "W_L": "W",
       "viertel": {
         "ww2": [
@@ -5386,17 +5379,16 @@
         }
       },
       "notizen": "Top-Scorer Gegner: Enrico Strutz #10 21Pkt (7/9 FW)",
-      "gsi": 0.5
+      "gsi": 0.5,
+      "ww2_punkte": 65,
+      "gegner_punkte": 59
     },
     {
       "id": "G14",
       "datum": "28.02.2026",
       "gegner": "Berliner SC 2",
       "heim_auswaerts": "Heim",
-      "ergebnis": {
-        "ww2": 80,
-        "gegner": 52
-      },
+      "ergebnis": "W",
       "W_L": "W",
       "viertel": {
         "ww2": [
@@ -5754,7 +5746,9 @@
         }
       },
       "notizen": "Player #15 (App) = Theo. 2er/3er attempts fehlen (kein HTML).",
-      "gsi": 0.5
+      "gsi": 0.5,
+      "ww2_punkte": 80,
+      "gegner_punkte": 52
     },
     {
       "id": "G15",
