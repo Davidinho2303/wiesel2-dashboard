@@ -1061,12 +1061,19 @@ async function loadData() {
     PLAYERS = buildPlayersFromJSON(data);
 
     // adj_pm und lineup_score aus spieler_aggregiert übernehmen
+    // (überschreibt die in buildPlayersFromJSON berechneten Werte — Quelle der Wahrheit)
     const agg = data.spieler_aggregiert || {};
     Object.entries(agg).forEach(([rawName, a]) => {
       const name = NAME_MAP[rawName] || rawName;
       if (!PLAYERS[name]) return;
-      if (a.adj_pm != null) PLAYERS[name].adj_pm = a.adj_pm;
-      if (a.lineup_score)   PLAYERS[name].lineup_score = a.lineup_score;
+      if (a.adj_pm      != null) PLAYERS[name].adj_pm      = a.adj_pm;
+      if (a.lineup_score != null) PLAYERS[name].lineup_score = a.lineup_score;
+    });
+
+    // Spieler die NICHT in spieler_aggregiert sind: adj_pm auf null setzen damit kein Fake-Wert erscheint
+    Object.keys(PLAYERS).forEach(name => {
+      const rawMatch = Object.keys(agg).find(r => (NAME_MAP[r]||r) === name);
+      if (!rawMatch) { PLAYERS[name].adj_pm = null; PLAYERS[name].lineup_score = null; }
     });
 
     // LINEUPS aus allen Spieldaten zusammenführen
@@ -1255,7 +1262,7 @@ function buildOverview() {
   const topScorer = pList.sort((a,b)=>b.ppg-a.ppg)[0];
   const topReb = [...pList].sort((a,b)=>b.reb-a.reb)[0];
   const topPM = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].pm_total-a[1].pm_total)[0];
-  const topAdjPM = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].adj_pm-a[1].adj_pm)[0];
+  const topAdjPM = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1 && p.adj_pm!=null).sort((a,b)=>b[1].adj_pm-a[1].adj_pm)[0];
   const totalGames = GAMES.length;
 
   const cards = [
@@ -1301,7 +1308,7 @@ function buildOverview() {
     </div>`).join('');
 
   // Top Adj PM
-  const adjPMs = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1).sort((a,b)=>b[1].adj_pm-a[1].adj_pm).slice(0,8);
+  const adjPMs = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1 && p.adj_pm!=null).sort((a,b)=>b[1].adj_pm-a[1].adj_pm).slice(0,8);
   const maxAdjPM = Math.max(...adjPMs.map(([,p])=>Math.abs(p.adj_pm)));
   document.getElementById('top-adj-pm').innerHTML = adjPMs.map(([n,p])=>`
     <div style="margin-bottom:10px;">
