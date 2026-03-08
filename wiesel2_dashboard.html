@@ -684,6 +684,7 @@
             <th onclick="sortTable('apg')">AST</th>
             <th onclick="sortTable('tpg')">TO</th>
             <th onclick="sortTable('stl')">STL</th>
+            <th onclick="sortTable('blk')">BLK</th>
             <th onclick="sortTable('pm_total')">+/-</th>
             
             <th onclick="sortTable('pir')">PIR</th>
@@ -1051,7 +1052,17 @@ async function loadData() {
       });
     });
     LINEUPS=Object.values(luMap).map(e=>({...e,net_rtg:e.min>0?Math.round(e.pm/e.min*100*10)/10:0})).sort((a,b)=>b.min-a.min);
-    GAMES=(data.spiele||[]).map(g=>({id:g.id,datum:g.datum,gegner:g.gegner,ergebnis:g.ergebnis,ww:g._ww,opp:g._opp,gsi:g.gsi}));
+    GAMES=(data.spiele||[]).map(g=>{
+      // Normalize ergebnis: always derive from scores
+      let ergebnis = g.ergebnis;
+      if (ergebnis !== 'W' && ergebnis !== 'L') {
+        // Try to derive from scores
+        if (g._ww != null && g._opp != null) {
+          ergebnis = g._ww > g._opp ? 'W' : 'L';
+        }
+      }
+      return {id:g.id,datum:g.datum,gegner:g.gegner,ergebnis,ww:g._ww,opp:g._opp,gsi:g.gsi};
+    });
     initDashboard();
   } catch(err) {
     document.body.innerHTML='<div style="color:#e85a4a;padding:40px;font-family:monospace">Fehler beim Laden der JSON: '+err.message+'<br><br>Stelle sicher dass <b>Wiesel2_Lineup_Daten_v3_clean.json</b> im selben Verzeichnis liegt.</div>';
@@ -1545,6 +1556,7 @@ function renderTable() {
       <td>${p.apg}</td>
       <td>${p.tpg}</td>
       <td>${p.stl}</td>
+      <td>${p.blk ?? '—'}</td>
       <td class="${pmColor(p.pm_total)}">${p.pm_total>0?'+':''}${p.pm_total}</td>
       
       <td>${p.pir != null ? p.pir : '—'}</td>
