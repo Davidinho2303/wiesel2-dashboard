@@ -1049,18 +1049,92 @@ async function loadData() {
     const resp = await fetch('./Wiesel2_Lineup_Daten_v3_clean.json');
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const data = await resp.json();
+
+    // GSI pro Spiel berechnen: opp/(ww+opp)
+    (data.spiele||[]).forEach(g => {
+      const ww  = g.ww2_punkte  || g.ww  || 0;
+      const opp = g.gegner_punkte || g.opp || 0;
+      g._ww = ww; g._opp = opp;
+      g.gsi = (ww+opp)>0 ? Math.round(opp/(ww+opp)*1000)/1000 : 0.5;
+    });
+
     PLAYERS = buildPlayersFromJSON(data);
-    LINEUPS = data.lineups||[];
-    GAMES   = (data.spiele||[]).map(g=>({
+
+    // adj_pm aus spieler_aggregiert übernehmen (korrekt GSI-gewichtet)
+    const agg = data.spieler_aggregiert || {};
+    Object.entries(agg).forEach(([rawName, a]) => {
+      const name = NAME_MAP[rawName] || rawName;
+      if (PLAYERS[name] && a.adj_pm != null) {
+        PLAYERS[name].adj_pm = a.adj_pm;
+      }
+    });
+
+    // LINEUPS aus allen Spieldaten zusammenführen
+    const linupMap = {};
+    (data.spiele||[]).forEach(spiel => {
+      (spiel.lineups||[]).forEach(lu => {
+        const players = (lu.spieler||lu.players||[]).map(n=>NAME_MAP[n]||n).sort().join('|');
+        const ww=spiel._ww||0, opp=spiel._opp||0;
+        if (!linupMap[players]) linupMap[players]={players:(lu.spieler||lu.players||[]).map(n=>NAME_MAP[n]||n),min:0,pkt:0,opp:0,pm:0,count:0};
+        const e=linupMap[players];
+        e.min+=lu.min||0; e.pkt+=lu.pkt||0; e.opp+=lu.opp||0;
+        e.pm+=(lu.pkt||0)-(lu.opp||0); e.count++;
+      });
+    });
+    LINEUPS = Object.values(linupMap).map(e=>({
+      ...e, net_rtg: e.min>0 ? Math.round((e.pm/e.min)*100*10)/10 : 0
+    })).sort((a,b)=>b.min-a.min);
+
+    GAMES = (data.spiele||[]).map(g=>({
       id:g.id, datum:g.datum, gegner:g.gegner,
-      ergebnis:g.ergebnis, ww:g.ww, opp:g.opp, gsi:g.gsi
+      ergebnis:g.ergebnis, ww:g._ww, opp:g._opp, gsi:g.gsi
     }));
+
+    // on/off lineup_score berechnen
+    buildLineupScores(data);
+
     initDashboard();
   } catch(err) {
     document.body.innerHTML = '<div style="color:#e85a4a;padding:40px;font-family:monospace">'+
       'Fehler beim Laden der JSON: '+err.message+'<br><br>'+
       'Stelle sicher dass <b>Wiesel2_Lineup_Daten_v3_clean.json</b> im selben Verzeichnis liegt.</div>';
   }
+}
+
+function buildLineupScores(data) {
+  // Für jeden Spieler: on_min, on_pkt, on_opp, off_pkt, off_opp aus Lineup-Daten
+  const playerOn  = {}; // name -> {min, pkt, opp, count}
+  const totalMin  = {}; // name -> min gespielt gesamt
+  let teamTotalMin=0, teamTotalPkt=0, teamTotalOpp=0;
+
+  (data.spiele||[]).forEach(spiel => {
+    (spiel.lineups||[]).forEach(lu => {
+      const players=(lu.spieler||lu.players||[]).map(n=>NAME_MAP[n]||n);
+      const m=lu.min||0, p=lu.pkt||0, o=lu.opp||0;
+      teamTotalMin+=m; teamTotalPkt+=p; teamTotalOpp+=o;
+      players.forEach(n=>{
+        if(!playerOn[n]) playerOn[n]={min:0,pkt:0,opp:0,count:0};
+        playerOn[n].min+=m; playerOn[n].pkt+=p; playerOn[n].opp+=o; playerOn[n].count++;
+      });
+    });
+  });
+
+  const teamNet = teamTotalMin>0 ? (teamTotalPkt-teamTotalOpp)/teamTotalMin*100 : 0;
+
+  Object.entries(playerOn).forEach(([name, on]) => {
+    if (!PLAYERS[name]) return;
+    const offMin  = teamTotalMin - on.min;
+    const offPkt  = teamTotalPkt - on.pkt;
+    const offOpp  = teamTotalOpp - on.opp;
+    const onNet   = on.min>0  ? Math.round((on.pkt -on.opp) /on.min *100*10)/10 : 0;
+    const offNet  = offMin>0  ? Math.round((offPkt-offOpp)/offMin*100*10)/10 : 0;
+    const onOff   = Math.round((onNet - offNet)*10)/10;
+    PLAYERS[name].lineup_score = {
+      on_net:onNet, off_net:offNet, on_off:onOff,
+      on_min:Math.round(on.min*10)/10, lu_count:on.count,
+      consistency: on.count>0 ? Math.min(100,Math.round(50+onOff/2)) : 0
+    };
+  });
 }
 // ========== HELPERS ==========
 function posBadge(pos) {
