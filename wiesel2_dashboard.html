@@ -413,6 +413,159 @@
     outline: none; transition: border-color 0.2s;
   }
   input[type="number"].min-input:focus { border-color: var(--accent); }
+
+  /* ===== RESPONSIVE ===== */
+
+  /* Tablet: 600–900px */
+  @media (max-width: 900px) {
+    .container { padding: 20px 20px; }
+    .tabs { padding: 0 20px; }
+    header { padding: 14px 20px; }
+    .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .two-col { grid-template-columns: 1fr; gap: 14px; }
+    #arch-legend { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+
+  /* Mobile: ≤600px — alles */
+  @media (max-width: 600px) {
+
+    /* === HEADER === */
+    header {
+      padding: 10px 14px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .logo { font-size: 22px; letter-spacing: 2px; }
+    .logo span { font-size: 13px; margin-left: 8px; }
+    .season-badge { font-size: 10px; padding: 3px 8px; }
+    #record-badge { font-size: 11px; }
+
+    /* === TABS === */
+    .tabs {
+      padding: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 0;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      padding: 11px 14px;
+      font-size: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* === LAYOUT === */
+    .container { padding: 12px 12px; }
+    .panel { margin-bottom: 12px; }
+    .panel-header { padding: 11px 14px; flex-wrap: wrap; gap: 4px; }
+    .panel-title { font-size: 15px; letter-spacing: 1px; }
+    .panel-sub { font-size: 11px; margin-left: 0; width: 100%; }
+
+    /* === STAT GRID (Übersicht) === */
+    .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; margin-bottom: 16px; }
+    .stat-card { padding: 12px 14px; }
+    .stat-card .value { font-size: 28px; }
+    .stat-card .label { font-size: 10px; margin-bottom: 4px; }
+    .stat-card .sub { font-size: 11px; }
+
+    /* === ARCHETYPE LEGEND === */
+    #arch-legend { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; padding: 12px !important; }
+
+    /* === TWO-COL → SINGLE === */
+    .two-col { grid-template-columns: 1fr !important; gap: 10px; }
+
+    /* === PLAYER CARDS === */
+    .player-grid { grid-template-columns: 1fr !important; padding: 10px; gap: 8px; }
+    .player-card { padding: 14px; }
+    .pc-name { font-size: 15px; }
+    .pc-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .pc-stat .v { font-size: 20px; }
+    .profile-detail.show { grid-template-columns: 1fr !important; gap: 12px; }
+
+    /* === STATS TABLE === */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 600px; }
+    th { padding: 8px 10px; font-size: 9px; }
+    td { padding: 9px 10px; font-size: 11px; }
+    td.name { font-size: 12px; }
+
+    /* === ROTATION BUILDER === */
+    .rotation-grid { padding: 12px; }
+    .rotation-header { grid-template-columns: 110px repeat(4, 1fr) !important; }
+    .rotation-row { grid-template-columns: 110px repeat(4, 1fr) !important; }
+    .player-label { font-size: 11px; }
+
+    /* === AUTO-BUILD === */
+    /* Attend grid: 2 cols */
+    #attend-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; }
+    #min-targets-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; }
+    #att-summary-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; }
+
+    /* Toggle touch target */
+    .attend-toggle { width: 44px; height: 26px; }
+    .attend-toggle::after { width: 18px; height: 18px; }
+    .attend-toggle.on::after { left: 22px; }
+    .ab-player-row { padding: 10px 12px; }
+
+    /* Starter/Bank result: stack */
+    #ab-result [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    #ab-starter-bench-grid { grid-template-columns: 1fr !important; }
+    #ab-rotation-overview-grid { grid-template-columns: 1fr !important; }
+
+    /* Quarter plan: scrollable */
+    #ab-rotation-plan { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+
+    /* Cheatsheet: single col */
+    #ab-cheatsheet > div[style*="auto-fill"] { grid-template-columns: 1fr !important; }
+    .cheat-row { gap: 8px; }
+    .cheat-min { font-size: 16px; min-width: 28px; }
+
+    /* Pos balance chips: wrap nicely */
+    .pos-slot { font-size: 10px; padding: 4px 8px; }
+
+    /* Save row: stack */
+    div[style*="save-rotation"], #ab-result .panel > div { flex-wrap: wrap; }
+    #save-rotation-row { flex-direction: column; align-items: stretch !important; }
+    #save-rotation-name { width: 100%; min-width: unset !important; font-size: 14px; padding: 10px 12px; }
+    #save-rotation-row button { width: 100%; padding: 12px !important; font-size: 18px !important; }
+
+    /* Generate button: bigger touch target */
+    #view-autobuild button[onclick="runAutoBuild()"] {
+      width: 100%; padding: 14px !important; font-size: 20px !important;
+    }
+
+    /* Kader limit badge */
+    #ab-kader-badge { font-size: 11px; padding: 4px 10px; }
+
+    /* Saved rotations list */
+    #saved-rotations-list > div { padding: 10px 12px; }
+    #saved-rotations-list > div > div { flex-direction: column !important; align-items: flex-start !important; gap: 8px; }
+    #saved-rotations-list > div > div > div:last-child { width: 100%; display: flex; gap: 8px; }
+    #saved-rotations-list button { flex: 1; padding: 8px 0 !important; text-align: center; font-size: 13px !important; }
+
+    /* === ATTENDANCE HEATMAP === */
+    #att-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* === LINEUP TAB === */
+    #view-lineups .panel-header { flex-wrap: wrap; }
+
+    /* === MIN TARGETS INPUT === */
+    input[type="number"].min-input { width: 52px; font-size: 13px; padding: 6px 8px; }
+
+    /* === FILTER BUTTONS === */
+    .ab-btn { padding: 7px 12px; font-size: 12px; }
+
+    /* === WARNINGS === */
+    .warn-item { font-size: 12px; padding: 8px 10px; }
+
+    /* Pos balance grid: wrap */
+    #ab-posbalance > div { gap: 6px; }
+
+    /* Section titles */
+    .panel-title { font-size: 14px; }
+  }
 </style>
 </head>
 <body>
@@ -432,7 +585,6 @@
   <div class="tab" onclick="showView('profiles')">Spielerprofile</div>
   <div class="tab" onclick="showView('table')">Stats-Tabelle</div>
   <div class="tab" onclick="showView('lineups')">Lineups</div>
-  <div class="tab" onclick="showView('rotation')">Rotation Builder</div>
   <div class="tab" onclick="showView('attendance')">Anwesenheit</div>
   <div class="tab" onclick="showView('autobuild')" style="color:#4ae87a;border-bottom:2px solid transparent;" id="tab-autobuild">⚡ Auto-Build</div>
 </div>
@@ -547,6 +699,7 @@
             <th onclick="sortTable('tpg')">TO</th>
             <th onclick="sortTable('stl')">STL</th>
             <th onclick="sortTable('pm_total')">+/-</th>
+            <th onclick="sortTable('adj_pm')">Adj +/-</th>
             <th onclick="sortTable('pir')">PIR</th>
           </tr>
         </thead>
@@ -565,8 +718,7 @@
     </div>
     <div class="filter-bar">
       <span style="font-size:12px;color:var(--muted2);align-self:center;">Min. Minuten:</span>
-      <button class="filter-btn active" onclick="filterLineups(this,2)">2+</button>
-      <button class="filter-btn" onclick="filterLineups(this,5)">5+</button>
+      <button class="filter-btn active" onclick="filterLineups(this,5)">5+</button>
       <button class="filter-btn" onclick="filterLineups(this,8)">8+</button>
       <button class="filter-btn" onclick="filterLineups(this,12)">12+</button>
     </div>
@@ -576,14 +728,13 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr>
+          <tr id="lineups-thead">
             <th>Lineup</th>
-            <th>Min</th>
-            <th>Pkt</th>
-            <th>Opp</th>
-            <th>+/-</th>
-            <th>Net Rtg</th>
-            <th>Spiele</th>
+            <th onclick="sortLineups(this,'min')" style="cursor:pointer;">Min</th>
+            <th onclick="sortLineups(this,'pkt')" style="cursor:pointer;">Pkt</th>
+            <th onclick="sortLineups(this,'opp')" style="cursor:pointer;">Opp</th>
+            <th onclick="sortLineups(this,'pm')" style="cursor:pointer;" class="sorted">+/-</th>
+            <th onclick="sortLineups(this,'count')" style="cursor:pointer;">Spiele</th>
           </tr>
         </thead>
         <tbody id="lineup-tbody"></tbody>
@@ -592,32 +743,6 @@
   </div>
 </div>
 
-<!-- ROTATION BUILDER -->
-<div class="view" id="view-rotation">
-  <div class="panel" style="margin-bottom:16px;">
-    <div class="panel-header">
-      <span class="panel-title">Rotation Builder</span>
-      <span class="panel-sub">Wähle Starter & Bank → sieh Spielerprofile & Empfehlungen</span>
-    </div>
-    <div style="padding:16px 20px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div>
-          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">STARTER (5)</div>
-          <div id="starter-slots" style="display:flex;flex-direction:column;gap:6px;"></div>
-        </div>
-        <div>
-          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:10px;">BANK</div>
-          <div id="bank-slots" style="display:flex;flex-direction:column;gap:6px;"></div>
-        </div>
-      </div>
-      <div style="margin-top:16px;">
-        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">SPIELER AUSWÄHLEN</div>
-        <div id="player-select-grid" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-      </div>
-    </div>
-  </div>
-  <div id="rotation-analysis" class="panel" style="display:none;"></div>
-</div>
 
 <!-- ANWESENHEIT VIEW -->
 <div class="view" id="view-attendance">
@@ -696,10 +821,46 @@
     </div>
   </div>
 
-  <!-- STEP 2: MINUTENZIELE -->
+
+  <!-- STEP 2: STARTER -->
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('ab-starters-pick')">
+      <span class="panel-title">② Starter</span>
+      <span style="font-size:11px;letter-spacing:1px;color:var(--accent);margin-left:12px;" id="starters-pick-summary">— noch nicht gesetzt</span>
+      <button onclick="event.stopPropagation();autoPickStarters()" style="margin-left:auto;padding:4px 14px;background:rgba(232,200,74,0.12);border:1px solid rgba(232,200,74,0.3);border-radius:6px;color:var(--accent);font-family:'DM Sans';font-size:12px;cursor:pointer;">⚡ Auto-Vorschlag</button>
+      <span class="panel-sub" style="margin-left:12px;">5 Starter wählen</span>
+    </div>
+    <div id="ab-starters-pick" style="padding:16px 20px;display:none;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Ziehe Spieler in die Starter- oder Bank-Zone · oder klicke zum Wechseln</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <!-- STARTER ZONE -->
+        <div>
+          <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">★ STARTER (5)</div>
+          <div id="sp-starter-slots"
+            ondragover="event.preventDefault();this.style.background='rgba(232,200,74,0.08)'"
+            ondragleave="this.style.background=''"
+            ondrop="dropToZone(event,'starter')"
+            style="min-height:180px;display:flex;flex-direction:column;gap:6px;border:2px dashed rgba(232,200,74,0.25);border-radius:10px;padding:8px;transition:background 0.15s;">
+          </div>
+        </div>
+        <!-- BANK ZONE -->
+        <div>
+          <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;">BANK</div>
+          <div id="sp-bench-slots"
+            ondragover="event.preventDefault();this.style.background='rgba(74,158,232,0.06)'"
+            ondragleave="this.style.background=''"
+            ondrop="dropToZone(event,'bench')"
+            style="min-height:180px;display:flex;flex-direction:column;gap:6px;border:2px dashed rgba(74,158,232,0.2);border-radius:10px;padding:8px;transition:background 0.15s;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: MINUTENZIELE -->
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header" style="cursor:pointer;" onclick="toggleSection('ab-minutes')">
-      <span class="panel-title">② Minutenziele <span style="font-size:12px;font-family:'DM Sans';font-weight:400;color:var(--muted2);">(optional)</span></span>
+      <span class="panel-title">③ Minutenziele <span style="font-size:12px;font-family:'DM Sans';font-weight:400;color:var(--muted2);">(optional)</span></span>
       <span class="panel-sub">Gesamt = 200 Min</span>
     </div>
     <div id="ab-minutes" style="padding:16px 20px;display:none;">
@@ -729,7 +890,7 @@
     </div>
 
     <!-- Starter & Bank -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div id="ab-starter-bench-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="panel">
         <div class="panel-header">
           <span class="panel-title" style="color:var(--accent);">★ STARTER (5)</span>
@@ -771,7 +932,7 @@
 
     <!-- Speichern -->
     <div class="panel" style="margin-bottom:16px;padding:16px 20px;">
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div id="save-rotation-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <input id="save-rotation-name" type="text" placeholder="Gegner / Spieltag (z.B. BASS Südwest 2 – Spiel 16)"
           style="flex:1;min-width:200px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans';font-size:13px;">
         <button onclick="saveCurrentRotation()" style="padding:9px 22px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;cursor:pointer;">
@@ -1340,7 +1501,9 @@ function showView2(name) {
 }
 
 // ========== LINEUPS ==========
-let lineupMinFilter = 2;
+let lineupMinFilter = 5;
+let lineupSortKey = 'pm';
+let lineupSortDir = -1;
 
 function buildLineups() {
   renderLineups();
@@ -1350,6 +1513,14 @@ function filterLineups(btn, min) {
   lineupMinFilter = min;
   document.querySelectorAll('#view-lineups .filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  renderLineups();
+}
+
+function sortLineups(btn, key) {
+  if (lineupSortKey === key) lineupSortDir *= -1;
+  else { lineupSortKey = key; lineupSortDir = -1; }
+  document.querySelectorAll(`#lineups-thead th`).forEach(t=>t.classList.remove(`sorted`));
+  btn.classList.add(`sorted`);
   renderLineups();
 }
 
@@ -1365,7 +1536,7 @@ function renderLineups() {
   if (searchTerms.length) {
     data = data.filter(l=>searchTerms.every(t=>l.players.some(p=>p.toLowerCase().includes(t))));
   }
-  data.sort((a,b)=>b.net_rtg-a.net_rtg);
+  data.sort((a,b)=>(b[lineupSortKey]-a[lineupSortKey])*lineupSortDir);
 
   document.getElementById('lineup-tbody').innerHTML = data.map(l=>`
     <tr>
@@ -1374,148 +1545,136 @@ function renderLineups() {
       <td>${l.pkt}</td>
       <td>${l.opp}</td>
       <td class="${l.pm>=0?'good':'bad'}">${l.pm>0?'+':''}${l.pm}</td>
-      <td class="lu-pm ${l.net_rtg>=0?'good':'bad'}">${l.net_rtg>0?'+':''}${l.net_rtg}</td>
       <td style="color:var(--muted);">${l.count}</td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px;">Keine Lineups gefunden</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Keine Lineups gefunden</td></tr>';
 }
 
 // ========== ROTATION BUILDER ==========
-let starters = [];
-let bench = [];
+// ========== STARTER PICKER (combined with Auto-Build) ==========
+let manualStarters = []; // manually picked starters (empty = use auto)
 
-function buildRotation() {
-  const allPlayers = Object.entries(PLAYERS).filter(([,p])=>p.spiele>=1);
-
-  const POS_GROUPS = [
-    { label: 'PG / SG', match: p => p==='1'||p==='1/2'||p==='2' },
-    { label: 'Combo',   match: p => p.toLowerCase()==='combo' },
-    { label: 'SF',      match: p => p==='3'||p==='3/4' },
-    { label: 'PF / C',  match: p => p==='4'||p==='4/5'||p==='5' },
-  ];
-
-  let html = '';
-  POS_GROUPS.forEach(group => {
-    const players = allPlayers
-      .filter(([,p]) => group.match((p.pos||'').toLowerCase()))
-      .sort((a,b) => b[1].ppg - a[1].ppg);
-    if (!players.length) return;
-    html += `<div style="width:100%;margin:6px 0 3px;"><span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-left:2px solid var(--accent);padding-left:6px;">${group.label}</span></div>`;
-    html += players.map(([name,p]) => `
-      <button class="filter-btn" id="rb-${name}" onclick="togglePlayer('${name}')" title="${p.ppg}ppg ${p.reb}reb">
-        ${name} <span style="color:var(--muted);font-size:10px;">${p.pos}</span>
-      </button>`).join('');
-  });
-
-  document.getElementById('player-select-grid').innerHTML = html;
-  renderRotationSlots();
+function buildStarterPicker() {
+  renderStarterPicker();
 }
 
-function togglePlayer(name) {
-  if (starters.includes(name)) {
-    starters = starters.filter(n=>n!==name);
-  } else if (bench.includes(name)) {
-    bench = bench.filter(n=>n!==name);
-  } else if (starters.length < 5) {
-    starters.push(name);
-  } else {
-    bench.push(name);
-  }
-  renderRotationSlots();
-  analyzeRotation();
+function makePlayerCard(name, zone) {
+  const p = PLAYERS[name];
+  const isStarter = zone === 'starter';
+  const bg = isStarter ? 'rgba(232,200,74,0.08)' : 'rgba(74,158,232,0.06)';
+  const border = isStarter ? 'rgba(232,200,74,0.25)' : 'rgba(74,158,232,0.2)';
+  const color = isStarter ? 'var(--accent)' : 'var(--accent2)';
+  return `<div draggable="true"
+    ondragstart="dragStart(event,'${name}')"
+    ondragend="dragEnd(event)"
+    onclick="toggleStarter('${name}')"
+    style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${bg};border:1px solid ${border};border-radius:7px;cursor:grab;user-select:none;transition:opacity 0.15s;">
+    ${posBadge(p?.pos||'?')}
+    <span style="font-weight:600;">${name}</span>
+    <span style="margin-left:auto;font-family:'DM Mono';font-size:11px;color:${color};">${p?.ppg||'—'}ppg</span>
+    <span style="color:var(--muted);font-size:11px;cursor:pointer;" onclick="event.stopPropagation();toggleStarter('${name}')">✕</span>
+  </div>`;
 }
 
-function renderRotationSlots() {
-  const posLabels = ['PG','SG','SF','PF','C'];
-  document.getElementById('starter-slots').innerHTML = Array(5).fill(0).map((_,i)=>{
-    const name = starters[i];
-    if (name) {
-      const p = PLAYERS[name];
-      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(232,200,74,0.08);border:1px solid rgba(232,200,74,0.2);border-radius:8px;">
-        ${posBadge(p.pos)}
-        <span style="font-weight:600;">${name}</span>
-        <span style="margin-left:auto;font-family:'DM Mono';font-size:11px;color:var(--accent);">${p.ppg}ppg</span>
-        <button onclick="togglePlayer('${name}')" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>
-      </div>`;
+function renderStarterPicker() {
+  const available = Object.keys(abAttendance).filter(n => abAttendance[n]);
+  const bench = available.filter(n => !manualStarters.includes(n));
+
+  // Starter zone
+  const starterEl = document.getElementById('sp-starter-slots');
+  if (starterEl) {
+    let html = manualStarters.map(n => makePlayerCard(n, 'starter')).join('');
+    // Empty slots
+    for (let i = manualStarters.length; i < 5; i++) {
+      html += `<div style="padding:7px 10px;border:1px dashed rgba(232,200,74,0.2);border-radius:7px;color:var(--muted);font-size:12px;">Starter ${i+1} — hierher ziehen</div>`;
     }
-    return `<div style="padding:8px 12px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;">${posLabels[i]} — Leer</div>`;
-  }).join('');
+    starterEl.innerHTML = html;
+  }
 
-  document.getElementById('bank-slots').innerHTML = bench.length ? bench.map(name=>{
-    const p = PLAYERS[name];
-    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(74,158,232,0.06);border:1px solid rgba(74,158,232,0.15);border-radius:8px;">
-      ${posBadge(p.pos)}
-      <span style="font-weight:600;">${name}</span>
-      <span style="margin-left:auto;font-family:'DM Mono';font-size:11px;color:var(--accent2);">${p.ppg}ppg</span>
-      <button onclick="togglePlayer('${name}')" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>
-    </div>`;
-  }).join('') : `<div style="padding:8px 12px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;">Spieler oben auswählen</div>`;
+  // Bench zone
+  const benchEl = document.getElementById('sp-bench-slots');
+  if (benchEl) {
+    if (bench.length) {
+      benchEl.innerHTML = bench.map(n => makePlayerCard(n, 'bench')).join('');
+    } else if (available.length === 0) {
+      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">Keine Spieler verfügbar — zuerst Anwesenheit setzen</span>`;
+    } else {
+      benchEl.innerHTML = `<span style="color:var(--muted);font-size:12px;">Alle verfügbaren Spieler sind Starter</span>`;
+    }
+  }
 
-  // Update button states
-  document.querySelectorAll('[id^="rb-"]').forEach(btn=>{
-    const name = btn.id.replace('rb-','');
-    btn.classList.toggle('active', starters.includes(name) || bench.includes(name));
-  });
+  // Summary label
+  const summary = document.getElementById('starters-pick-summary');
+  if (summary) {
+    if (manualStarters.length === 5) {
+      summary.textContent = manualStarters.join(', ');
+      summary.style.color = 'var(--green)';
+    } else if (manualStarters.length > 0) {
+      summary.textContent = `${manualStarters.length}/5 gewählt`;
+      summary.style.color = 'var(--accent)';
+    } else {
+      summary.textContent = '— Auto-Modus aktiv';
+      summary.style.color = 'var(--muted)';
+    }
+  }
 }
 
-function analyzeRotation() {
-  const panel = document.getElementById('rotation-analysis');
-  if (starters.length < 3) { panel.style.display='none'; return; }
-  panel.style.display = 'block';
-
-  const startKey = tuple => tuple.sort().join(',');
-  const relevant = LINEUPS.filter(l=>{
-    const inStarters = l.players.filter(p=>starters.includes(p)).length;
-    return inStarters >= 3 && l.min >= 2;
-  }).sort((a,b)=>b.net_rtg-a.net_rtg);
-
-  const allSelected = [...starters, ...bench];
-  const starterStats = starters.map(n=>PLAYERS[n]).filter(Boolean);
-  const avgPPG = (starterStats.reduce((a,p)=>a+p.ppg,0)/starterStats.length).toFixed(1);
-  const avgReb = (starterStats.reduce((a,p)=>a+p.reb,0)/starterStats.length).toFixed(1);
-  const totalPM = allSelected.reduce((a,n)=>a+(PLAYERS[n]?.pm_total||0),0);
-
-  // Position check
-  const positions = starters.map(n=>PLAYERS[n]?.pos||'?');
-  const has1 = positions.some(p=>p.includes('1') || p.toLowerCase().includes('combo'));
-  const has5 = positions.some(p=>p.includes('5') || p.includes('4'));
-
-  panel.innerHTML = `
-    <div class="panel-header">
-      <span class="panel-title">Rotation Analyse</span>
-    </div>
-    <div style="padding:16px 20px;">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
-        <div class="stat-card" style="padding:12px 16px;">
-          <div class="label">Ø PPG Starter</div>
-          <div class="value" style="font-size:28px;">${avgPPG}</div>
-        </div>
-        <div class="stat-card" style="padding:12px 16px;">
-          <div class="label">Ø Reb Starter</div>
-          <div class="value" style="font-size:28px;">${avgReb}</div>
-        </div>
-        <div class="stat-card" style="padding:12px 16px;">
-          <div class="label">Total +/-</div>
-          <div class="value" style="font-size:28px;color:${totalPM>=0?'var(--green)':'var(--red)'};">${totalPM>0?'+':''}${totalPM}</div>
-        </div>
-        <div class="stat-card" style="padding:12px 16px;">
-          <div class="label">Roster Größe</div>
-          <div class="value" style="font-size:28px;">${allSelected.length}</div>
-        </div>
-      </div>
-      
-      ${!has1 ? '<div style="padding:8px 12px;background:rgba(232,90,74,0.1);border:1px solid rgba(232,90,74,0.2);border-radius:6px;margin-bottom:12px;color:#f0907a;font-size:12px;">⚠️ Kein klassischer PG im Starter-Lineup</div>' : ''}
-      ${!has5 ? '<div style="padding:8px 12px;background:rgba(232,90,74,0.1);border:1px solid rgba(232,90,74,0.2);border-radius:6px;margin-bottom:12px;color:#f0907a;font-size:12px;">⚠️ Kein großer Mann (4/5) im Starter-Lineup</div>' : ''}
-
-      <div style="margin-bottom:16px;">
-        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">BEKANNTE LINEUP-DATEN (3+ gemeinsame Starter)</div>
-        ${relevant.slice(0,6).map(l=>`
-          <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;">
-            <div style="flex:1">${l.players.map(p=>`<span class="lu-tag" style="${starters.includes(p)?'background:rgba(232,200,74,0.15);color:var(--accent);':''}">${p}</span>`).join('')}</div>
-            <span style="font-family:'DM Mono';font-size:11px;color:${l.net_rtg>=0?'var(--green)':'var(--red)'};">${l.net_rtg>0?'+':''}${l.net_rtg} · ${l.min}min</span>
-          </div>`).join('') || '<div style="color:var(--muted);font-size:12px;">Noch keine gemeinsamen Spieldaten</div>'}
-      </div>
-    </div>`;
+// Drag & Drop
+let _dragName = null;
+function dragStart(event, name) {
+  _dragName = name;
+  event.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => { if (event.target) event.target.style.opacity = '0.4'; }, 0);
 }
+function dragEnd(event) {
+  if (event.target) event.target.style.opacity = '';
+  _dragName = null;
+}
+function dropToZone(event, zone) {
+  event.preventDefault();
+  event.currentTarget.style.background = '';
+  if (!_dragName) return;
+  const available = Object.keys(abAttendance).filter(n => abAttendance[n]);
+  if (zone === 'starter') {
+    if (!manualStarters.includes(_dragName) && manualStarters.length < 5) {
+      manualStarters.push(_dragName);
+    } else if (!manualStarters.includes(_dragName) && manualStarters.length >= 5) {
+      // Swap: remove last, add new
+      manualStarters.pop();
+      manualStarters.push(_dragName);
+    }
+  } else { // bench
+    manualStarters = manualStarters.filter(n => n !== _dragName);
+  }
+  renderStarterPicker();
+}
+
+function toggleStarter(name) {
+  if (manualStarters.includes(name)) {
+    manualStarters = manualStarters.filter(n => n !== name);
+  } else if (manualStarters.length < 5) {
+    manualStarters.push(name);
+  } else {
+    manualStarters.pop();
+    manualStarters.push(name);
+  }
+  renderStarterPicker();
+}
+
+function autoPickStarters() {
+  const available = Object.keys(abAttendance).filter(n => abAttendance[n]);
+  if (available.length < 5) return;
+  const scored = available.map(n => ({ name: n, score: scorePlayer(n) }))
+    .sort((a,b) => b.score - a.score);
+  const roster = scored.slice(0, Math.min(available.length, 12)).map(x => x.name);
+  const bh = roster.find(n => FULL_ROSTER[n]?.ballhandler);
+  const big = roster.filter(n => n !== bh).find(n => FULL_ROSTER[n]?.can_play_big);
+  const rest = roster.filter(n => n !== bh && n !== big).slice(0, 3);
+  manualStarters = [bh, big, ...rest].filter(Boolean).slice(0, 5);
+  const body = document.getElementById('ab-starters-pick');
+  if (body) body.style.display = 'block';
+  renderStarterPicker();
+}
+
 
 
 // ========== ATTENDANCE DATA (from CSV export) ==========
@@ -1685,12 +1844,16 @@ let abMinTargets = {};
 function initAutoBuild() {
   // Merge FULL_ROSTER with PLAYERS data
   const allNames = new Set([...Object.keys(FULL_ROSTER), ...Object.keys(PLAYERS)]);
+  // Default: Top 12 by recent attendance (last8 sessions), ties broken by last3 then total
+  const ranked = [...allNames].sort((a, b) => {
+    const sa = ATT_DATA.stats[a] || {last8:0, last3:0, total:0};
+    const sb = ATT_DATA.stats[b] || {last8:0, last3:0, total:0};
+    return (sb.last8 - sa.last8) || (sb.last3 - sa.last3) || (sb.total - sa.total);
+  });
+  const top12 = new Set(ranked.slice(0, 12));
   allNames.forEach(n => {
     if (abAttendance[n] === undefined) {
-      // Default: present if in PLAYERS with spiele >= 1, else by att level
-      const hasSeason = PLAYERS[n] && PLAYERS[n].spiele >= 1;
-      const att = FULL_ROSTER[n]?.att || 1;
-      abAttendance[n] = hasSeason && att >= 2;
+      abAttendance[n] = top12.has(n);
     }
   });
   renderAttendGrid();
@@ -1917,21 +2080,22 @@ function runAutoBuild() {
     .sort((a, b) => b.score - a.score);
 
   // ---- STARTER SELECTION ----
-  // Constraints via flags: 1x ballhandler, 1x can_play_big, fill rest by score
   let starters5 = [];
   const remaining = [...scored];
 
-  // 1. Pick best ballhandler
-  const bh = remaining.find(x => FULL_ROSTER[x.name]?.ballhandler);
-  if (bh) { starters5.push(bh.name); remaining.splice(remaining.indexOf(bh), 1); }
-
-  // 2. Pick best big (can_play_big flag)
-  const big = remaining.find(x => FULL_ROSTER[x.name]?.can_play_big);
-  if (big) { starters5.push(big.name); remaining.splice(remaining.indexOf(big), 1); }
-
-  // 3. Fill remaining 3 spots with best available
-  while (starters5.length < 5 && remaining.length > 0) {
-    starters5.push(remaining.shift().name);
+  if (manualStarters.length === 5 && manualStarters.every(n => available.includes(n))) {
+    // Use manually picked starters
+    starters5 = [...manualStarters];
+    remaining.splice(0, remaining.length, ...remaining.filter(x => !starters5.includes(x.name)));
+  } else {
+    // Auto: 1x ballhandler, 1x can_play_big, fill rest by score
+    const bh = remaining.find(x => FULL_ROSTER[x.name]?.ballhandler);
+    if (bh) { starters5.push(bh.name); remaining.splice(remaining.indexOf(bh), 1); }
+    const big = remaining.find(x => FULL_ROSTER[x.name]?.can_play_big);
+    if (big) { starters5.push(big.name); remaining.splice(remaining.indexOf(big), 1); }
+    while (starters5.length < 5 && remaining.length > 0) {
+      starters5.push(remaining.shift().name);
+    }
   }
 
   const bench5 = remaining.map(x => x.name);
@@ -1981,13 +2145,9 @@ function runAutoBuild() {
   const diff2 = totalMin - sumCheck;
   if (diff2 !== 0 && starters5[0]) assignedMin[starters5[0]] = (assignedMin[starters5[0]] || 0) + diff2;
 
-  // ---- QUARTER PLAN ----
-  // Q1-Q4: 10 min each, 5 players * 4 quarters * 10 = 200
-  // Generate stint plan: which players play in which quarter
-  const quarterPlan = generateQuarterPlan(starters5, bench5, assignedMin, available);
-
-  // ---- CHEATSHEET ----
-  const cheatsheet = generateCheatsheet(quarterPlan, starters5);
+  // ---- STINT PLAN + CHEATSHEET ----
+  const stintResult = generateStintPlan(starters5, bench5, assignedMin);
+  const cheatsheet = stintResult.cheatsheet;
 
   // ---- POSITION BALANCE ----
   const posBalance = checkPosBalance(starters5, available);
@@ -1996,7 +2156,7 @@ function runAutoBuild() {
   const warnings = generateWarnings(starters5, bench5, available, assignedMin, posBalance);
 
   // ---- RENDER ----
-  renderAutoBuildResult(starters5, bench5, assignedMin, quarterPlan, cheatsheet, posBalance, warnings);
+  renderAutoBuildResult(starters5, bench5, assignedMin, stintResult, cheatsheet, posBalance, warnings);
 
   // Store for save function
   _lastRotationData = {
@@ -2005,7 +2165,7 @@ function runAutoBuild() {
     mins: assignedMin,
     minTargets: {...abMinTargets},
     available: Object.keys(FULL_ROSTER).filter(n => abAttendance[n]),
-    quarterPlan,
+    quarterPlan: stintResult,
     cheatsheet,
     posBalance,
     warnings
@@ -2016,55 +2176,157 @@ function runAutoBuild() {
 }
 
 // ---- QUARTER PLAN GENERATOR ----
-function generateQuarterPlan(starters, bench, mins, available) {
-  // Create a simple stint plan: who plays in Q1..Q4 (each 10 min)
-  // Starters play Q1 always, then rotate based on minutes
-  const plan = {}; // name -> [q1bool, q2bool, q3bool, q4bool]
-  available.forEach(n => {
-    const m = mins[n] || 0;
-    // Roughly: 30+ min = 3Q, 20+ = 2Q, 10+ = 1Q, <10 = spot
-    if (starters.includes(n)) {
-      if (m >= 34) plan[n] = [true, true, true, true];
-      else if (m >= 26) plan[n] = [true, true, true, false];
-      else if (m >= 18) plan[n] = [true, true, false, true];
-      else plan[n] = [true, false, false, false];
-    } else {
-      if (m >= 28) plan[n] = [true, true, true, false];
-      else if (m >= 20) plan[n] = [false, true, true, false];
-      else if (m >= 12) plan[n] = [false, true, false, true];
-      else plan[n] = [false, false, true, false];
-    }
+// ========== STINT ENGINE ==========
+// Generates stints: [{name, start, end}] ensuring at all times:
+//   - exactly 5 on court
+//   - at least 1 ballhandler
+//   - at least 1 big (can_play_big)
+//   - max 4 simultaneous subs
+// Returns: { stints: [{name,start,end}], subs: [{minute,outs,ins,fieldAfter}] }
+
+function generateStintPlan(starters, bench, targetMins) {
+  const GAME         = 40;
+  const TARGET_STINT = 7;
+  const MAX_STINT    = 10;
+  const MIN_REST     = 4;
+  const MAX_SUBS     = 2;  // max simultaneous subs (Ausnahme: bis 3)
+
+  const f     = n => FULL_ROSTER[n] || {};
+  const isBH  = n => !!f(n).ballhandler;
+  const isBig = n => !!f(n).can_play_big;
+
+  const roster = [...new Set([...starters, ...bench])].filter(n => (targetMins[n]||0) > 0);
+
+  const played  = {};
+  const onSince = {};
+  const offAt   = {};
+  const pStints = {};
+  roster.forEach(n => {
+    played[n] = 0; onSince[n] = null; offAt[n] = -MIN_REST; pStints[n] = [];
   });
-  return plan;
+
+  // Starters begin at 0 — but stagger their first sub target slightly
+  // so they don't all hit MAX_STINT at the same minute
+  const staggerOffset = {};
+  starters.forEach((n, i) => {
+    onSince[n] = 0;
+    // Spread first sub moment: player 0 hits limit at 6min, player 4 at 8min
+    // by giving each a small "head start" offset of 0-2 min
+    staggerOffset[n] = Math.floor(i / 2) * 1; // 0,0,1,1,2 min offset
+  });
+  bench.forEach(n => { offAt[n] = 0; });
+
+  let court = starters.filter(n => (targetMins[n]||0) > 0).slice(0, 5);
+
+  // Effective time-on for urgency: subtract stagger so they feel "older" than they are
+  const effectiveTimeOn = (n, t) => {
+    const raw = t - (onSince[n] ?? t);
+    return raw + (staggerOffset[n] || 0);
+  };
+
+  const subEvents = [];
+
+  function outUrgency(n, t) {
+    const timeOn = effectiveTimeOn(n, t);
+    const rem    = (targetMins[n]||0) - played[n];
+    if (timeOn >= MAX_STINT + (staggerOffset[n]||0)) return 100 + timeOn; // hard cap
+    if (rem - (t - (onSince[n]??t)) <= 0) return 80;                      // minutes used up
+    if (timeOn >= TARGET_STINT) return timeOn - TARGET_STINT;              // soft urgency
+    return 0;
+  }
+
+  function inUrgency(n, t) {
+    if (onSince[n] !== null) return -1;
+    const rem  = (targetMins[n]||0) - played[n];
+    const rest = t - offAt[n];
+    if (rem <= 0 || rest < MIN_REST) return -1;
+    const timeLeft = GAME - t;
+    return rem / Math.max(1, timeLeft) * 10 + (starters.includes(n) ? 1 : 0);
+  }
+
+  for (let t = 2; t <= GAME; t += 2) {
+    if (t === GAME) {
+      court.forEach(n => {
+        const s = onSince[n] ?? t;
+        played[n] += t - s;
+        pStints[n].push({ start: s, end: t });
+      });
+      break;
+    }
+
+    // Sort by urgency, take max MAX_SUBS (soft: allow 3 only if someone is hard-capped)
+    const urgencies = court
+      .map(n => ({ n, u: outUrgency(n, t) }))
+      .filter(x => x.u > 0)
+      .sort((a, b) => b.u - a.u);
+
+    const hardCapped = urgencies.filter(x => x.u >= 100).length;
+    const limit = hardCapped > MAX_SUBS ? Math.min(hardCapped, 3) : Math.min(urgencies.length, MAX_SUBS);
+    const wantOut = urgencies.slice(0, limit).map(x => x.n);
+
+    if (!wantOut.length) continue;
+
+    const staying = court.filter(n => !wantOut.includes(n));
+    const needBH  = !staying.some(isBH);
+    const needBig = !staying.some(isBig);
+
+    const canIn = roster
+      .filter(n => !court.includes(n))
+      .map(n => ({ n, u: inUrgency(n, t) }))
+      .filter(x => x.u >= 0)
+      .sort((a, b) => {
+        let sa = a.u, sb = b.u;
+        if (needBH  && isBH(a.n))  sa += 20;
+        if (needBH  && isBH(b.n))  sb += 20;
+        if (needBig && isBig(a.n)) sa += 20;
+        if (needBig && isBig(b.n)) sb += 20;
+        return sb - sa;
+      })
+      .map(x => x.n);
+
+    const numSubs  = Math.min(wantOut.length, canIn.length);
+    if (numSubs === 0) continue;
+
+    const goingOut = wantOut.slice(0, numSubs);
+    const comingIn = canIn.slice(0, numSubs);
+
+    goingOut.forEach(n => {
+      const s = onSince[n] ?? t;
+      played[n] += t - s;
+      pStints[n].push({ start: s, end: t });
+      onSince[n] = null;
+      offAt[n]   = t;
+    });
+    comingIn.forEach(n => { onSince[n] = t; });
+
+    court = [...staying, ...comingIn];
+
+    subEvents.push({ minute: t, outs: goingOut, ins: comingIn, fieldAfter: [...court] });
+  }
+
+  const playerSummary = {};
+  roster.forEach(n => {
+    playerSummary[n] = {
+      stints:  pStints[n],
+      planned: pStints[n].reduce((s, x) => s + x.end - x.start, 0),
+      target:  targetMins[n] || 0
+    };
+  });
+
+  return {
+    stints: pStints,
+    cheatsheet: subEvents.map(e => ({ minute: e.minute, outs: e.outs, ins: e.ins, fieldAfter: e.fieldAfter })),
+    playerSummary
+  };
 }
 
-// ---- CHEATSHEET GENERATOR ----
+
+function generateQuarterPlan(starters, bench, mins, available) {
+  // Return null — we now use generateStintPlan directly
+  return null;
+}
 function generateCheatsheet(quarterPlan, starters) {
-  // Key substitution moments: 4', 8', 12', 16', 20', 24', 28', 32', 36'
-  const subMinutes = [4, 8, 12, 16, 20, 24, 28, 32];
-  const sheet = [];
-
-  starters.forEach((starter, i) => {
-    const mins = [4 + i * 1.5, 24 + i * 1.5]; // rough sub moments
-    mins.forEach(m => {
-      const t = Math.round(m);
-      const benchForThis = Object.keys(quarterPlan).filter(n => !starters.includes(n));
-      const sub = benchForThis[i % benchForThis.length];
-      if (sub) sheet.push({ minute: t, out: starter, in: sub });
-    });
-  });
-
-  // Sort and deduplicate by minute
-  const byMin = {};
-  sheet.forEach(s => {
-    if (!byMin[s.minute]) byMin[s.minute] = { outs: [], ins: [] };
-    byMin[s.minute].outs.push(s.out);
-    byMin[s.minute].ins.push(s.in);
-  });
-
-  return Object.entries(byMin)
-    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-    .map(([m, v]) => ({ minute: parseInt(m), outs: [...new Set(v.outs)], ins: [...new Set(v.ins)] }));
+  return [];
 }
 
 // ---- POSITION BALANCE CHECK ----
@@ -2183,44 +2445,127 @@ function renderAutoBuildResult(starters, bench, mins, quarterPlan, cheatsheet, p
     }).join(' · ')}</div>
   `;
 
-  // Quarter plan table
-  const allInPlan = Object.keys(quarterPlan);
-  const qLabels = ['Q1 (0-10\')', 'Q2 (10-20\')', 'Q3 (20-30\')', 'Q4 (30-40\')'];
-  document.getElementById('ab-rotation-plan').innerHTML = `
-    <div style="display:grid;grid-template-columns:70px repeat(4,1fr);gap:3px;min-width:420px;">
-      <div></div>
-      ${qLabels.map(q => `<div class="q-header-cell">${q}</div>`).join('')}
-      ${allInPlan.map(n => {
-        const qs = quarterPlan[n];
-        const isStarter = starters.includes(n);
-        return `<div style="display:contents;">
-          <div class="rp-name" style="display:flex;align-items:center;gap:4px;padding:3px 0;">
-            <span style="width:6px;height:6px;border-radius:50%;background:${isStarter ? 'var(--accent)' : 'var(--accent2)'};display:inline-block;flex-shrink:0;"></span>
-            ${n}
-          </div>
-          ${qs.map(active => `<div class="rp-cell ${active ? (isStarter ? 'rp-starter' : 'rp-bench') : 'rp-off'}">${active ? (isStarter ? '★' : '·') : ''}</div>`).join('')}
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="margin-top:10px;display:flex;gap:14px;font-size:10px;">
-      <span><span style="color:var(--accent);">★</span> Starter-Stint</span>
-      <span><span style="color:var(--accent2);">·</span> Bank-Stint</span>
-    </div>
-  `;
+  // Gantt Timeline
+  const GAME = 40;
+  const SCALE = 12;
+  const allRoster = [...starters, ...bench];
+  const playerSummary = quarterPlan ? quarterPlan.playerSummary : null;
+
+  function buildGantt() {
+    let html = '<div style="font-size:11px;color:var(--accent);margin-bottom:10px;">Rotation Plan</div>';
+    html += '<div style="overflow-x:auto;">';
+
+    // Minute header
+    html += '<div style="display:flex;margin-left:80px;margin-bottom:4px;position:relative;min-width:' + (GAME*SCALE) + 'px;">';
+    [0,4,8,12,16,20,24,28,32,36,40].forEach(function(m) {
+      html += '<div style="position:absolute;left:' + (m*SCALE) + 'px;font-size:9px;color:var(--muted);font-family:DM Mono,monospace;">' + m + "'</div>";
+    });
+    html += '</div>';
+
+    // Q divider labels
+    const qColors = ['rgba(232,200,74,0.06)','rgba(74,158,232,0.05)','rgba(232,200,74,0.06)','rgba(74,158,232,0.05)'];
+
+    // Player rows
+    html += '<div style="display:flex;flex-direction:column;gap:3px;">';
+    allRoster.forEach(function(n) {
+      var isStarter = starters.includes(n);
+      var ps = playerSummary ? playerSummary[n] : null;
+      var target = ps ? ps.target : (mins[n] || 0);
+      var planned = ps ? ps.planned : 0;
+      var diff = planned - target;
+      var diffStr = diff === 0 ? '' : (diff > 0 ? '+' + diff : '' + diff);
+      var diffColor = Math.abs(diff) > 3 ? 'var(--red)' : diff !== 0 ? 'var(--accent)' : 'var(--muted)';
+      var playerStints = ps ? ps.stints : [];
+      var dotColor = isStarter ? 'var(--accent)' : 'var(--accent2)';
+
+      html += '<div style="display:flex;align-items:center;">';
+      // Name
+      html += '<div style="width:80px;font-size:11px;font-weight:' + (isStarter?'700':'400') + ';flex-shrink:0;display:flex;align-items:center;gap:4px;overflow:hidden;">';
+      html += '<span style="width:6px;height:6px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;display:inline-block;"></span>';
+      html += '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + n + '</span>';
+      html += '</div>';
+
+      // Timeline bar
+      html += '<div style="position:relative;width:' + (GAME*SCALE) + 'px;height:20px;background:rgba(255,255,255,0.03);border-radius:3px;flex-shrink:0;">';
+      // Q background stripes
+      [0,1,2,3].forEach(function(q) {
+        html += '<div style="position:absolute;left:' + (q*10*SCALE) + 'px;width:' + (10*SCALE) + 'px;top:0;bottom:0;background:' + qColors[q] + ';"></div>';
+      });
+      // Q divider lines
+      [10,20,30].forEach(function(q) {
+        html += '<div style="position:absolute;left:' + (q*SCALE) + 'px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.12);"></div>';
+      });
+      // Stints
+      playerStints.forEach(function(s) {
+        var w = Math.max(2, (s.end - s.start) * SCALE - 2);
+        var l = s.start * SCALE;
+        var color = isStarter ? 'var(--accent)' : 'var(--accent2)';
+        html += '<div style="position:absolute;left:' + l + 'px;width:' + w + 'px;top:2px;height:16px;background:' + color + ';opacity:0.9;border-radius:3px;" title="' + n + '"></div>';
+      });
+      html += '</div>';
+
+      // Stats
+      html += '<div style="margin-left:8px;font-size:10px;font-family:DM Mono,monospace;color:var(--muted);white-space:nowrap;">' + planned + 'min <span style="color:' + diffColor + ';">' + diffStr + '</span></div>';
+      // (merged above)
+      // (merged above)
+      html += '</div>'; // row
+    });
+    html += '</div>'; // rows
+
+    // Q labels
+    html += '<div style="display:flex;margin-left:80px;margin-top:4px;position:relative;min-width:' + (GAME*SCALE) + 'px;height:14px;">';
+    ['Q1','Q2','Q3','Q4'].forEach(function(q, i) {
+      html += '<div style="position:absolute;left:' + (i*10*SCALE+2) + 'px;font-size:9px;color:var(--muted);font-family:DM Mono,monospace;">' + q + '</div>';
+    });
+    html += '</div>';
+    html += '</div>'; // overflow
+
+    // Stint table
+    html += '<div style="margin-top:14px;overflow-x:auto;">';
+    html += '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
+    html += '<thead><tr style="color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase;">';
+    ['Spieler','Pos','Ziel','Plan','Stints'].forEach(function(h, i) {
+      var align = i >= 2 && i <= 3 ? 'right' : 'left';
+      html += '<th style="text-align:' + align + ';padding:4px 8px;border-bottom:1px solid var(--border);">' + h + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+    allRoster.forEach(function(n) {
+      var isStarter = starters.includes(n);
+      var ps = playerSummary ? playerSummary[n] : null;
+      var target = ps ? ps.target : (mins[n] || 0);
+      var planned = ps ? ps.planned : 0;
+      var diff = planned - target;
+      var diffStr = diff === 0 ? '=' : (diff > 0 ? '+' + diff : '' + diff);
+      var diffColor = Math.abs(diff) > 3 ? 'var(--red)' : Math.abs(diff) > 0 ? 'var(--accent)' : 'var(--green)';
+      var stintStr = ps ? ps.stints.map(function(s){ return s.start + "'-" + s.end + "'"; }).join(' · ') : '—';
+      var pos = (FULL_ROSTER[n] ? FULL_ROSTER[n].pos : null) || (PLAYERS[n] ? PLAYERS[n].pos : '?') || '?';
+      var nameColor = isStarter ? 'var(--accent)' : 'var(--text)';
+      html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">';
+      html += '<td style="padding:5px 8px;font-weight:' + (isStarter?'700':'400') + ';color:' + nameColor + ';">' + (isStarter ? '★ ' : '') + n + '</td>';
+      html += '<td style="padding:5px 8px;color:var(--muted);">' + pos + '</td>';
+      html += '<td style="padding:5px 8px;text-align:right;font-family:DM Mono,monospace;">' + target + "min</td>";
+      html += '<td style="padding:5px 8px;text-align:right;font-family:DM Mono,monospace;color:' + diffColor + ';">' + planned + 'min (' + diffStr + ')</td>';
+      html += '<td style="padding:5px 8px;color:var(--muted2);font-family:DM Mono,monospace;">' + stintStr + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  document.getElementById('ab-rotation-plan').innerHTML = buildGantt();
 
   // Cheatsheet
   document.getElementById('ab-cheatsheet').innerHTML = cheatsheet.length > 0 ? `
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;">
-      ${cheatsheet.map(c => `
-        <div class="cheat-row">
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      ${cheatsheet.map((c,i) => `
+        <div class="cheat-row" style="display:grid;grid-template-columns:44px 1fr 1fr 2fr;gap:8px;align-items:center;">
           <span class="cheat-min">${c.minute}'</span>
-          <span style="color:var(--muted);font-size:11px;">▼ OUT</span>
-          <span class="cheat-out">${c.outs.join(', ')}</span>
-          <span style="color:var(--muted);font-size:11px;">▲ IN</span>
-          <span class="cheat-in">${c.ins.join(', ')}</span>
+          <span><span style="color:var(--red);font-size:10px;margin-right:3px;">▼</span><span class="cheat-out">${c.outs.join(', ')}</span></span>
+          <span><span style="color:var(--green);font-size:10px;margin-right:3px;">▲</span><span class="cheat-in">${c.ins.join(', ')}</span></span>
+          <span style="color:var(--muted);font-size:10px;font-family:'DM Mono';">${(c.fieldAfter||[]).join(' · ')}</span>
         </div>`).join('')}
     </div>
-    <div style="margin-top:8px;font-size:11px;color:var(--muted);">Empfehlung — passe Minutenziele an für präzisere Wechsel</div>
+    <div style="margin-top:8px;font-size:11px;color:var(--muted);">Wechsel aus Stint-Plan · rechts = Feld danach</div>
   ` : '<div style="color:var(--muted);font-size:12px;">Keine Wechsel generiert</div>';
 
   // Warnings
@@ -2357,7 +2702,7 @@ buildOverview();
 buildPlayerCards();
 buildTable();
 buildLineups();
-buildRotation();
+buildStarterPicker();
 buildAttendanceView();
 initAutoBuild();
 loadSavedRotations();
