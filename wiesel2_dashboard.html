@@ -297,6 +297,8 @@
   .arch-main-twoway { background: rgba(74,232,122,0.18); color: var(--green); }
   .arch-twoway-wing { background: rgba(74,232,122,0.1); color: #90f5b0; }
   .arch-twoway-guard { background: rgba(74,232,150,0.12); color: #80f0c0; border: 1px solid rgba(74,232,150,0.2); }
+  .arch-lockdown-wing { background: rgba(74,232,100,0.15); color: #60f090; border: 1px solid rgba(74,232,100,0.3); }
+  .arch-versatile-def { background: rgba(120,232,160,0.12); color: #90e8b0; }
   .arch-3d { background: rgba(74,200,122,0.1); color: #85eaa8; }
   /* ANCHOR — lila */
   .arch-main-anchor { background: rgba(180,74,232,0.18); color: #c07af0; }
@@ -979,6 +981,7 @@ function _parseShot(s) {
 
 function buildPlayersFromJSON(data) {
   const kader = data.spieler_kader || {};
+  const agg   = data.spieler_aggregiert || {};
   const acc = {};
   (data.spiele||[]).forEach(spiel => {
     const gid=spiel.id, gsi=spiel.gsi||0.5;
@@ -1039,6 +1042,7 @@ function buildPlayersFromJSON(data) {
       can_play_big:  flags.can_play_big||false,
       games: p.games,
       lineup_score: null,
+      archetype_data: agg[name]?.archetype || null,
       shot_dist:{
         two_pct_share:  (p.two_a+p.three_a)>0?Math.round(p.two_a/(p.two_a+p.three_a)*100):null,
         three_pct_share:(p.two_a+p.three_a)>0?Math.round(p.three_a/(p.two_a+p.three_a)*100):null,
@@ -1103,28 +1107,7 @@ function pmColor(v) {
   return 'highlight';
 }
 
-// Two-tier archetype system: returns [mainLabel, mainClass, subLabel, subClass, description]
-const ARCHETYPE_MAP = {
-  'Felix':   ['CREATOR','arch-main-creator','Lead Playmaker','arch-lead-playmaker','Combo-Playmaker: 2.3 APG, 1.4 STL, 12.7 PPG — primärer Ballhandler, generiert Offense für andere'],
-  'Mattias': ['CREATOR','arch-main-creator','Secondary Creator','arch-secondary-creator','Potential: 60% 3P, 1.0 APG — braucht Konsistenz & Selbstvertrauen'],
-  'Niklas':  ['SCORER','arch-main-scorer','Stretch Big','arch-stretch-big','4/5 mit 37% von der Dreierlinie + 55% aus dem Zweier — zieht Defense raus'],
-  'Moritz':  ['SCORER','arch-main-scorer','Spot-Up Shooter','arch-spot-up','Perimeter-Spieler, 34% 3P — lebt vom Spacing, kaum TOs'],
-  'Thore':   ['SCORER','arch-main-scorer','Slasher','arch-slasher','67% aus dem Zweier, selten dribbelt — reiner Finisher & Cutter'],
-  'Jon':     ['SCORER','arch-main-scorer','Slasher','arch-slasher','Athletischer Wing (2–4), zieht zum Ring statt zu werfen — 72% 2P, gefährlichster Finisher im Team ohne den Ball zu brauchen'],
-  'Jeff':    ['TWO-WAY','arch-main-twoway','Two-Way Guard','arch-twoway-guard','10 PPG, 4.5 REB, 43% 3P — verlässlich auf beiden Seiten, Guard mit Scoring & Defensivanker-Qualitäten'],
-  'Serdar':  ['SCORER','arch-main-scorer','Slasher','arch-slasher','100% 2P (small sample) — sehr effizienter Finisher, wenig Einsatz bisher'],
-  
-  'Andi':    ['TWO-WAY','arch-main-twoway','3&D','arch-3d','36% 3P, 0.4 STL, gibt Spacing — hohes TO-Volumen ist Schwäche'],
-  'Jari':    ['ANCHOR','arch-main-anchor','Def. Anchor','arch-def-anchor','7.0 RPG, bester +/- Team (+59) — dominanter Rebounder & physischer Anker'],
-  'Mattis':  ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','3.6 REB, 69% FT, kein 3P-Versuch — finisht Cuts & Screens physisch'],
-  'Deniz':   ['ANCHOR','arch-main-anchor','Rim Runner','arch-rim-runner','2.6 REB, finisht Cuts — Dreier ist Bonus (small sample), guter +/- (+14)'],
-  'Cedi':    ['SCORER','arch-main-scorer','Slasher','arch-slasher','Starkes Debüt G15: 9P, 100% 2P, +21 in 18 Min — Combo mit Finisher-Qualitäten'],
-  'Mello':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','Kurze Stints, 36% 2P — bringt Energie & Intensität von der Bank'],
-  'Theo':    ['GLUE','arch-main-glue','Energy Guy','arch-energy','-74 Raw / -96 Adj +/- — bringt Intensität, braucht aber stabilere Rolle & bessere Effizienz'],
-  'Frowin':  ['GLUE','arch-main-glue','In Development','arch-in-dev','2.3 TPG in kleiner Stichprobe — Rolle noch unklar, Ballsicherheit fehlt'],
-  'Oskar':   ['GLUE','arch-main-glue','Energy Guy','arch-energy','-22 Raw / -42 Adj — gibt Energie & Hustle, Scoring-Effizienz muss wachsen'],
-};
-
+// Two-tier archetype system: reads from JSON data (spieler_aggregiert.archetype)
 const ARCHETYPE_META = {
   'CREATOR':  { color: 'var(--accent2)', desc: 'Generiert Offense für andere, Ballhandling & Kreation' },
   'SCORER':   { color: '#f0907a',        desc: 'Primäre Scoring-Option in verschiedenen Ausprägungen' },
@@ -1134,8 +1117,11 @@ const ARCHETYPE_META = {
 };
 
 function archetype(p, name) {
-  const entry = ARCHETYPE_MAP[name];
-  if (entry) return entry; // [main, mainClass, sub, subClass, desc]
+  // Read directly from JSON data attached as archetype_data
+  const arch = p && p.archetype_data;
+  if (arch && arch.main) {
+    return [arch.main, arch.main_class, arch.sub, arch.sub_class, arch.desc];
+  }
   // fallback
   return ['GLUE','arch-main-glue','Roleplayer','arch-in-dev','Rolle noch nicht bestimmt'];
 }

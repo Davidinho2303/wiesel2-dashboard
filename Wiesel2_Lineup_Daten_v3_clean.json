@@ -6163,7 +6163,7 @@
         "main_class": "arch-main-glue",
         "sub": "Energy Guy",
         "sub_class": "arch-energy",
-        "desc": "-22 Raw / -42 Adj — gibt Energie & Hustle, Scoring-Effizienz muss wachsen"
+        "desc": "-22 Raw — gibt Energie & Hustle, Scoring-Effizienz muss wachsen"
       },
       "lineup_score": {
         "on_net": 8.3,
@@ -6258,7 +6258,7 @@
         "main_class": "arch-main-creator",
         "sub": "Secondary Creator",
         "sub_class": "arch-secondary-creator",
-        "desc": "Potential: 60% 3P, 1.0 APG — braucht Konsistenz & Selbstvertrauen"
+        "desc": "50% 3P (small sample), 1.2 STL — braucht Konsistenz & Selbstvertrauen"
       },
       "flags": {
         "ballhandler": true,
@@ -6346,11 +6346,11 @@
         }
       ],
       "archetype": {
-        "main": "SCORER",
-        "main_class": "arch-main-scorer",
-        "sub": "Slasher",
-        "sub_class": "arch-slasher",
-        "desc": "67% aus dem Zweier, selten dribbelt — reiner Finisher & Cutter"
+        "main": "TWO-WAY",
+        "main_class": "arch-main-twoway",
+        "sub": "3&D Wing",
+        "sub_class": "arch-3d",
+        "desc": "9.1 PPG, 5.0 REB, 1.0 STL, 1.0 BLK — verlässlicher Allrounder auf beiden Seiten"
       },
       "flags": {
         "ballhandler": false,
@@ -6474,11 +6474,11 @@
         }
       ],
       "archetype": {
-        "main": "TWO-WAY",
-        "main_class": "arch-main-twoway",
-        "sub": "Two-Way Guard",
-        "sub_class": "arch-twoway-guard",
-        "desc": "10 PPG, 4.5 REB, 43% 3P — verlässlich auf beiden Seiten, Guard mit Scoring & Defensivanker-Qualitäten"
+        "main": "CREATOR",
+        "main_class": "arch-main-creator",
+        "sub": "Secondary Creator",
+        "sub_class": "arch-secondary-creator",
+        "desc": "6.8 PPG, 1.5 AST, 1.2 STL — zweiter Ballhandler mit Scoring & Defensivpräsenz"
       },
       "flags": {
         "ballhandler": true,
@@ -6576,7 +6576,7 @@
         "main_class": "arch-main-twoway",
         "sub": "3&D",
         "sub_class": "arch-3d",
-        "desc": "36% 3P, 0.4 STL, gibt Spacing — hohes TO-Volumen ist Schwäche"
+        "desc": "5.1 PPG, 2.8 REB, 0.8 STL — 3P-Volumen muss effizienter werden (16%)"
       },
       "flags": {
         "ballhandler": false,
@@ -6678,9 +6678,9 @@
       "archetype": {
         "main": "GLUE",
         "main_class": "arch-main-glue",
-        "sub": "Energy Guy",
-        "sub_class": "arch-energy",
-        "desc": "-74 Raw / -96 Adj +/- — bringt Intensität, braucht aber stabilere Rolle & bessere Effizienz"
+        "sub": "Versatile Defender",
+        "sub_class": "arch-versatile-def",
+        "desc": "1.4 STL, 2.8 REB — defensiv vielseitig einsetzbar, Scoring-Effizienz (27% 2P) muss wachsen"
       },
       "flags": {
         "ballhandler": false,
@@ -6808,7 +6808,7 @@
         "main_class": "arch-main-anchor",
         "sub": "Def. Anchor",
         "sub_class": "arch-def-anchor",
-        "desc": "7.0 RPG, bester +/- Team (+59) — dominanter Rebounder & physischer Anker"
+        "desc": "9.7 PPG, 13.0 RPG, +59 +/- — dominanter Rebounder & physischer Anker, bester Spieler im Team"
       },
       "flags": {
         "ballhandler": false,
@@ -6924,7 +6924,7 @@
         "main_class": "arch-main-scorer",
         "sub": "Stretch Big",
         "sub_class": "arch-stretch-big",
-        "desc": "4/5 mit 37% von der Dreierlinie + 55% aus dem Zweier — zieht Defense raus"
+        "desc": "12.9 PPG, 7.8 REB, 46% 2P — dominanter Scorer innen, Dreier noch ausbaufähig"
       },
       "flags": {
         "ballhandler": false,
@@ -7022,7 +7022,7 @@
         "main_class": "arch-main-scorer",
         "sub": "Spot-Up Shooter",
         "sub_class": "arch-spot-up",
-        "desc": "Perimeter-Spieler, 34% 3P — lebt vom Spacing, kaum TOs"
+        "desc": "9.6 PPG, 39 3P-Versuche — lebt vom Spacing, Effizienz muss wachsen"
       },
       "flags": {
         "ballhandler": false,
@@ -7132,7 +7132,7 @@
         "main_class": "arch-main-creator",
         "sub": "Lead Playmaker",
         "sub_class": "arch-lead-playmaker",
-        "desc": "Combo-Playmaker: 2.3 APG, 1.4 STL, 12.7 PPG — primärer Ballhandler, generiert Offense für andere"
+        "desc": "Combo-Playmaker: 3.3 APG, 2.0 STL, 12.7 PPG — primärer Ballhandler, generiert Offense für andere"
       },
       "flags": {
         "ballhandler": true,
@@ -7242,7 +7242,7 @@
         "main_class": "arch-main-anchor",
         "sub": "Rim Runner",
         "sub_class": "arch-rim-runner",
-        "desc": "3.6 REB, 69% FT, kein 3P-Versuch — finisht Cuts & Screens physisch"
+        "desc": "6.4 PPG, 6.0 REB, 69% FT — finisht Cuts & Screens physisch"
       },
       "flags": {
         "ballhandler": false,
@@ -7364,11 +7364,11 @@
         }
       ],
       "archetype": {
-        "main": "SCORER",
-        "main_class": "arch-main-scorer",
-        "sub": "Slasher",
-        "sub_class": "arch-slasher",
-        "desc": "Athletischer Wing (2–4), zieht zum Ring statt zu werfen — 72% 2P, gefährlichster Finisher im Team ohne den Ball zu brauchen"
+        "main": "TWO-WAY",
+        "main_class": "arch-main-twoway",
+        "sub": "Lockdown Wing",
+        "sub_class": "arch-lockdown-wing",
+        "desc": "55% 2P, +35 +/- — athletischer Finisher & physisch stärkster Defensivspieler am Flügel"
       },
       "flags": {
         "ballhandler": false,
@@ -7448,7 +7448,7 @@
         "main_class": "arch-main-anchor",
         "sub": "Rim Runner",
         "sub_class": "arch-rim-runner",
-        "desc": "2.6 REB, finisht Cuts — Dreier ist Bonus (small sample), guter +/- (+14)"
+        "desc": "3.2 REB, 0.5 STL, +14 +/- — solider Finisher, Dreier ist Bonus (small sample)"
       },
       "flags": {
         "ballhandler": false,
@@ -7534,7 +7534,7 @@
         "main_class": "arch-main-glue",
         "sub": "Energy Guy",
         "sub_class": "arch-energy",
-        "desc": "Kurze Stints, 36% 2P — bringt Energie & Intensität von der Bank"
+        "desc": "Kurze Stints, 1.6 REB — bringt Energie & Intensität von der Bank"
       },
       "flags": {
         "ballhandler": false,
@@ -7602,7 +7602,7 @@
         "main_class": "arch-main-glue",
         "sub": "In Development",
         "sub_class": "arch-in-dev",
-        "desc": "2.3 TPG in kleiner Stichprobe — Rolle noch unklar, Ballsicherheit fehlt"
+        "desc": "3.5 TPG in kleiner Stichprobe — Rolle noch unklar, Ballsicherheit fehlt"
       },
       "flags": {
         "ballhandler": true,
@@ -7716,6 +7716,13 @@
         "off_net": 38.0,
         "on_off": -38.0,
         "on_min": 10.8
+      },
+      "archetype": {
+        "main": "GLUE",
+        "main_class": "arch-main-glue",
+        "sub": "Versatile Defender",
+        "sub_class": "arch-versatile-def",
+        "desc": "Vielseitiger Verteidiger, kann verschiedene Positionen übernehmen — noch wenig Datenbasis"
       }
     },
     "Serdar": {
