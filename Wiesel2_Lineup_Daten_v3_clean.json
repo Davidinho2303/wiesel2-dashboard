@@ -6222,7 +6222,138 @@
           "pir": 11
         }
       },
-      "lineups": [],
+      "lineups": [
+        {
+          "spieler": [
+            "Cedi",
+            "Jari",
+            "Mattias",
+            "Moritz",
+            "Niklas"
+          ],
+          "min": "07:09",
+          "ww2_pts": 16,
+          "opp_pts": 15,
+          "diff": 1
+        },
+        {
+          "spieler": [
+            "Jari",
+            "Jon",
+            "Mattias",
+            "Moritz",
+            "Niklas"
+          ],
+          "min": "07:39",
+          "ww2_pts": 13,
+          "opp_pts": 6,
+          "diff": 7
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jon",
+            "Mattias",
+            "Moritz",
+            "Niklas"
+          ],
+          "min": "04:40",
+          "ww2_pts": 12,
+          "opp_pts": 8,
+          "diff": 4
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jari",
+            "Jeff",
+            "Jon",
+            "Moritz"
+          ],
+          "min": "04:23",
+          "ww2_pts": 11,
+          "opp_pts": 8,
+          "diff": 3
+        },
+        {
+          "spieler": [
+            "Jari",
+            "Jeff",
+            "Jon",
+            "Moritz",
+            "Yang"
+          ],
+          "min": "03:34",
+          "ww2_pts": 10,
+          "opp_pts": 12,
+          "diff": -2
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jeff",
+            "Moritz",
+            "Niklas",
+            "Yang"
+          ],
+          "min": "02:36",
+          "ww2_pts": 5,
+          "opp_pts": 5,
+          "diff": 0
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jeff",
+            "Mattias",
+            "Niklas",
+            "Yang"
+          ],
+          "min": "02:12",
+          "ww2_pts": 5,
+          "opp_pts": 3,
+          "diff": 2
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jari",
+            "Jon",
+            "Mattias",
+            "Moritz"
+          ],
+          "min": "00:32",
+          "ww2_pts": 3,
+          "opp_pts": 0,
+          "diff": 3
+        },
+        {
+          "spieler": [
+            "Jari",
+            "Jeff",
+            "Jon",
+            "Moritz",
+            "Niklas"
+          ],
+          "min": "04:19",
+          "ww2_pts": 3,
+          "opp_pts": 7,
+          "diff": -4
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jeff",
+            "Jon",
+            "Moritz",
+            "Yang"
+          ],
+          "min": "00:00",
+          "ww2_pts": 0,
+          "opp_pts": 0,
+          "diff": 0
+        }
+      ],
       "gegner_stats": {
         "gesamt": {
           "pkt": 72,
