@@ -2,7 +2,7 @@
   "team": "Weddinger Wiesel 2",
   "saison": "2025/2026",
   "liga": "Herren Landesliga B",
-  "zuletzt_aktualisiert": "08.03.2026",
+  "zuletzt_aktualisiert": "14.03.2026",
   "schema_version": "2.1",
   "stats_schema": {
     "spieler_stats_felder": [
@@ -24,7 +24,6 @@
   },
   "spieler_kader": {
     "Andi": {
-      "vollname": "Andreas Lamoth",
       "position": "3",
       "flags": {
         "ballhandler": false,
@@ -65,7 +64,6 @@
       }
     },
     "Cedi": {
-      "vollname": "Cedrick Kinsumba",
       "position": "combo",
       "flags": {
         "ballhandler": true,
@@ -106,7 +104,6 @@
       }
     },
     "Dariush": {
-      "vollname": "Dariush",
       "position": "1",
       "flags": {
         "ballhandler": true,
@@ -119,7 +116,6 @@
       }
     },
     "Deniz": {
-      "vollname": "Deniz",
       "position": "4/5",
       "flags": {
         "ballhandler": false,
@@ -160,7 +156,6 @@
       }
     },
     "Felix": {
-      "vollname": "Felix von Heymann",
       "position": "combo",
       "flags": {
         "ballhandler": true,
@@ -201,7 +196,6 @@
       }
     },
     "Frowin": {
-      "vollname": "Frowin",
       "position": "1/2",
       "flags": {
         "ballhandler": true,
@@ -242,7 +236,6 @@
       }
     },
     "Jakob": {
-      "vollname": "Jakob",
       "position": "2",
       "flags": {
         "ballhandler": false,
@@ -255,7 +248,6 @@
       }
     },
     "Jari": {
-      "vollname": "Jari Begemann",
       "position": "4/5",
       "flags": {
         "ballhandler": false,
@@ -296,7 +288,6 @@
       }
     },
     "Jeff": {
-      "vollname": "Jeffrey Van Der Geest",
       "position": "1/2",
       "flags": {
         "ballhandler": true,
@@ -337,7 +328,6 @@
       }
     },
     "Jon": {
-      "vollname": "Jon",
       "position": "2/3",
       "flags": {
         "ballhandler": false,
@@ -378,7 +368,6 @@
       }
     },
     "Martin": {
-      "vollname": "Martin",
       "position": "3/4",
       "flags": {
         "ballhandler": false,
@@ -419,7 +408,6 @@
       }
     },
     "Mattias": {
-      "vollname": "Mattias Coeli",
       "position": "1/2",
       "flags": {
         "ballhandler": true,
@@ -460,7 +448,6 @@
       }
     },
     "Mattis": {
-      "vollname": "Johannes Mattis Beckmannshagen",
       "position": "4/5",
       "flags": {
         "ballhandler": false,
@@ -501,7 +488,6 @@
       }
     },
     "Max": {
-      "vollname": "Max",
       "position": "2",
       "flags": {
         "ballhandler": false,
@@ -514,7 +500,6 @@
       }
     },
     "Mello": {
-      "vollname": "Mello Melloni",
       "position": "3/4",
       "flags": {
         "ballhandler": false,
@@ -555,7 +540,6 @@
       }
     },
     "Moritz": {
-      "vollname": "Moritz Winkler",
       "position": "2",
       "flags": {
         "ballhandler": false,
@@ -596,7 +580,6 @@
       }
     },
     "Niklas": {
-      "vollname": "Niklas Beckmannshagen",
       "position": "4/5",
       "flags": {
         "ballhandler": false,
@@ -637,7 +620,6 @@
       }
     },
     "Oskar": {
-      "vollname": "Oskar Dawid",
       "position": "?",
       "flags": {
         "ballhandler": false,
@@ -678,7 +660,6 @@
       }
     },
     "Serdar": {
-      "vollname": "Serdar Subasigüller",
       "position": "combo",
       "flags": {
         "ballhandler": true,
@@ -719,7 +700,6 @@
       }
     },
     "Theo": {
-      "vollname": "Theo",
       "position": "4/5",
       "flags": {
         "ballhandler": false,
@@ -760,7 +740,6 @@
       }
     },
     "Thore": {
-      "vollname": "Thore Jacobs",
       "position": "3/4",
       "flags": {
         "ballhandler": false,
@@ -801,7 +780,6 @@
       }
     },
     "Yang": {
-      "vollname": "Yang",
       "position": "5",
       "flags": {
         "ballhandler": false,
@@ -6086,11 +6064,179 @@
         }
       },
       "gsi": 0.415
+    },
+    {
+      "id": "G16",
+      "datum": "14.03.2026",
+      "gegner": "TSV Sportuniversum",
+      "ergebnis": "W",
+      "ww2_punkte": 78,
+      "gegner_punkte": 72,
+      "viertel_ww2": [
+        19,
+        15,
+        24,
+        20
+      ],
+      "viertel_gegner": [
+        10,
+        20,
+        29,
+        13
+      ],
+      "spieler_stats": {
+        "Moritz": {
+          "nr": 4,
+          "min": "36:47",
+          "pkt": 25,
+          "fw": "5-6",
+          "2er": "1-2",
+          "3er": "6-14",
+          "or": 1,
+          "dr": 1,
+          "ast": 2,
+          "to": 1,
+          "stl": 1,
+          "blk": 0,
+          "pf": 3,
+          "plus_minus": 9,
+          "pir": 16
+        },
+        "Jari": {
+          "nr": 19,
+          "min": "28:51",
+          "pkt": 22,
+          "fw": "0-2",
+          "2er": "11-18",
+          "3er": "0-2",
+          "or": 8,
+          "dr": 10,
+          "ast": 1,
+          "to": 0,
+          "stl": 0,
+          "blk": 1,
+          "pf": 1,
+          "plus_minus": 2,
+          "pir": 30
+        },
+        "Jeff": {
+          "nr": 18,
+          "min": "19:20",
+          "pkt": 9,
+          "fw": "2-2",
+          "2er": "2-4",
+          "3er": "1-2",
+          "or": 0,
+          "dr": 2,
+          "ast": 1,
+          "to": 2,
+          "stl": 0,
+          "blk": 0,
+          "pf": 1,
+          "plus_minus": -9,
+          "pir": 6
+        },
+        "Cedi": {
+          "nr": 7,
+          "min": "22:47",
+          "pkt": 6,
+          "fw": "1-2",
+          "2er": "1-4",
+          "3er": "1-4",
+          "or": 0,
+          "dr": 4,
+          "ast": 6,
+          "to": 3,
+          "stl": 1,
+          "blk": 0,
+          "pf": 1,
+          "plus_minus": 10,
+          "pir": 6
+        },
+        "Mattias": {
+          "nr": 20,
+          "min": "23:53",
+          "pkt": 5,
+          "fw": "1-1",
+          "2er": "2-3",
+          "3er": "0-0",
+          "or": 1,
+          "dr": 4,
+          "ast": 4,
+          "to": 2,
+          "stl": 0,
+          "blk": 0,
+          "pf": 3,
+          "plus_minus": 12,
+          "pir": 8
+        },
+        "Jon": {
+          "nr": 77,
+          "min": "26:48",
+          "pkt": 2,
+          "fw": "0-0",
+          "2er": "1-9",
+          "3er": "0-2",
+          "or": 2,
+          "dr": 1,
+          "ast": 2,
+          "to": 0,
+          "stl": 0,
+          "blk": 0,
+          "pf": 3,
+          "plus_minus": 3,
+          "pir": -6
+        },
+        "Yang": {
+          "nr": 76,
+          "min": "11:18",
+          "pkt": 0,
+          "fw": "0-0",
+          "2er": "0-0",
+          "3er": "0-0",
+          "or": 1,
+          "dr": 0,
+          "ast": 0,
+          "to": 0,
+          "stl": 0,
+          "blk": 0,
+          "pf": 1,
+          "plus_minus": -5,
+          "pir": 0
+        },
+        "Niklas": {
+          "nr": 15,
+          "min": "30:15",
+          "pkt": 9,
+          "fw": "0-0",
+          "2er": "3-11",
+          "3er": "1-4",
+          "or": 1,
+          "dr": 11,
+          "ast": 2,
+          "to": 3,
+          "stl": 1,
+          "blk": 2,
+          "pf": 1,
+          "plus_minus": 8,
+          "pir": 11
+        }
+      },
+      "lineups": [],
+      "gegner_stats": {
+        "gesamt": {
+          "pkt": 72,
+          "fg": "26-68",
+          "3pt": "13-33",
+          "ft": "7-16"
+        }
+      },
+      "gsi": null,
+      "notizen": "7/8 OKE Wings. Alle werfen, Bigs trash; meistens nur einer auf dem Feld (Mismatch-Potenzial)."
     }
   ],
   "spieler_aggregiert": {
     "Oskar": {
-      "vollname": "Oskar Dawid",
       "pos": "?",
       "spiele": 7,
       "mpg": 18.6,
@@ -6098,22 +6244,22 @@
       "fw_pct": 38,
       "fw_m": 5,
       "fw_a": 13,
-      "two_pct": 33,
-      "two_m": 2,
+      "two_pct": 67,
+      "two_m": 4,
       "two_a": 6,
       "three_pct": 0,
       "three_m": 0,
       "three_a": 5,
       "or_pg": 0.0,
-      "dr_pg": 0.3,
-      "reb": 0.3,
-      "apg": 0.7,
-      "tpg": 2.0,
-      "stl": 0.3,
+      "dr_pg": 0.1,
+      "reb": 0.1,
+      "apg": 0.3,
+      "tpg": 0.9,
+      "stl": 0.1,
       "blk": 0.0,
       "pf": 1.3,
       "pm_total": -22,
-      "adj_pm": -23.5,
+      "adj_pm": -6.1,
       "games": [
         {
           "gid": "G1",
@@ -6170,33 +6316,36 @@
         "off_net": 44.4,
         "on_off": -36.1,
         "on_min": 84.3
-      }
+      },
+      "fw_a_pg": 1.9,
+      "two_a_pg": 0.9,
+      "three_a_pg": 0.7,
+      "ast_to": 0.33
     },
     "Mattias": {
-      "vollname": "Mattias Coeli",
       "pos": "1/2",
-      "spiele": 9,
-      "mpg": 23.7,
+      "spiele": 10,
+      "mpg": 23.8,
       "ppg": 4.9,
-      "fw_pct": 45,
-      "fw_m": 5,
-      "fw_a": 11,
-      "two_pct": 38,
-      "two_m": 8,
-      "two_a": 21,
-      "three_pct": 50,
-      "three_m": 2,
+      "fw_pct": 50,
+      "fw_m": 6,
+      "fw_a": 12,
+      "two_pct": 71,
+      "two_m": 17,
+      "two_a": 24,
+      "three_pct": 75,
+      "three_m": 3,
       "three_a": 4,
       "or_pg": 0.2,
-      "dr_pg": 3.5,
-      "reb": 3.8,
-      "apg": 2.2,
-      "tpg": 3.5,
-      "stl": 1.2,
-      "blk": 0.2,
-      "pf": 2.3,
-      "pm_total": -36,
-      "adj_pm": -40.4,
+      "dr_pg": 1.8,
+      "reb": 2.0,
+      "apg": 1.3,
+      "tpg": 1.6,
+      "stl": 0.5,
+      "blk": 0.1,
+      "pf": 2.4,
+      "pm_total": -24,
+      "adj_pm": -3.6,
       "games": [
         {
           "gid": "G1",
@@ -6251,6 +6400,12 @@
           "pkt": 0,
           "pm": 11,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 5,
+          "pm": 12,
+          "gsi": null
         }
       ],
       "archetype": {
@@ -6274,10 +6429,13 @@
         "off_net": 37.8,
         "on_off": -2.3,
         "on_min": 146.7
-      }
+      },
+      "fw_a_pg": 1.2,
+      "two_a_pg": 2.4,
+      "three_a_pg": 0.4,
+      "ast_to": 0.81
     },
     "Thore": {
-      "vollname": "Thore Jacobs",
       "pos": "3/4",
       "spiele": 7,
       "mpg": 21.4,
@@ -6285,22 +6443,22 @@
       "fw_pct": 65,
       "fw_m": 13,
       "fw_a": 20,
-      "two_pct": 43,
-      "two_m": 3,
+      "two_pct": 214,
+      "two_m": 15,
       "two_a": 7,
-      "three_pct": 14,
-      "three_m": 1,
+      "three_pct": 100,
+      "three_m": 7,
       "three_a": 7,
-      "or_pg": 1.0,
-      "dr_pg": 4.0,
-      "reb": 5.0,
-      "apg": 2.0,
-      "tpg": 2.0,
-      "stl": 1.0,
-      "blk": 1.0,
+      "or_pg": 0.1,
+      "dr_pg": 0.6,
+      "reb": 0.7,
+      "apg": 0.3,
+      "tpg": 0.3,
+      "stl": 0.1,
+      "blk": 0.1,
       "pf": 2.1,
       "pm_total": 21,
-      "adj_pm": 16.4,
+      "adj_pm": 5.0,
       "games": [
         {
           "gid": "G1",
@@ -6366,33 +6524,36 @@
         "off_net": 37.4,
         "on_off": -1.5,
         "on_min": 116.9
-      }
+      },
+      "fw_a_pg": 2.9,
+      "two_a_pg": 1.0,
+      "three_a_pg": 1.0,
+      "ast_to": 1.0
     },
     "Jeff": {
-      "vollname": "Jeffrey Van Der Geest",
       "pos": "1/2",
-      "spiele": 13,
-      "mpg": 22.2,
-      "ppg": 6.8,
-      "fw_pct": 72,
-      "fw_m": 18,
-      "fw_a": 25,
-      "two_pct": 38,
-      "two_m": 13,
-      "two_a": 34,
-      "three_pct": 31,
-      "three_m": 4,
-      "three_a": 13,
-      "or_pg": 1.2,
-      "dr_pg": 2.5,
-      "reb": 3.7,
-      "apg": 1.5,
-      "tpg": 2.5,
-      "stl": 1.2,
-      "blk": 0.3,
+      "spiele": 14,
+      "mpg": 22.0,
+      "ppg": 7.0,
+      "fw_pct": 74,
+      "fw_m": 20,
+      "fw_a": 27,
+      "two_pct": 71,
+      "two_m": 27,
+      "two_a": 38,
+      "three_pct": 53,
+      "three_m": 8,
+      "three_a": 15,
+      "or_pg": 0.5,
+      "dr_pg": 1.2,
+      "reb": 1.7,
+      "apg": 0.7,
+      "tpg": 1.2,
+      "stl": 0.5,
+      "blk": 0.1,
       "pf": 1.6,
-      "pm_total": 31,
-      "adj_pm": 25.3,
+      "pm_total": 22,
+      "adj_pm": 2.6,
       "games": [
         {
           "gid": "G1",
@@ -6471,6 +6632,12 @@
           "pkt": 6,
           "pm": 10,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 9,
+          "pm": -9,
+          "gsi": null
         }
       ],
       "archetype": {
@@ -6494,10 +6661,13 @@
         "off_net": 51.5,
         "on_off": -27.7,
         "on_min": 214.4
-      }
+      },
+      "fw_a_pg": 1.9,
+      "two_a_pg": 2.7,
+      "three_a_pg": 1.1,
+      "ast_to": 0.58
     },
     "Andi": {
-      "vollname": "Andreas Lamoth",
       "pos": "3",
       "spiele": 8,
       "mpg": 17.6,
@@ -6505,22 +6675,22 @@
       "fw_pct": 75,
       "fw_m": 3,
       "fw_a": 4,
-      "two_pct": 50,
-      "two_m": 3,
+      "two_pct": 67,
+      "two_m": 4,
       "two_a": 6,
-      "three_pct": 16,
-      "three_m": 3,
+      "three_pct": 53,
+      "three_m": 10,
       "three_a": 19,
-      "or_pg": 0.5,
-      "dr_pg": 2.2,
-      "reb": 2.8,
+      "or_pg": 0.2,
+      "dr_pg": 1.1,
+      "reb": 1.4,
       "apg": 0.0,
-      "tpg": 2.0,
-      "stl": 0.8,
-      "blk": 0.2,
+      "tpg": 1.0,
+      "stl": 0.4,
+      "blk": 0.1,
       "pf": 1.6,
       "pm_total": -29,
-      "adj_pm": -31.1,
+      "adj_pm": -7.4,
       "games": [
         {
           "gid": "G1",
@@ -6592,10 +6762,12 @@
         "off_net": 50.8,
         "on_off": -52.7,
         "on_min": 107.3
-      }
+      },
+      "fw_a_pg": 0.5,
+      "two_a_pg": 0.8,
+      "three_a_pg": 2.4
     },
     "Theo": {
-      "vollname": "Theo",
       "pos": "4/5",
       "spiele": 9,
       "mpg": 20.0,
@@ -6603,22 +6775,22 @@
       "fw_pct": 29,
       "fw_m": 4,
       "fw_a": 14,
-      "two_pct": 27,
-      "two_m": 7,
+      "two_pct": 35,
+      "two_m": 9,
       "two_a": 26,
       "three_pct": null,
       "three_m": 0,
       "three_a": 0,
-      "or_pg": 0.4,
-      "dr_pg": 2.4,
-      "reb": 2.8,
-      "apg": 0.2,
-      "tpg": 1.6,
-      "stl": 1.4,
+      "or_pg": 0.2,
+      "dr_pg": 1.3,
+      "reb": 1.6,
+      "apg": 0.1,
+      "tpg": 0.9,
+      "stl": 0.8,
       "blk": 0.0,
       "pf": 2.1,
       "pm_total": -74,
-      "adj_pm": -75.6,
+      "adj_pm": -14.8,
       "games": [
         {
           "gid": "G1",
@@ -6696,33 +6868,36 @@
         "off_net": 46.8,
         "on_off": -42.6,
         "on_min": 94.3
-      }
+      },
+      "fw_a_pg": 1.6,
+      "two_a_pg": 2.9,
+      "three_a_pg": 0.0,
+      "ast_to": 0.11
     },
     "Jari": {
-      "vollname": "Jari Begemann",
       "pos": "4/5",
-      "spiele": 13,
-      "mpg": 24.6,
-      "ppg": 9.7,
-      "fw_pct": 67,
+      "spiele": 14,
+      "mpg": 24.9,
+      "ppg": 10.6,
+      "fw_pct": 59,
       "fw_m": 10,
-      "fw_a": 15,
-      "two_pct": 44,
-      "two_m": 28,
-      "two_a": 64,
-      "three_pct": null,
-      "three_m": 0,
-      "three_a": 0,
-      "or_pg": 5.0,
-      "dr_pg": 8.0,
-      "reb": 13.0,
-      "apg": 0.3,
-      "tpg": 1.9,
-      "stl": 0.7,
-      "blk": 0.4,
-      "pf": 1.7,
-      "pm_total": 59,
-      "adj_pm": 48.5,
+      "fw_a": 17,
+      "two_pct": 80,
+      "two_m": 66,
+      "two_a": 82,
+      "three_pct": 100,
+      "three_m": 2,
+      "three_a": 2,
+      "or_pg": 3.1,
+      "dr_pg": 4.7,
+      "reb": 7.8,
+      "apg": 0.2,
+      "tpg": 0.9,
+      "stl": 0.4,
+      "blk": 0.3,
+      "pf": 1.6,
+      "pm_total": 61,
+      "adj_pm": 6.3,
       "games": [
         {
           "gid": "G1",
@@ -6801,6 +6976,12 @@
           "pkt": 22,
           "pm": 19,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 22,
+          "pm": 2,
+          "gsi": null
         }
       ],
       "archetype": {
@@ -6824,33 +7005,36 @@
         "off_net": 38.5,
         "on_off": -2.6,
         "on_min": 239.7
-      }
+      },
+      "fw_a_pg": 1.2,
+      "two_a_pg": 5.9,
+      "three_a_pg": 0.1,
+      "ast_to": 0.22
     },
     "Niklas": {
-      "vollname": "Niklas Beckmannshagen",
       "pos": "4/5",
-      "spiele": 11,
-      "mpg": 24.2,
-      "ppg": 12.9,
+      "spiele": 12,
+      "mpg": 24.7,
+      "ppg": 12.6,
       "fw_pct": 77,
       "fw_m": 17,
       "fw_a": 22,
-      "two_pct": 46,
-      "two_m": 22,
-      "two_a": 48,
-      "three_pct": 20,
-      "three_m": 3,
-      "three_a": 15,
-      "or_pg": 3.8,
-      "dr_pg": 4.0,
-      "reb": 7.8,
-      "apg": 1.5,
-      "tpg": 2.0,
-      "stl": 0.8,
-      "blk": 0.0,
-      "pf": 2.3,
-      "pm_total": 4,
-      "adj_pm": -2.3,
+      "two_pct": 83,
+      "two_m": 49,
+      "two_a": 59,
+      "three_pct": 63,
+      "three_m": 12,
+      "three_a": 19,
+      "or_pg": 1.3,
+      "dr_pg": 2.2,
+      "reb": 3.6,
+      "apg": 0.7,
+      "tpg": 0.9,
+      "stl": 0.3,
+      "blk": 0.2,
+      "pf": 2.2,
+      "pm_total": 12,
+      "adj_pm": 1.5,
       "games": [
         {
           "gid": "G1",
@@ -6917,6 +7101,12 @@
           "pkt": 14,
           "pm": 16,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 9,
+          "pm": 8,
+          "gsi": null
         }
       ],
       "archetype": {
@@ -6940,33 +7130,36 @@
         "off_net": 32.2,
         "on_off": 9.7,
         "on_min": 200.3
-      }
+      },
+      "fw_a_pg": 1.8,
+      "two_a_pg": 4.9,
+      "three_a_pg": 1.6,
+      "ast_to": 0.78
     },
     "Moritz": {
-      "vollname": "Moritz Winkler",
       "pos": "2",
-      "spiele": 8,
-      "mpg": 27.5,
-      "ppg": 9.6,
-      "fw_pct": 56,
-      "fw_m": 10,
-      "fw_a": 18,
-      "two_pct": 20,
-      "two_m": 2,
-      "two_a": 10,
-      "three_pct": 26,
-      "three_m": 10,
-      "three_a": 39,
-      "or_pg": 0.0,
-      "dr_pg": 2.0,
-      "reb": 2.0,
-      "apg": 1.0,
-      "tpg": 0.0,
-      "stl": 0.5,
+      "spiele": 9,
+      "mpg": 28.6,
+      "ppg": 11.3,
+      "fw_pct": 62,
+      "fw_m": 15,
+      "fw_a": 24,
+      "two_pct": 50,
+      "two_m": 6,
+      "two_a": 12,
+      "three_pct": 47,
+      "three_m": 25,
+      "three_a": 53,
+      "or_pg": 0.1,
+      "dr_pg": 1.0,
+      "reb": 1.1,
+      "apg": 0.7,
+      "tpg": 0.1,
+      "stl": 0.3,
       "blk": 0.0,
-      "pf": 1.2,
-      "pm_total": 5,
-      "adj_pm": 2.9,
+      "pf": 1.4,
+      "pm_total": 14,
+      "adj_pm": 2.0,
       "games": [
         {
           "gid": "G2",
@@ -7015,6 +7208,12 @@
           "pkt": 5,
           "pm": 6,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 25,
+          "pm": 9,
+          "gsi": null
         }
       ],
       "archetype": {
@@ -7038,10 +7237,13 @@
         "off_net": 29.2,
         "on_off": 21.3,
         "on_min": 148.5
-      }
+      },
+      "fw_a_pg": 2.7,
+      "two_a_pg": 1.3,
+      "three_a_pg": 5.9,
+      "ast_to": 7.0
     },
     "Felix": {
-      "vollname": "Felix von Heymann",
       "pos": "combo",
       "spiele": 10,
       "mpg": 28.4,
@@ -7049,22 +7251,22 @@
       "fw_pct": 57,
       "fw_m": 29,
       "fw_a": 51,
-      "two_pct": 41,
-      "two_m": 23,
+      "two_pct": 61,
+      "two_m": 34,
       "two_a": 56,
-      "three_pct": 25,
-      "three_m": 6,
+      "three_pct": 42,
+      "three_m": 10,
       "three_a": 24,
-      "or_pg": 1.3,
-      "dr_pg": 3.6,
-      "reb": 4.9,
-      "apg": 3.3,
-      "tpg": 4.0,
-      "stl": 2.0,
+      "or_pg": 0.9,
+      "dr_pg": 2.5,
+      "reb": 3.4,
+      "apg": 2.3,
+      "tpg": 2.8,
+      "stl": 1.4,
       "blk": 0.0,
       "pf": 2.1,
       "pm_total": 38,
-      "adj_pm": 31.7,
+      "adj_pm": 4.8,
       "games": [
         {
           "gid": "G2",
@@ -7148,10 +7350,13 @@
         "off_net": 16.1,
         "on_off": 39.4,
         "on_min": 216.1
-      }
+      },
+      "fw_a_pg": 5.1,
+      "two_a_pg": 5.6,
+      "three_a_pg": 2.4,
+      "ast_to": 0.82
     },
     "Mattis": {
-      "vollname": "Johannes Mattis Beckmannshagen",
       "pos": "4/5",
       "spiele": 10,
       "mpg": 20.4,
@@ -7159,22 +7364,22 @@
       "fw_pct": 69,
       "fw_m": 22,
       "fw_a": 32,
-      "two_pct": 25,
-      "two_m": 8,
+      "two_pct": 66,
+      "two_m": 21,
       "two_a": 32,
       "three_pct": null,
       "three_m": 0,
       "three_a": 0,
-      "or_pg": 2.2,
-      "dr_pg": 3.8,
-      "reb": 6.0,
-      "apg": 1.0,
-      "tpg": 2.2,
-      "stl": 0.2,
-      "blk": 0.2,
+      "or_pg": 1.3,
+      "dr_pg": 2.3,
+      "reb": 3.6,
+      "apg": 0.6,
+      "tpg": 1.3,
+      "stl": 0.1,
+      "blk": 0.1,
       "pf": 3.1,
       "pm_total": 15,
-      "adj_pm": 14.1,
+      "adj_pm": 2.6,
       "games": [
         {
           "gid": "G2",
@@ -7258,10 +7463,13 @@
         "off_net": 30.3,
         "on_off": 16.5,
         "on_min": 164.6
-      }
+      },
+      "fw_a_pg": 3.2,
+      "two_a_pg": 3.2,
+      "three_a_pg": 0.0,
+      "ast_to": 0.46
     },
     "Jacopo": {
-      "vollname": "Jacopo Melloni",
       "pos": "?",
       "spiele": 1,
       "mpg": 9.9,
@@ -7301,30 +7509,29 @@
       }
     },
     "Jon": {
-      "vollname": "Jon",
       "pos": "2/3",
-      "spiele": 6,
-      "mpg": 19.1,
-      "ppg": 7.5,
+      "spiele": 7,
+      "mpg": 20.2,
+      "ppg": 6.7,
       "fw_pct": 33,
       "fw_m": 3,
       "fw_a": 9,
-      "two_pct": 55,
-      "two_m": 6,
-      "two_a": 11,
-      "three_pct": 25,
-      "three_m": 1,
-      "three_a": 4,
-      "or_pg": 1.0,
-      "dr_pg": 2.0,
-      "reb": 3.0,
-      "apg": 1.0,
-      "tpg": 1.5,
+      "two_pct": 95,
+      "two_m": 19,
+      "two_a": 20,
+      "three_pct": 33,
+      "three_m": 2,
+      "three_a": 6,
+      "or_pg": 0.6,
+      "dr_pg": 0.7,
+      "reb": 1.3,
+      "apg": 0.6,
+      "tpg": 0.4,
       "stl": 0.0,
       "blk": 0.0,
-      "pf": 1.2,
-      "pm_total": 35,
-      "adj_pm": 33.3,
+      "pf": 1.4,
+      "pm_total": 38,
+      "adj_pm": 9.7,
       "games": [
         {
           "gid": "G3",
@@ -7361,6 +7568,12 @@
           "pkt": 9,
           "pm": 6,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 2,
+          "pm": 3,
+          "gsi": null
         }
       ],
       "archetype": {
@@ -7384,10 +7597,13 @@
         "off_net": 29.9,
         "on_off": 31.6,
         "on_min": 91.0
-      }
+      },
+      "fw_a_pg": 1.3,
+      "two_a_pg": 2.9,
+      "three_a_pg": 0.9,
+      "ast_to": 1.5
     },
     "Deniz": {
-      "vollname": "Deniz",
       "pos": "4/5",
       "spiele": 5,
       "mpg": 14.0,
@@ -7401,16 +7617,16 @@
       "three_pct": 67,
       "three_m": 4,
       "three_a": 6,
-      "or_pg": 0.8,
-      "dr_pg": 2.5,
-      "reb": 3.2,
-      "apg": 0.8,
-      "tpg": 0.8,
-      "stl": 0.5,
+      "or_pg": 0.6,
+      "dr_pg": 2.0,
+      "reb": 2.6,
+      "apg": 0.6,
+      "tpg": 0.6,
+      "stl": 0.4,
       "blk": 0.0,
       "pf": 1.6,
       "pm_total": 14,
-      "adj_pm": 10.4,
+      "adj_pm": 7.2,
       "games": [
         {
           "gid": "G5",
@@ -7464,33 +7680,36 @@
         "off_net": 41.5,
         "on_off": -31.4,
         "on_min": 59.2
-      }
+      },
+      "fw_a_pg": 0.8,
+      "two_a_pg": 1.8,
+      "three_a_pg": 1.2,
+      "ast_to": 1.0
     },
     "Mello": {
-      "vollname": "Mello",
       "pos": "3/4",
-      "spiele": 6,
-      "mpg": 12.2,
-      "ppg": 1.7,
+      "spiele": 7,
+      "mpg": 11.8,
+      "ppg": 1.4,
       "fw_pct": null,
       "fw_m": 0,
       "fw_a": 0,
-      "two_pct": 36,
-      "two_m": 4,
+      "two_pct": 45,
+      "two_m": 5,
       "two_a": 11,
       "three_pct": 0,
       "three_m": 0,
       "three_a": 4,
-      "or_pg": 0.6,
-      "dr_pg": 1.0,
-      "reb": 1.6,
-      "apg": 0.2,
-      "tpg": 0.6,
-      "stl": 0.2,
-      "blk": 0.2,
-      "pf": 1.0,
-      "pm_total": 7,
-      "adj_pm": 8.5,
+      "or_pg": 0.4,
+      "dr_pg": 0.7,
+      "reb": 1.1,
+      "apg": 0.1,
+      "tpg": 0.4,
+      "stl": 0.1,
+      "blk": 0.1,
+      "pf": 0.9,
+      "pm_total": 11,
+      "adj_pm": 4.8,
       "games": [
         {
           "gid": "G5",
@@ -7550,10 +7769,13 @@
         "off_net": 23.2,
         "on_off": 83.7,
         "on_min": 67.3
-      }
+      },
+      "fw_a_pg": 0.0,
+      "two_a_pg": 1.6,
+      "three_a_pg": 0.6,
+      "ast_to": 0.25
     },
     "Frowin": {
-      "vollname": "Frowin",
       "pos": "1/2",
       "spiele": 3,
       "mpg": 18.2,
@@ -7564,19 +7786,19 @@
       "two_pct": 0,
       "two_m": 0,
       "two_a": 3,
-      "three_pct": 100,
-      "three_m": 2,
+      "three_pct": 150,
+      "three_m": 3,
       "three_a": 2,
-      "or_pg": 1.5,
-      "dr_pg": 1.0,
-      "reb": 2.5,
-      "apg": 1.0,
-      "tpg": 3.5,
+      "or_pg": 1.0,
+      "dr_pg": 0.7,
+      "reb": 1.7,
+      "apg": 0.7,
+      "tpg": 2.3,
       "stl": 0.0,
       "blk": 0.0,
       "pf": 2.3,
       "pm_total": -25,
-      "adj_pm": -25.1,
+      "adj_pm": -16.5,
       "games": [
         {
           "gid": "G6",
@@ -7618,13 +7840,16 @@
         "off_net": 41.5,
         "on_off": -49.5,
         "on_min": 37.5
-      }
+      },
+      "fw_a_pg": 0.7,
+      "two_a_pg": 1.0,
+      "three_a_pg": 0.7,
+      "ast_to": 0.3
     },
     "Yang": {
-      "vollname": "Yang",
       "pos": "5",
-      "spiele": 1,
-      "mpg": 2.0,
+      "spiele": 2,
+      "mpg": 6.7,
       "ppg": 0.0,
       "fw_pct": null,
       "fw_m": 0,
@@ -7635,22 +7860,28 @@
       "three_pct": null,
       "three_m": 0,
       "three_a": 0,
-      "or_pg": null,
-      "dr_pg": null,
-      "reb": null,
-      "apg": null,
-      "tpg": null,
-      "stl": null,
-      "blk": null,
-      "pf": 0.0,
-      "pm_total": -2,
-      "adj_pm": -2.0,
+      "or_pg": 0.5,
+      "dr_pg": 0.0,
+      "reb": 0.5,
+      "apg": 0.0,
+      "tpg": 0.0,
+      "stl": 0.0,
+      "blk": 0.0,
+      "pf": 0.5,
+      "pm_total": -7,
+      "adj_pm": -18.8,
       "games": [
         {
           "gid": "G9",
           "pkt": 0,
           "pm": -2,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 0,
+          "pm": -5,
+          "gsi": null
         }
       ],
       "flags": {
@@ -7667,10 +7898,12 @@
         "off_net": 37.6,
         "on_off": -137.6,
         "on_min": 2.0
-      }
+      },
+      "fw_a_pg": 0.0,
+      "two_a_pg": 0.0,
+      "three_a_pg": 0.0
     },
     "Martin": {
-      "vollname": "Martin",
       "pos": "3/4",
       "spiele": 1,
       "mpg": 14.0,
@@ -7693,7 +7926,7 @@
       "blk": 0.0,
       "pf": 1.0,
       "pm_total": 8,
-      "adj_pm": 8.0,
+      "adj_pm": 20.6,
       "games": [
         {
           "gid": "G13",
@@ -7723,10 +7956,12 @@
         "sub": "Versatile Defender",
         "sub_class": "arch-versatile-def",
         "desc": "Vielseitiger Verteidiger, kann verschiedene Positionen übernehmen — noch wenig Datenbasis"
-      }
+      },
+      "fw_a_pg": 0.0,
+      "two_a_pg": 0.0,
+      "three_a_pg": 3.0
     },
     "Serdar": {
-      "vollname": "Serdar Subasigüller",
       "pos": "combo",
       "spiele": 2,
       "mpg": 20.1,
@@ -7735,10 +7970,10 @@
       "fw_m": 0,
       "fw_a": 1,
       "two_pct": null,
-      "two_m": 0,
+      "two_m": 3,
       "two_a": 0,
       "three_pct": null,
-      "three_m": 0,
+      "three_m": 1,
       "three_a": 0,
       "or_pg": null,
       "dr_pg": null,
@@ -7749,7 +7984,7 @@
       "blk": null,
       "pf": 2.0,
       "pm_total": 27,
-      "adj_pm": 26.0,
+      "adj_pm": 24.2,
       "games": [
         {
           "gid": "G14",
@@ -7785,39 +8020,47 @@
         "off_net": 37.4,
         "on_off": -6.8,
         "on_min": 26.2
-      }
+      },
+      "fw_a_pg": 0.5,
+      "two_a_pg": 0.0,
+      "three_a_pg": 0.0
     },
     "Cedi": {
-      "vollname": "Cedrick Kinsumba",
       "pos": "combo",
-      "spiele": 1,
-      "mpg": 18.7,
-      "ppg": 9.0,
-      "fw_pct": null,
-      "fw_m": 0,
-      "fw_a": 0,
-      "two_pct": null,
-      "two_m": 0,
-      "two_a": 0,
-      "three_pct": null,
-      "three_m": 0,
-      "three_a": 0,
-      "or_pg": null,
-      "dr_pg": null,
-      "reb": null,
-      "apg": null,
-      "tpg": null,
-      "stl": null,
-      "blk": null,
+      "spiele": 2,
+      "mpg": 20.7,
+      "ppg": 7.5,
+      "fw_pct": 50,
+      "fw_m": 1,
+      "fw_a": 2,
+      "two_pct": 100,
+      "two_m": 4,
+      "two_a": 4,
+      "three_pct": 50,
+      "three_m": 2,
+      "three_a": 4,
+      "or_pg": 0.0,
+      "dr_pg": 2.0,
+      "reb": 2.0,
+      "apg": 3.0,
+      "tpg": 1.5,
+      "stl": 0.5,
+      "blk": 0.0,
       "pf": 1.0,
-      "pm_total": 21,
-      "adj_pm": 17.4,
+      "pm_total": 31,
+      "adj_pm": 27.0,
       "games": [
         {
           "gid": "G15",
           "pkt": 9,
           "pm": 21,
           "gsi": 0.5
+        },
+        {
+          "gid": "G16",
+          "pkt": 6,
+          "pm": 10,
+          "gsi": null
         }
       ],
       "archetype": {
@@ -7841,7 +8084,11 @@
         "off_net": 32.8,
         "on_off": 111.1,
         "on_min": 15.3
-      }
+      },
+      "fw_a_pg": 1.0,
+      "two_a_pg": 2.0,
+      "three_a_pg": 2.0,
+      "ast_to": 2.0
     }
   }
 }
