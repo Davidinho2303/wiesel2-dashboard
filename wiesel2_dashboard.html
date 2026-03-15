@@ -608,6 +608,7 @@
   <div class="tab" data-tab="table" onclick="showView('table')">Stats-Tabelle</div>
   <div class="tab" data-tab="lineups" onclick="showView('lineups')">Lineups</div>
   <div class="tab" data-tab="attendance" onclick="showView('attendance')">Anwesenheit</div>
+  <div class="tab" data-tab="games" onclick="showView('games')">Spiele</div>
   <div class="tab" onclick="showView('autobuild')" style="color:#4ae87a;border-bottom:2px solid transparent;" id="tab-autobuild">⚡ Auto-Build</div>
 </div>
 
@@ -786,6 +787,26 @@
       </div>
       <div id="att-summary-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
     </div>
+  </div>
+</div>
+
+<!-- GAMES -->
+<div class="view" id="view-games">
+  <!-- Game list -->
+  <div class="panel" id="games-list-panel">
+    <div class="panel-header">
+      <span class="panel-title" id="panel-games-list-title">Alle Spiele</span>
+      <span class="panel-sub" id="panel-games-list-sub">Saison 2025/26 · klicken für Details</span>
+    </div>
+    <div id="games-list" style="padding:12px 16px;"></div>
+  </div>
+  <!-- Game detail -->
+  <div class="panel" id="game-detail-panel" style="display:none;">
+    <div class="panel-header">
+      <span class="panel-title" id="game-detail-title">Spieldetail</span>
+      <button onclick="closeGameDetail()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted2);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'DM Sans';">✕ Schließen</button>
+    </div>
+    <div id="game-detail-body" style="padding:0;"></div>
   </div>
 </div>
 
@@ -1141,6 +1162,171 @@ function showView(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
   event.target.classList.add('active');
+  if (name === 'games') buildGamesList();
+}
+
+// ========== GAMES LIST ==========
+let _gamesRawData = null; // cache full spiele array with spieler_stats
+
+async function ensureGamesRaw() {
+  if (_gamesRawData) return _gamesRawData;
+  const resp = await fetch('./Wiesel2_Lineup_Daten_v3_clean.json');
+  const data = await resp.json();
+  _gamesRawData = data.spiele || [];
+  return _gamesRawData;
+}
+
+function buildGamesList() {
+  if (!GAMES || GAMES.length === 0) return;
+  const isEN = currentLang === 'en';
+  const el = document.getElementById('games-list');
+  el.innerHTML = GAMES.map(g => {
+    const isW = g.ww != null && g.opp != null ? g.ww > g.opp : g.ergebnis === 'W';
+    const isL = g.ww != null && g.opp != null ? g.ww < g.opp : g.ergebnis === 'L';
+    const diff = (g.ww != null && g.opp != null) ? (g.ww - g.opp) : null;
+    const diffStr = diff != null ? (diff > 0 ? `+${diff}` : `${diff}`) : '';
+    const gsiColor = g.gsi > 0.55 ? '#f0907a' : g.gsi < 0.45 ? 'var(--green)' : 'var(--muted)';
+    return `<div onclick="showGameDetail('${g.id}')" style="display:flex;align-items:center;gap:12px;padding:10px 8px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:6px;transition:background 0.15s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <span style="font-family:'DM Mono';font-size:11px;color:var(--muted);width:28px;">${g.id}</span>
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);width:76px;">${g.datum}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--text);flex:1;">${g.gegner}</span>
+      <span style="font-family:'DM Mono';font-size:13px;font-weight:700;color:${isW?'var(--green)':isL?'var(--red)':'var(--muted2)'};">${isW?'W':isL?'L':'?'}</span>
+      <span style="font-family:'DM Mono';font-size:13px;color:var(--muted2);width:60px;text-align:right;">${g.ww!=null?g.ww+':'+g.opp:'—'}</span>
+      <span style="font-family:'DM Mono';font-size:12px;width:36px;text-align:right;color:${isW?'var(--green)':isL?'var(--red)':'var(--muted)'};">${diffStr}</span>
+      <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${g.gsi>0.55?'rgba(232,90,74,0.12)':g.gsi<0.45?'rgba(74,232,122,0.1)':'rgba(255,255,255,0.04)'};color:${gsiColor};font-family:'DM Mono';width:60px;text-align:center;">GSI ${g.gsi}</span>
+      <span style="color:var(--muted);font-size:12px;">›</span>
+    </div>`;
+  }).join('');
+}
+
+async function showGameDetail(gameId) {
+  const isEN = currentLang === 'en';
+  const raw = await ensureGamesRaw();
+  const spiel = raw.find(g => g.id === gameId);
+  if (!spiel) return;
+
+  document.getElementById('game-detail-panel').style.display = '';
+  document.getElementById('game-detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const ww = spiel.ww2_punkte || spiel.ww || 0;
+  const opp = spiel.gegner_punkte || spiel.opp || 0;
+  const isW = ww > opp, isL = ww < opp;
+  const resultColor = isW ? 'var(--green)' : isL ? 'var(--red)' : 'var(--muted2)';
+  const resultLabel = isW ? (isEN ? 'WIN' : 'SIEG') : isL ? (isEN ? 'LOSS' : 'NIEDERLAGE') : '—';
+
+  // Quarter scores
+  const qWW = spiel.viertel_ww2 || [];
+  const qOpp = spiel.viertel_gegner || [];
+  const quarterHTML = (qWW.length >= 4) ? `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${qWW.map((q,i) => {
+        const oq = qOpp[i]||0;
+        const qW = q > oq, qL = q < oq;
+        return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;min-width:70px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">${isEN?'Q':'Q'}${i+1}</div>
+          <div style="font-family:'DM Mono';font-size:18px;font-weight:700;color:${qW?'var(--green)':qL?'var(--red)':'var(--muted2)'};">${q}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${isEN?'opp':'Geg'}: ${oq}</div>
+        </div>`;
+      }).join('')}
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px 14px;min-width:70px;text-align:center;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">${isEN?'TOTAL':'TOTAL'}</div>
+        <div style="font-family:'DM Mono';font-size:18px;font-weight:700;color:${resultColor};">${ww}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${isEN?'opp':'Geg'}: ${opp}</div>
+      </div>
+    </div>` : `<span style="color:var(--muted);font-size:12px;">${isEN?'No quarter data':'Keine Viertelwerte'}</span>`;
+
+  // Player stats table
+  const stats = spiel.spieler_stats || {};
+  const playerRows = Object.entries(stats)
+    .sort((a,b) => { const ma=_parseMinVal(a[1].min||'0'), mb=_parseMinVal(b[1].min||'0'); return mb-ma; })
+    .map(([name, s]) => {
+      const pm = s.plus_minus;
+      const pmColor = pm > 5 ? 'var(--green)' : pm < -5 ? 'var(--red)' : 'var(--muted2)';
+      const p = PLAYERS[name];
+      const arch = p ? archetypeBadgeHTML(p, name, true) : '';
+      return `<tr>
+        <td class="name">${name} ${arch}</td>
+        <td>${s.min||'—'}</td>
+        <td style="color:var(--accent);font-weight:700;">${s.pkt??'—'}</td>
+        <td>${s['2er']||'—'}</td>
+        <td>${s['3er']||'—'}</td>
+        <td>${s.fw||'—'}</td>
+        <td>${s.or??'—'}</td>
+        <td>${s.dr??'—'}</td>
+        <td>${s.ast??'—'}</td>
+        <td>${s.to??'—'}</td>
+        <td>${s.stl??'—'}</td>
+        <td>${s.blk??'—'}</td>
+        <td>${s.pf??'—'}</td>
+        <td style="font-weight:700;color:${pmColor};">${pm!=null?(pm>0?'+':'')+pm:'—'}</td>
+      </tr>`;
+    }).join('');
+
+  // Best lineups for this game
+  const gameLUs = (spiel.lineups||[]).sort((a,b)=>{
+    const pa=a.pkt||0, oa=a.opp||0, pb=b.pkt||0, ob=b.opp||0;
+    return (pb-ob)-(pa-oa);
+  });
+  const luHTML = gameLUs.length ? gameLUs.map(lu => {
+    const pm = (lu.pkt||0)-(lu.opp||0);
+    const min = _parseMin(lu.min);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;">${(lu.spieler||lu.players||[]).map(p=>`<span class="lu-tag">${NAME_MAP[p]||p}</span>`).join('')}</div>
+      <span style="font-family:'DM Mono';font-size:11px;color:var(--muted);width:40px;">${Math.round(min)}min</span>
+      <span style="font-family:'DM Mono';font-size:12px;font-weight:700;color:${pm>0?'var(--green)':pm<0?'var(--red)':'var(--muted2)'};">${pm>0?'+':''}${pm}</span>
+    </div>`;
+  }).join('') : `<span style="color:var(--muted);font-size:12px;">${isEN?'No lineup data':'Keine Lineup-Daten'}</span>`;
+
+  document.getElementById('game-detail-title').textContent = `${spiel.id} · ${spiel.gegner} · ${spiel.datum}`;
+  document.getElementById('game-detail-body').innerHTML = `
+    <!-- Hero -->
+    <div style="padding:20px;display:flex;align-items:center;gap:24px;border-bottom:1px solid var(--border);flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-family:'DM Mono';font-size:48px;font-weight:700;color:${resultColor};line-height:1;">${ww}:${opp}</div>
+        <div style="font-size:13px;font-weight:700;color:${resultColor};letter-spacing:2px;margin-top:4px;">${resultLabel}</div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">${spiel.gegner}</div>
+        <div style="font-size:12px;color:var(--muted);">${spiel.datum} · ${isEN?'Game':'Spiel'} ${spiel.id}</div>
+      </div>
+    </div>
+    <!-- Quarters -->
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+      <div style="font-family:'Bebas Neue';font-size:14px;letter-spacing:2px;color:var(--muted2);margin-bottom:10px;">${isEN?'QUARTER SCORES':'VIERTEL'}</div>
+      ${quarterHTML}
+    </div>
+    <!-- Player Stats -->
+    <div style="border-bottom:1px solid var(--border);">
+      <div style="padding:14px 20px 10px;font-family:'Bebas Neue';font-size:14px;letter-spacing:2px;color:var(--muted2);">${isEN?'PLAYER STATS':'SPIELER STATS'}</div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>${isEN?'Player':'Spieler'}</th>
+              <th>MIN</th><th>PTS</th><th>2P</th><th>3P</th><th>FT</th>
+              <th>OR</th><th>DR</th><th>AST</th><th>TO</th><th>STL</th><th>BLK</th><th>PF</th><th>+/-</th>
+            </tr>
+          </thead>
+          <tbody>${playerRows}</tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Lineups -->
+    <div style="padding:14px 20px;">
+      <div style="font-family:'Bebas Neue';font-size:14px;letter-spacing:2px;color:var(--muted2);margin-bottom:10px;">${isEN?'LINEUPS (sorted by +/-)':'LINEUPS (nach +/-)'}</div>
+      ${luHTML}
+    </div>
+  `;
+}
+
+function _parseMinVal(minStr) {
+  if (!minStr) return 0;
+  const parts = String(minStr).split(':');
+  return parts.length >= 2 ? parseInt(parts[0])*60+parseInt(parts[1]) : parseInt(parts[0])||0;
+}
+
+function closeGameDetail() {
+  document.getElementById('game-detail-panel').style.display = 'none';
 }
 
 // ========== OVERVIEW ==========
@@ -2913,6 +3099,7 @@ function applyLang() {
     'table':      TRANSLATIONS['tab-table'][currentLang],
     'lineups':    TRANSLATIONS['tab-lineups'][currentLang],
     'attendance': TRANSLATIONS['tab-attendance'][currentLang],
+    'games':      currentLang === 'en' ? 'Games' : 'Spiele',
   };
   document.querySelectorAll('.tab[data-tab]').forEach(t => {
     const key = t.getAttribute('data-tab');
