@@ -1241,7 +1241,7 @@ async function showGameDetail(gameId) {
     .sort((a,b) => { const ma=_parseMinVal(a[1].min||'0'), mb=_parseMinVal(b[1].min||'0'); return mb-ma; })
     .map(([name, s]) => {
       const pm = s.plus_minus;
-      const pmColor = pm > 5 ? 'var(--green)' : pm < -5 ? 'var(--red)' : 'var(--muted2)';
+      const pmCol = pm > 5 ? 'var(--green)' : pm < -5 ? 'var(--red)' : 'var(--muted2)';
       const p = PLAYERS[name];
       const arch = p ? archetypeBadgeHTML(p, name, true) : '';
       return `<tr>
@@ -1258,7 +1258,7 @@ async function showGameDetail(gameId) {
         <td>${s.stl??'—'}</td>
         <td>${s.blk??'—'}</td>
         <td>${s.pf??'—'}</td>
-        <td style="font-weight:700;color:${pmColor};">${pm!=null?(pm>0?'+':'')+pm:'—'}</td>
+        <td style="font-weight:700;color:${pmCol};">${pm!=null?(pm>0?'+':'')+pm:'—'}</td>
       </tr>`;
     }).join('');
 

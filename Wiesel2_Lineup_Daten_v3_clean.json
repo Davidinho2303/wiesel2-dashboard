@@ -4881,7 +4881,7 @@
           ],
           "min": "03:20",
           "pkt": 11,
-          "opp_pkt": 3
+          "opp": 3
         },
         {
           "spieler": [
@@ -4893,7 +4893,7 @@
           ],
           "min": "05:23",
           "pkt": 9,
-          "opp_pkt": 10
+          "opp": 10
         },
         {
           "spieler": [
@@ -4905,7 +4905,7 @@
           ],
           "min": "03:49",
           "pkt": 7,
-          "opp_pkt": 15
+          "opp": 15
         },
         {
           "spieler": [
@@ -4917,7 +4917,7 @@
           ],
           "min": "05:12",
           "pkt": 7,
-          "opp_pkt": 6
+          "opp": 6
         },
         {
           "spieler": [
@@ -4929,7 +4929,7 @@
           ],
           "min": "02:22",
           "pkt": 6,
-          "opp_pkt": 6
+          "opp": 6
         },
         {
           "spieler": [
@@ -4941,7 +4941,7 @@
           ],
           "min": "03:33",
           "pkt": 5,
-          "opp_pkt": 6
+          "opp": 6
         },
         {
           "spieler": [
@@ -4953,7 +4953,7 @@
           ],
           "min": "01:28",
           "pkt": 4,
-          "opp_pkt": 0
+          "opp": 0
         },
         {
           "spieler": [
@@ -4965,7 +4965,7 @@
           ],
           "min": "03:18",
           "pkt": 4,
-          "opp_pkt": 2
+          "opp": 2
         },
         {
           "spieler": [
@@ -4977,7 +4977,7 @@
           ],
           "min": "03:38",
           "pkt": 3,
-          "opp_pkt": 3
+          "opp": 3
         },
         {
           "spieler": [
@@ -4989,7 +4989,7 @@
           ],
           "min": "01:31",
           "pkt": 3,
-          "opp_pkt": 4
+          "opp": 4
         }
       ],
       "gsi": 0.529
@@ -5197,8 +5197,8 @@
             "Moritz"
           ],
           "min": "01:41",
-          "pkt_ww2": 10,
-          "pkt_opp": 2
+          "pkt": 10,
+          "opp": 2
         },
         {
           "spieler": [
@@ -5209,8 +5209,8 @@
             "Jon"
           ],
           "min": "02:19",
-          "pkt_ww2": 9,
-          "pkt_opp": 4
+          "pkt": 9,
+          "opp": 4
         },
         {
           "spieler": [
@@ -5221,8 +5221,8 @@
             "Jon"
           ],
           "min": "03:45",
-          "pkt_ww2": 7,
-          "pkt_opp": 7
+          "pkt": 7,
+          "opp": 7
         },
         {
           "spieler": [
@@ -5233,8 +5233,8 @@
             "Moritz"
           ],
           "min": "07:35",
-          "pkt_ww2": 6,
-          "pkt_opp": 9
+          "pkt": 6,
+          "opp": 9
         },
         {
           "spieler": [
@@ -5245,8 +5245,8 @@
             "Jeffrey"
           ],
           "min": "04:20",
-          "pkt_ww2": 6,
-          "pkt_opp": 2
+          "pkt": 6,
+          "opp": 2
         },
         {
           "spieler": [
@@ -5257,8 +5257,8 @@
             "Jeffrey"
           ],
           "min": "01:27",
-          "pkt_ww2": 5,
-          "pkt_opp": 4
+          "pkt": 5,
+          "opp": 4
         },
         {
           "spieler": [
@@ -5269,8 +5269,8 @@
             "Moritz"
           ],
           "min": "06:15",
-          "pkt_ww2": 4,
-          "pkt_opp": 16
+          "pkt": 4,
+          "opp": 16
         },
         {
           "spieler": [
@@ -5281,8 +5281,8 @@
             "Jon"
           ],
           "min": "02:25",
-          "pkt_ww2": 4,
-          "pkt_opp": 6
+          "pkt": 4,
+          "opp": 6
         },
         {
           "spieler": [
@@ -5293,8 +5293,8 @@
             "Jeffrey"
           ],
           "min": "01:05",
-          "pkt_ww2": 4,
-          "pkt_opp": 0
+          "pkt": 4,
+          "opp": 0
         },
         {
           "spieler": [
@@ -5305,8 +5305,8 @@
             "Jeffrey"
           ],
           "min": "01:19",
-          "pkt_ww2": 3,
-          "pkt_opp": 0
+          "pkt": 3,
+          "opp": 0
         }
       ],
       "gegner_stats": {
@@ -5564,8 +5564,8 @@
             "Jeffrey"
           ],
           "min": "06:53",
-          "pkt_ww2": 19,
-          "pkt_opp": 11
+          "pkt": 19,
+          "opp": 11
         },
         {
           "spieler": [
@@ -5576,8 +5576,8 @@
             "Moritz"
           ],
           "min": "06:15",
-          "pkt_ww2": 11,
-          "pkt_opp": 10
+          "pkt": 11,
+          "opp": 10
         },
         {
           "spieler": [
@@ -5588,8 +5588,8 @@
             "Jeffrey"
           ],
           "min": "02:39",
-          "pkt_ww2": 10,
-          "pkt_opp": 1
+          "pkt": 10,
+          "opp": 1
         },
         {
           "spieler": [
@@ -5600,8 +5600,8 @@
             "Jon"
           ],
           "min": "02:25",
-          "pkt_ww2": 4,
-          "pkt_opp": 2
+          "pkt": 4,
+          "opp": 2
         },
         {
           "spieler": [
@@ -5612,8 +5612,8 @@
             "Jon"
           ],
           "min": "04:15",
-          "pkt_ww2": 4,
-          "pkt_opp": 3
+          "pkt": 4,
+          "opp": 3
         },
         {
           "spieler": [
@@ -5624,8 +5624,8 @@
             "Serdar"
           ],
           "min": "01:10",
-          "pkt_ww2": 4,
-          "pkt_opp": 0
+          "pkt": 4,
+          "opp": 0
         },
         {
           "spieler": [
@@ -5636,8 +5636,8 @@
             "Jeffrey"
           ],
           "min": "01:14",
-          "pkt_ww2": 3,
-          "pkt_opp": 0
+          "pkt": 3,
+          "opp": 0
         },
         {
           "spieler": [
@@ -5648,8 +5648,8 @@
             "Jeffrey"
           ],
           "min": "00:49",
-          "pkt_ww2": 3,
-          "pkt_opp": 4
+          "pkt": 3,
+          "opp": 4
         },
         {
           "spieler": [
@@ -5660,8 +5660,8 @@
             "Jeffrey"
           ],
           "min": "01:01",
-          "pkt_ww2": 3,
-          "pkt_opp": 0
+          "pkt": 3,
+          "opp": 0
         },
         {
           "spieler": [
@@ -5672,8 +5672,8 @@
             "Jeffrey"
           ],
           "min": "00:07",
-          "pkt_ww2": 3,
-          "pkt_opp": 0
+          "pkt": 3,
+          "opp": 0
         }
       ],
       "gegner_stats": {
@@ -6232,9 +6232,8 @@
             "Niklas"
           ],
           "min": "07:09",
-          "ww2_pts": 16,
-          "opp_pts": 15,
-          "diff": 1
+          "pkt": 16,
+          "opp": 15
         },
         {
           "spieler": [
@@ -6245,9 +6244,8 @@
             "Niklas"
           ],
           "min": "07:39",
-          "ww2_pts": 13,
-          "opp_pts": 6,
-          "diff": 7
+          "pkt": 13,
+          "opp": 6
         },
         {
           "spieler": [
@@ -6258,9 +6256,8 @@
             "Niklas"
           ],
           "min": "04:40",
-          "ww2_pts": 12,
-          "opp_pts": 8,
-          "diff": 4
+          "pkt": 12,
+          "opp": 8
         },
         {
           "spieler": [
@@ -6271,9 +6268,8 @@
             "Moritz"
           ],
           "min": "04:23",
-          "ww2_pts": 11,
-          "opp_pts": 8,
-          "diff": 3
+          "pkt": 11,
+          "opp": 8
         },
         {
           "spieler": [
@@ -6284,9 +6280,8 @@
             "Yang"
           ],
           "min": "03:34",
-          "ww2_pts": 10,
-          "opp_pts": 12,
-          "diff": -2
+          "pkt": 10,
+          "opp": 12
         },
         {
           "spieler": [
@@ -6297,9 +6292,8 @@
             "Yang"
           ],
           "min": "02:36",
-          "ww2_pts": 5,
-          "opp_pts": 5,
-          "diff": 0
+          "pkt": 5,
+          "opp": 5
         },
         {
           "spieler": [
@@ -6310,9 +6304,8 @@
             "Yang"
           ],
           "min": "02:12",
-          "ww2_pts": 5,
-          "opp_pts": 3,
-          "diff": 2
+          "pkt": 5,
+          "opp": 3
         },
         {
           "spieler": [
@@ -6323,9 +6316,8 @@
             "Moritz"
           ],
           "min": "00:32",
-          "ww2_pts": 3,
-          "opp_pts": 0,
-          "diff": 3
+          "pkt": 3,
+          "opp": 0
         },
         {
           "spieler": [
@@ -6336,9 +6328,8 @@
             "Niklas"
           ],
           "min": "04:19",
-          "ww2_pts": 3,
-          "opp_pts": 7,
-          "diff": -4
+          "pkt": 3,
+          "opp": 7
         },
         {
           "spieler": [
@@ -6349,9 +6340,8 @@
             "Yang"
           ],
           "min": "00:00",
-          "ww2_pts": 0,
-          "opp_pts": 0,
-          "diff": 0
+          "pkt": 0,
+          "opp": 0
         }
       ],
       "gegner_stats": {
