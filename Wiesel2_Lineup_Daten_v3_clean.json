@@ -6854,11 +6854,11 @@
         }
       ],
       "archetype": {
-        "main": "CREATOR",
-        "main_class": "arch-main-creator",
-        "sub": "Secondary Creator",
-        "sub_class": "arch-secondary-creator",
-        "desc": "50% 3P (small sample), 1.2 STL — braucht Konsistenz & Selbstvertrauen"
+        "main": "TWO-WAY",
+        "main_class": "arch-main-two-way",
+        "sub": "Cutter",
+        "sub_class": "arch-cutter",
+        "desc": "79% 2P, 0.5 STL — hocheffizienter Finisher im Halbfeld, stark in Bewegung"
       },
       "flags": {
         "ballhandler": true,
@@ -7090,7 +7090,7 @@
         "main_class": "arch-main-creator",
         "sub": "Secondary Creator",
         "sub_class": "arch-secondary-creator",
-        "desc": "6.8 PPG, 1.5 AST, 1.2 STL — zweiter Ballhandler mit Scoring & Defensivpräsenz"
+        "desc": "7.2 PPG, 76% 2P, 60% 3P — effizienter Scorer mit Ballhandling, stark in kurzen Stints"
       },
       "flags": {
         "ballhandler": true,
@@ -7187,11 +7187,11 @@
         }
       ],
       "archetype": {
-        "main": "TWO-WAY",
-        "main_class": "arch-main-twoway",
-        "sub": "3&D",
-        "sub_class": "arch-3d",
-        "desc": "5.1 PPG, 2.8 REB, 0.8 STL — 3P-Volumen muss effizienter werden (16%)"
+        "main": "SCORER",
+        "main_class": "arch-main-scorer",
+        "sub": "Spot-Up Shooter",
+        "sub_class": "arch-spot-up",
+        "desc": "5.1 PPG, 53% 3P"
       },
       "flags": {
         "ballhandler": false,
@@ -7296,8 +7296,8 @@
         "main": "GLUE",
         "main_class": "arch-main-glue",
         "sub": "Versatile Defender",
-        "sub_class": "arch-versatile-def",
-        "desc": "1.4 STL, 2.8 REB — defensiv vielseitig einsetzbar, Scoring-Effizienz (27% 2P) muss wachsen"
+        "sub_class": "arch-versatile-defender",
+        "desc": "0.7 STL, 50% 2P — defensiv vielseitig einsetzbar, Scoring hat sich gefestigt"
       },
       "flags": {
         "ballhandler": false,
@@ -7434,7 +7434,7 @@
         "main_class": "arch-main-anchor",
         "sub": "Def. Anchor",
         "sub_class": "arch-def-anchor",
-        "desc": "9.7 PPG, 13.0 RPG, +59 +/- — dominanter Rebounder & physischer Anker, bester Spieler im Team"
+        "desc": "10.3 PPG, 7.3 RPG, 84% 2P — dominanter Rebounder & physischer Anker im Team"
       },
       "flags": {
         "ballhandler": false,
@@ -7559,7 +7559,7 @@
         "main_class": "arch-main-scorer",
         "sub": "Stretch Big",
         "sub_class": "arch-stretch-big",
-        "desc": "12.9 PPG, 7.8 REB, 46% 2P — dominanter Scorer innen, Dreier noch ausbaufähig"
+        "desc": "12.8 PPG, 92% 2P, 68% 3P — hocheffizienter Scorer auf beiden Ebenen, einer der besten Effizienzwerte im Team"
       },
       "flags": {
         "ballhandler": false,
@@ -7666,7 +7666,7 @@
         "main_class": "arch-main-scorer",
         "sub": "Spot-Up Shooter",
         "sub_class": "arch-spot-up",
-        "desc": "9.6 PPG, 39 3P-Versuche — lebt vom Spacing, Effizienz muss wachsen"
+        "desc": "11.6 PPG, 53 3P-Versuche, 55% 3P — volumenstärkster Dreier im Team, effizienter Spot-Up Scorer"
       },
       "flags": {
         "ballhandler": false,
@@ -8105,11 +8105,11 @@
         }
       ],
       "archetype": {
-        "main": "ANCHOR",
-        "main_class": "arch-main-anchor",
-        "sub": "Rim Runner",
-        "sub_class": "arch-rim-runner",
-        "desc": "3.2 REB, 0.5 STL, +14 +/- — solider Finisher, Dreier ist Bonus (small sample)"
+        "main": "TWO-WAY",
+        "main_class": "arch-main-two-way",
+        "sub": "Stretch Big",
+        "sub_class": "arch-stretch-big",
+        "desc": "67% 3P, 2.6 RPG — überraschend starker Dreier-Schütze für einen Big, vielseitig einsetzbar"
       },
       "flags": {
         "ballhandler": false,
@@ -8509,11 +8509,11 @@
         }
       ],
       "archetype": {
-        "main": "SCORER",
-        "main_class": "arch-main-scorer",
-        "sub": "Slasher",
-        "sub_class": "arch-slasher",
-        "desc": "Starkes Debüt G15: 9P, 100% 2P, +21 in 18 Min — Combo mit Finisher-Qualitäten"
+        "main": "CREATOR",
+        "main_class": "arch-main-creator",
+        "sub": "Combo Playmaker",
+        "sub_class": "arch-combo-playmaker",
+        "desc": "8.3 PPG, 2.0 AST — vielseitiger Combo mit Scoring & Playmaking-Qualitäten"
       },
       "flags": {
         "ballhandler": true,
