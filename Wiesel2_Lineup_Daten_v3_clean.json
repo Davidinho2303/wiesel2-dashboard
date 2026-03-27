@@ -2,7 +2,7 @@
   "team": "Weddinger Wiesel 2",
   "saison": "2025/2026",
   "liga": "Herren Landesliga B",
-  "zuletzt_aktualisiert": "14.03.2026",
+  "zuletzt_aktualisiert": "22.03.2026",
   "schema_version": "2.1",
   "stats_schema": {
     "spieler_stats_felder": [
@@ -6354,6 +6354,330 @@
       },
       "gsi": null,
       "notizen": "7/8 OKE Wings. Alle werfen, Bigs trash; meistens nur einer auf dem Feld (Mismatch-Potenzial)."
+    },
+    {
+      "id": "G17",
+      "datum": "22.03.2026",
+      "gegner": "Alba Berlin 4",
+      "ergebnis": "W",
+      "ww2_punkte": 87,
+      "gegner_punkte": 73,
+      "viertel_ww2": [
+        21,
+        20,
+        24,
+        22
+      ],
+      "viertel_gegner": [
+        20,
+        12,
+        25,
+        16
+      ],
+      "spieler_stats": {
+        "Moritz": {
+          "nr": 4,
+          "min": "26:20",
+          "pkt": 14,
+          "fw": "0-0",
+          "2er": "1-null",
+          "3er": "4-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 2,
+          "plus_minus": -2,
+          "pir": null
+        },
+        "Mello": {
+          "nr": 6,
+          "min": "13:40",
+          "pkt": 8,
+          "fw": "6-6",
+          "2er": "1-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 2,
+          "plus_minus": 16,
+          "pir": null
+        },
+        "Mattias": {
+          "nr": 7,
+          "min": "18:00",
+          "pkt": 5,
+          "fw": "1-1",
+          "2er": "2-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 4,
+          "plus_minus": 0,
+          "pir": null
+        },
+        "Jon": {
+          "nr": 8,
+          "min": "18:20",
+          "pkt": 6,
+          "fw": "0-0",
+          "2er": "3-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 2,
+          "plus_minus": -2,
+          "pir": null
+        },
+        "Yang": {
+          "nr": 9,
+          "min": "05:31",
+          "pkt": 0,
+          "fw": "0-0",
+          "2er": "0-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 0,
+          "plus_minus": 2,
+          "pir": null
+        },
+        "Jari": {
+          "nr": 10,
+          "min": "24:57",
+          "pkt": 6,
+          "fw": "0-0",
+          "2er": "3-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 2,
+          "plus_minus": 5,
+          "pir": null
+        },
+        "Cedi": {
+          "nr": 11,
+          "min": "21:40",
+          "pkt": 10,
+          "fw": "1-2",
+          "2er": "3-null",
+          "3er": "1-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 4,
+          "plus_minus": 16,
+          "pir": null
+        },
+        "Jeff": {
+          "nr": 13,
+          "min": "22:00",
+          "pkt": 10,
+          "fw": "3-4",
+          "2er": "2-null",
+          "3er": "1-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 2,
+          "plus_minus": 14,
+          "pir": null
+        },
+        "Theo": {
+          "nr": 14,
+          "min": "22:29",
+          "pkt": 13,
+          "fw": "5-5",
+          "2er": "4-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 3,
+          "plus_minus": 18,
+          "pir": null
+        },
+        "Niklas": {
+          "nr": 15,
+          "min": "27:03",
+          "pkt": 15,
+          "fw": "2-2",
+          "2er": "5-null",
+          "3er": "1-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 3,
+          "plus_minus": 3,
+          "pir": null
+        }
+      },
+      "lineups": [
+        {
+          "spieler": [
+            "Cedi",
+            "Jeff",
+            "Mello",
+            "Niklas",
+            "Theo"
+          ],
+          "min": "04:54",
+          "pkt": 16,
+          "opp": 9
+        },
+        {
+          "spieler": [
+            "Jari",
+            "Jon",
+            "Mattias",
+            "Moritz",
+            "Niklas"
+          ],
+          "min": "09:10",
+          "pkt": 14,
+          "opp": 23
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jari",
+            "Jeff",
+            "Mello",
+            "Theo"
+          ],
+          "min": "04:18",
+          "pkt": 12,
+          "opp": 5
+        },
+        {
+          "spieler": [
+            "Jari",
+            "Jeff",
+            "Jon",
+            "Moritz",
+            "Theo"
+          ],
+          "min": "01:10",
+          "pkt": 8,
+          "opp": 0
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jari",
+            "Jeff",
+            "Moritz",
+            "Theo"
+          ],
+          "min": "05:35",
+          "pkt": 7,
+          "opp": 9
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Mattias",
+            "Moritz",
+            "Niklas",
+            "Theo"
+          ],
+          "min": "01:52",
+          "pkt": 7,
+          "opp": 2
+        },
+        {
+          "spieler": [
+            "Jari",
+            "Jeff",
+            "Jon",
+            "Moritz",
+            "Niklas"
+          ],
+          "min": "02:01",
+          "pkt": 6,
+          "opp": 3
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Mattias",
+            "Mello",
+            "Niklas",
+            "Yang"
+          ],
+          "min": "01:15",
+          "pkt": 5,
+          "opp": 2
+        },
+        {
+          "spieler": [
+            "Jon",
+            "Mattias",
+            "Moritz",
+            "Niklas",
+            "Yang"
+          ],
+          "min": "02:30",
+          "pkt": 4,
+          "opp": 2
+        },
+        {
+          "spieler": [
+            "Cedi",
+            "Jari",
+            "Jeff",
+            "Moritz",
+            "Niklas"
+          ],
+          "min": "00:49",
+          "pkt": 2,
+          "opp": 2
+        }
+      ],
+      "gegner_stats": {
+        "gesamt": {
+          "pkt": 73,
+          "fg": null,
+          "3pt": null,
+          "ft": "16-32"
+        }
+      },
+      "gsi": null,
+      "notizen": ""
     }
   ],
   "spieler_aggregiert": {
