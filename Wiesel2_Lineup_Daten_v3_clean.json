@@ -2,7 +2,7 @@
   "team": "Weddinger Wiesel 2",
   "saison": "2025/2026",
   "liga": "Herren Landesliga B",
-  "zuletzt_aktualisiert": "01.04.2026",
+  "zuletzt_aktualisiert": "12.04.2026",
   "schema_version": "2.1",
   "stats_schema": {
     "spieler_stats_felder": [
@@ -7275,6 +7275,389 @@
       },
       "gsi": null,
       "notizen": "Heimspiel. Moritz 5/9 3PT. Nik bester +/- (+23)."
+    },
+    {
+      "id": "G20",
+      "datum": "12.04.2026",
+      "gegner": "BC Lions Moabit 1",
+      "heim_auswaerts": "Auswärts",
+      "ergebnis": "L",
+      "ww2_punkte": 60,
+      "gegner_punkte": 91,
+      "viertel_ww2": [
+        9,
+        24,
+        13,
+        14
+      ],
+      "viertel_gegner": [
+        26,
+        22,
+        25,
+        18
+      ],
+      "spieler_stats": {
+        "Moritz": {
+          "nr": 4,
+          "min": "24:02",
+          "pkt": 0,
+          "fw": "0-0",
+          "2er": "0-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 0,
+          "plus_minus": -28,
+          "pir": null
+        },
+        "Mattias": {
+          "nr": 5,
+          "min": "16:59",
+          "pkt": 2,
+          "fw": "0-0",
+          "2er": "1-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 4,
+          "plus_minus": -25,
+          "pir": null
+        },
+        "Mello": {
+          "nr": 6,
+          "min": "18:18",
+          "pkt": 0,
+          "fw": "0-0",
+          "2er": "0-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 3,
+          "plus_minus": -3,
+          "pir": null
+        },
+        "Frowin": {
+          "nr": 7,
+          "min": "15:08",
+          "pkt": 6,
+          "fw": "1-2",
+          "2er": "1-null",
+          "3er": "1-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 1,
+          "plus_minus": 1,
+          "pir": null
+        },
+        "Felix": {
+          "nr": 9,
+          "min": "22:03",
+          "pkt": 21,
+          "fw": "4-6",
+          "2er": "4-null",
+          "3er": "3-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 2,
+          "plus_minus": -28,
+          "pir": null
+        },
+        "Dariush": {
+          "nr": 10,
+          "min": "17:19",
+          "pkt": 2,
+          "fw": "0-0",
+          "2er": "1-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 1,
+          "plus_minus": -4,
+          "pir": null
+        },
+        "Yang": {
+          "nr": 11,
+          "min": "24:29",
+          "pkt": 2,
+          "fw": "0-2",
+          "2er": "1-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 2,
+          "plus_minus": -9,
+          "pir": null
+        },
+        "Martin": {
+          "nr": 12,
+          "min": "23:21",
+          "pkt": 4,
+          "fw": "2-2",
+          "2er": "1-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 3,
+          "plus_minus": -30,
+          "pir": null
+        },
+        "Jeff": {
+          "nr": 13,
+          "min": "22:50",
+          "pkt": 19,
+          "fw": "4-4",
+          "2er": "3-null",
+          "3er": "3-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 4,
+          "plus_minus": -7,
+          "pir": null
+        },
+        "Serdar": {
+          "nr": 15,
+          "min": "15:31",
+          "pkt": 4,
+          "fw": "2-2",
+          "2er": "1-null",
+          "3er": "0-null",
+          "or": null,
+          "dr": null,
+          "ast": null,
+          "to": null,
+          "stl": null,
+          "blk": null,
+          "pf": 4,
+          "plus_minus": -22,
+          "pir": null
+        }
+      },
+      "lineups": [
+        {
+          "spieler": [
+            "Frowin",
+            "Mello",
+            "Yang",
+            "Jeff",
+            "Dariush"
+          ],
+          "min": "15:08",
+          "pkt": 25,
+          "opp": 24
+        },
+        {
+          "spieler": [
+            "Mattias",
+            "Serdar",
+            "Martin",
+            "Moritz",
+            "Felix"
+          ],
+          "min": "15:31",
+          "pkt": 22,
+          "opp": 44
+        },
+        {
+          "spieler": [
+            "Serdar",
+            "Moritz",
+            "Yang",
+            "Felix",
+            "Jeff"
+          ],
+          "min": "03:22",
+          "pkt": 4,
+          "opp": 6
+        },
+        {
+          "spieler": [
+            "Mello",
+            "Moritz",
+            "Yang",
+            "Felix",
+            "Jeff"
+          ],
+          "min": "00:41",
+          "pkt": 4,
+          "opp": 2
+        },
+        {
+          "spieler": [
+            "Serdar",
+            "Mello",
+            "Moritz",
+            "Yang",
+            "Felix"
+          ],
+          "min": "01:39",
+          "pkt": 3,
+          "opp": 5
+        },
+        {
+          "spieler": [
+            "Serdar",
+            "Yang",
+            "Felix",
+            "Jeff",
+            "Dariush"
+          ],
+          "min": "01:21",
+          "pkt": 2,
+          "opp": 3
+        },
+        {
+          "spieler": [
+            "Mattias",
+            "Serdar",
+            "Martin",
+            "Felix",
+            "Jeff"
+          ],
+          "min": "00:00",
+          "pkt": 0,
+          "opp": 0
+        },
+        {
+          "spieler": [
+            "Mattias",
+            "Serdar",
+            "Yang",
+            "Felix",
+            "Jeff"
+          ],
+          "min": "01:28",
+          "pkt": 0,
+          "opp": 3
+        },
+        {
+          "spieler": [
+            "Serdar",
+            "Mello",
+            "Yang",
+            "Jeff",
+            "Dariush"
+          ],
+          "min": "00:00",
+          "pkt": 0,
+          "opp": 0
+        },
+        {
+          "spieler": [
+            "Mello",
+            "Moritz",
+            "Yang",
+            "Jeff",
+            "Dariush"
+          ],
+          "min": "00:50",
+          "pkt": 0,
+          "opp": 4
+        }
+      ],
+      "gegner_stats": {
+        "gesamt": {
+          "pkt": 91,
+          "fg": "21-27",
+          "3pt": "13-null",
+          "ft": "10-27"
+        },
+        "spieler": [
+          {
+            "name": "Omar El-Cheikh",
+            "nr": 2,
+            "min": "17:33",
+            "pkt": 6,
+            "fw": "0-2"
+          },
+          {
+            "name": "Mustafa Girke",
+            "nr": 5,
+            "min": "32:21",
+            "pkt": 19,
+            "fw": "0-0"
+          },
+          {
+            "name": "Salim El-Cheikh",
+            "nr": 8,
+            "min": "12:55",
+            "pkt": 1,
+            "fw": "1-5"
+          },
+          {
+            "name": "Oduwa Ehiorobo",
+            "nr": 23,
+            "min": "15:45",
+            "pkt": 4,
+            "fw": "2-4"
+          },
+          {
+            "name": "Jared Zerrenner",
+            "nr": 24,
+            "min": "37:23",
+            "pkt": 22,
+            "fw": "4-9"
+          },
+          {
+            "name": "Almin Oviel Olivo Cruz",
+            "nr": 41,
+            "min": "26:42",
+            "pkt": 18,
+            "fw": "0-0"
+          },
+          {
+            "name": "Nico Rauer",
+            "nr": 44,
+            "min": "26:18",
+            "pkt": 16,
+            "fw": "2-4"
+          },
+          {
+            "name": "Robert Amuri",
+            "nr": 55,
+            "min": "31:02",
+            "pkt": 5,
+            "fw": "1-3"
+          }
+        ]
+      },
+      "gsi": null,
+      "notizen": "Letztes Saisonspiel 2025/26. FG-Attempts (Denominator) nicht vollständig erfasst. Gegner-Stats aus App-Screenshots."
     }
   ],
   "spieler_aggregiert": {
